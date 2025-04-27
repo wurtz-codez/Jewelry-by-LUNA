@@ -1,10 +1,14 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Toast from '../components/Toast';
+import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
+  const { register, error: authError } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,15 +26,20 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/register', formData);
-      localStorage.setItem('token', response.data.token);
-      setShowToast(true);
-      setTimeout(() => {
-        navigate('/');
-      }, 1000);
+      const success = await register(formData.name, formData.email, formData.password);
+      
+      if (success) {
+        setShowToast(true);
+        setTimeout(() => {
+          navigate(from);
+        }, 1000);
+      } else {
+        setError(authError || 'Registration failed');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred during registration');
+      setError('An error occurred during registration');
     }
   };
 

@@ -1,10 +1,14 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Toast from '../components/Toast';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
+  const { login, error: authError } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
+  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -21,15 +25,20 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/login', formData);
-      localStorage.setItem('token', response.data.token);
-      setShowToast(true);
-      setTimeout(() => {
-        navigate('/');
-      }, 1000);
+      const success = await login(formData.email, formData.password);
+      
+      if (success) {
+        setShowToast(true);
+        setTimeout(() => {
+          navigate(from);
+        }, 1000);
+      } else {
+        setError(authError || 'Invalid credentials');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred during login');
+      setError('An error occurred during login');
     }
   };
 

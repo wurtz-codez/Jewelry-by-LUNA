@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import lunaLogo from '../assets/luna-logo.png'
-import { FiSearch, FiHeart, FiShoppingBag, FiUser } from 'react-icons/fi'
+import { FiSearch, FiHeart, FiShoppingBag, FiUser, FiLogIn, FiLogOut } from 'react-icons/fi'
+import { useAuth } from '../contexts/AuthContext'
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeLink, setActiveLink] = useState('');
+  const { currentUser, logout } = useAuth();
 
   // Update active link based on current location
   useEffect(() => {
@@ -21,6 +24,11 @@ const Navbar = () => {
       setActiveLink('Contact');
     }
   }, [location]);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <nav className="navbar">
@@ -64,15 +72,32 @@ const Navbar = () => {
         <button aria-label="Search" style={{ color: '#8B4513' }}>
           <FiSearch />
         </button>
-        <Link to="/wishlist" aria-label="Wishlist" style={{ color: '#8B4513' }}>
-          <FiHeart />
-        </Link>
-        <Link to="/cart" aria-label="Shopping Bag" style={{ color: '#8B4513' }}>
-          <FiShoppingBag />
-        </Link>
-        <Link to="/profile" aria-label="Account" style={{ color: '#8B4513' }}>
-          <FiUser />
-        </Link>
+        
+        {currentUser ? (
+          <>
+            <Link to="/wishlist" aria-label="Wishlist" style={{ color: '#8B4513' }}>
+              <FiHeart />
+            </Link>
+            <Link to="/cart" aria-label="Shopping Bag" style={{ color: '#8B4513' }}>
+              <FiShoppingBag />
+            </Link>
+            <Link to="/profile" aria-label="Account" style={{ color: '#8B4513' }}>
+              <FiUser />
+            </Link>
+            <button 
+              onClick={handleLogout} 
+              aria-label="Logout" 
+              style={{ color: '#8B4513' }}
+              className="ml-2"
+            >
+              <FiLogOut />
+            </button>
+          </>
+        ) : (
+          <Link to="/login" aria-label="Login" style={{ color: '#8B4513' }}>
+            <FiLogIn />
+          </Link>
+        )}
       </div>
     </nav>
   )
