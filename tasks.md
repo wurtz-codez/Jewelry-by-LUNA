@@ -13,8 +13,8 @@
 - [ ] Set up basic routing structure
 
 ### Phase 2: Core Features (Upcoming)
-- [ ] Implement user authentication system (JWT)
-- [ ] Create user registration and login pages
+- [x] Implement user authentication system (JWT)
+- [x] Create user registration and login pages
 - [ ] Set up user profile management
 - [ ] Create product database schema
 - [ ] Implement product listing page
@@ -27,6 +27,8 @@
 - [x] Basic project structure setup
 - [x] Initial backend setup
 - [x] Database connection setup
+- [x] User authentication system implementation
+- [x] Basic registration and login pages
 
 ## Backlog Tasks
 
