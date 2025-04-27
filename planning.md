@@ -76,13 +76,13 @@ Jewelry by LUNA is an e-commerce platform for selling handmade jewelry. This doc
 5. Implement advanced admin features
 
 ## Technical Stack
-- Frontend: Next.js, TypeScript, Tailwind CSS
-- Backend: Next.js API routes
+- Frontend: React.js, TypeScript, Tailwind CSS
+- Backend: Node.js, Express.js
 - Database: MongoDB
-- Authentication: NextAuth.js
-- Payment: Stripe
+- Authentication: JWT, OAuth
+- Payment: -----
 - Image Storage: Cloudinary
-- Deployment: Vercel
+- Deployment: Vercel, Render
 
 ## Security Considerations
 - Implement HTTPS
