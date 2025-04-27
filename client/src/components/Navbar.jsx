@@ -1,61 +1,78 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import lunaLogo from '../assets/luna-logo.png'
 import { FiSearch, FiHeart, FiShoppingBag, FiUser } from 'react-icons/fi'
 
 const Navbar = () => {
-  const [activeLink, setActiveLink] = useState('Home')
+  const location = useLocation();
+  const [activeLink, setActiveLink] = useState('');
+
+  // Update active link based on current location
+  useEffect(() => {
+    const path = location.pathname;
+    
+    if (path === '/') {
+      setActiveLink('Home');
+    } else if (path === '/shop') {
+      setActiveLink('Shop');
+    } else if (path === '/about') {
+      setActiveLink('About');
+    } else if (path === '/contact') {
+      setActiveLink('Contact');
+    }
+  }, [location]);
 
   return (
     <nav className="navbar">
       <div className="nav-links">
-        <a 
-          href="" 
+        <Link 
+          to="/" 
           className={activeLink === 'Home' ? 'active' : ''}
-          onClick={() => setActiveLink('Home')}
+          style={{ color: '#8B4513' }}
         >
           Home
-        </a>
-        <a 
-          href="./shop" 
+        </Link>
+        <Link 
+          to="/shop" 
           className={activeLink === 'Shop' ? 'active' : ''}
-          onClick={() => setActiveLink('Shop')}
+          style={{ color: '#8B4513' }}
         >
           Shop
-        </a>
-        <a 
-          href="#" 
+        </Link>
+        <Link 
+          to="/about" 
           className={activeLink === 'About' ? 'active' : ''}
-          onClick={() => setActiveLink('About')}
+          style={{ color: '#8B4513' }}
         >
           About
-        </a>
-        <a 
-          href="#" 
+        </Link>
+        <Link 
+          to="/contact" 
           className={activeLink === 'Contact' ? 'active' : ''}
-          onClick={() => setActiveLink('Contact')}
+          style={{ color: '#8B4513' }}
         >
           Contact
-        </a>
+        </Link>
       </div>
 
-      <div className="logo">
+      <Link to="/" className="logo">
         <img src={lunaLogo || "/placeholder.svg"} alt="Jewelry by Luna" />
-        <span>JEWELRY BY LUNA</span>
-      </div>
+        <span style={{ color: '#8B4513' }}>JEWELRY BY LUNA</span>
+      </Link>
 
       <div className="nav-icons">
-        <button aria-label="Search">
+        <button aria-label="Search" style={{ color: '#8B4513' }}>
           <FiSearch />
         </button>
-        <button aria-label="Wishlist">
+        <Link to="/wishlist" aria-label="Wishlist" style={{ color: '#8B4513' }}>
           <FiHeart />
-        </button>
-        <button aria-label="Shopping Bag">
+        </Link>
+        <Link to="/cart" aria-label="Shopping Bag" style={{ color: '#8B4513' }}>
           <FiShoppingBag />
-        </button>
-        <button aria-label="Account">
+        </Link>
+        <Link to="/profile" aria-label="Account" style={{ color: '#8B4513' }}>
           <FiUser />
-        </button>
+        </Link>
       </div>
     </nav>
   )

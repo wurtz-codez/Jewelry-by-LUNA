@@ -98,10 +98,10 @@ const Shop = () => {
       {/* Shop Banner */}
       <div className="shop-banner">
         <img src={bannerImage} alt="Jewelry Collection" />
-        <div className="banner-text">
+        {/* <div className="banner-text">
           <h1>Our Collection</h1>
           <p>Discover timeless elegance with our handcrafted jewelry pieces</p>
-        </div>
+        </div> */}
       </div>
       
       {/* Search and Filters */}
