@@ -9,14 +9,14 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="nav-links">
         <a 
-          href="#" 
+          href="" 
           className={activeLink === 'Home' ? 'active' : ''}
           onClick={() => setActiveLink('Home')}
         >
           Home
         </a>
         <a 
-          href="#" 
+          href="./shop" 
           className={activeLink === 'Shop' ? 'active' : ''}
           onClick={() => setActiveLink('Shop')}
         >

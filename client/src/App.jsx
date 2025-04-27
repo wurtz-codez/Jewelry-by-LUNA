@@ -1,13 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
-import './App.css'
-import Navbar from './components/Navbar'
-import Hero from './components/Hero'
-import AboutUs from './components/AboutUs'
-import Collections from './components/Collections'
-import Footer from './components/Footer'
+import Shop from './pages/Shop';
+import './App.css';
 
 const App = () => {
   return (
@@ -15,6 +11,7 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/shop" element={<Shop />} />
         <Route path="/" element={<Home />} />
       </Routes>
     </Router>
