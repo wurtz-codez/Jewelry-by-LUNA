@@ -30,10 +30,34 @@ const jewelrySchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
+  rating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5
+  },
+  isAvailable: {
+    type: Boolean,
+    default: true
+  },
+  detailedDescription: {
+    type: String,
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
+});
+
+// Update the updatedAt timestamp before saving
+jewelrySchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
 });
 
 const Jewelry = mongoose.model('Jewelry', jewelrySchema);

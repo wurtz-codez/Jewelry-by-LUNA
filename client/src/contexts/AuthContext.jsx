@@ -1,6 +1,7 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
+const API_BASE_URL = 'http://localhost:5001/api';
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
@@ -20,16 +21,19 @@ export const AuthProvider = ({ children }) => {
       }
       
       try {
-        const response = await axios.get('http://localhost:5001/api/auth/me', {
+        console.log('Checking user with token:', token); // Debug log
+        const response = await axios.get(`${API_BASE_URL}/auth/me`, {
           headers: {
             'x-auth-token': token
           }
         });
         
+        console.log('User data received:', response.data); // Debug log
         setCurrentUser(response.data);
         setLoading(false);
       } catch (err) {
         console.error('Error verifying authentication:', err);
+        console.error('Error details:', err.response?.data); // Debug log
         localStorage.removeItem('token');
         setCurrentUser(null);
         setLoading(false);
@@ -41,7 +45,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/login', {
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
         password
       });
@@ -50,7 +54,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', token);
       
       // Get user data
-      const userResponse = await axios.get('http://localhost:5001/api/auth/me', {
+      const userResponse = await axios.get(`${API_BASE_URL}/auth/me`, {
         headers: {
           'x-auth-token': token
         }
@@ -60,14 +64,15 @@ export const AuthProvider = ({ children }) => {
       setError('');
       return true;
     } catch (err) {
-      setError(err.response?.data.msg || 'Failed to login');
+      console.error('Login error:', err.response?.data); // Debug log
+      setError(err.response?.data?.message || 'Failed to login');
       return false;
     }
   };
 
   const register = async (name, email, password) => {
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/register', {
+      const response = await axios.post(`${API_BASE_URL}/auth/register`, {
         name,
         email,
         password
@@ -77,7 +82,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', token);
       
       // Get user data
-      const userResponse = await axios.get('http://localhost:5001/api/auth/me', {
+      const userResponse = await axios.get(`${API_BASE_URL}/auth/me`, {
         headers: {
           'x-auth-token': token
         }
@@ -87,7 +92,8 @@ export const AuthProvider = ({ children }) => {
       setError('');
       return true;
     } catch (err) {
-      setError(err.response?.data.msg || 'Failed to register');
+      console.error('Registration error:', err.response?.data); // Debug log
+      setError(err.response?.data?.message || 'Failed to register');
       return false;
     }
   };

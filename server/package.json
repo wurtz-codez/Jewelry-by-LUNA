@@ -8,7 +8,8 @@
     "test": "jest --testTimeout=10000",
     "test:watch": "jest --watch",
     "test:db": "jest tests/db.test.js",
-    "test:api": "jest tests/api.test.js"
+    "test:api": "jest tests/api.test.js",
+    "test:jewelry": "jest tests/jewelry.test.js"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +23,7 @@
     "jest": "^29.7.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.16.0",
+    "mongodb-memory-server": "^9.5.0",
     "mongoose": "^8.14.0",
     "supertest": "^7.1.0"
   },

@@ -1,74 +1,97 @@
-# Jewelry by LUNA E-commerce Website
+# Jewelry by LUNA
 
-A modern e-commerce website for Jewelry by LUNA, built with Vite and Express.js.
-
-## Project Structure
-
-```
-jewelry-by-luna/
-├── client/          # Frontend (Vite)
-└── server/          # Backend (Express.js)
-```
-
-## Prerequisites
-
-- Node.js (v14 or higher)
-- npm (v6 or higher)
-
-## Getting Started
-
-### Frontend Setup
-
-1. Navigate to the client directory:
-   ```bash
-   cd client
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-The frontend will be available at `http://localhost:5173`
-
-### Backend Setup
-
-1. Navigate to the server directory:
-   ```bash
-   cd server
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-The backend API will be available at `http://localhost:5000`
-
-## Development
-
-- Frontend runs on port 5173
-- Backend runs on port 5000
-- CORS is enabled for local development
-- Environment variables are managed through .env files
+A modern e-commerce platform for handmade jewelry.
 
 ## Features
 
-- Modern, responsive design
-- RESTful API architecture
-- Cross-browser compatibility
-- Mobile-first approach
+- User authentication and authorization
+- Product catalog with categories
+- Shopping cart functionality
+- Secure payment processing
+- Admin dashboard
+- Order management
+- User reviews and ratings
+
+## Tech Stack
+
+### Frontend
+- React.js
+- Vite
+- Tailwind CSS
+- Axios for API calls
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB
+- JWT for authentication
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- MongoDB
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/jewelry-by-luna.git
+cd jewelry-by-luna
+```
+
+2. Install dependencies:
+```bash
+# Install server dependencies
+cd server
+npm install
+
+# Install client dependencies
+cd ../client
+npm install
+```
+
+3. Set up environment variables:
+   - Copy `.env.example` to `.env` in the server directory
+   - Update the variables with your configuration
+
+4. Start the development servers:
+
+```bash
+# Start the backend server (from server directory)
+npm run dev
+
+# Start the frontend development server (from client directory)
+npm run dev
+```
+
+The frontend will be available at `http://localhost:5173`
+The backend API will be available at `http://localhost:5001`
+
+## API Endpoints
+
+### Authentication
+- POST `/api/auth/register` - Register a new user
+- POST `/api/auth/login` - Login user
+- GET `/api/auth/me` - Get current user
+
+### Products
+- GET `/api/jewelry` - Get all products
+- GET `/api/jewelry/:id` - Get single product
+- POST `/api/jewelry` - Create product (admin only)
+- PUT `/api/jewelry/:id` - Update product (admin only)
+- DELETE `/api/jewelry/:id` - Delete product (admin only)
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 
-This project is proprietary and confidential. 
+This project is licensed under the MIT License - see the LICENSE file for details. 
