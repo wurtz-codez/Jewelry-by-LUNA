@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import lunaLogo from '../assets/luna-logo.png'
-import { FiSearch, FiHeart, FiShoppingBag, FiUser, FiLogIn, FiLogOut } from 'react-icons/fi'
+import { FiSearch, FiHeart, FiShoppingBag, FiUser, FiLogIn, FiLogOut, FiBarChart2 } from 'react-icons/fi'
 import { useAuth } from '../contexts/AuthContext'
 
 const Navbar = () => {
@@ -22,6 +22,8 @@ const Navbar = () => {
       setActiveLink('About');
     } else if (path === '/contact') {
       setActiveLink('Contact');
+    } else if (path === '/admin') {
+      setActiveLink('Dashboard');
     }
   }, [location]);
 
@@ -47,20 +49,33 @@ const Navbar = () => {
         >
           Shop
         </Link>
-        <Link 
-          to="/about" 
-          className={activeLink === 'About' ? 'active' : ''}
-          style={{ color: '#8B4513' }}
-        >
-          About
-        </Link>
-        <Link 
-          to="/contact" 
-          className={activeLink === 'Contact' ? 'active' : ''}
-          style={{ color: '#8B4513' }}
-        >
-          Contact
-        </Link>
+        {!currentUser?.role === 'admin' && (
+          <>
+            <Link 
+              to="/about" 
+              className={activeLink === 'About' ? 'active' : ''}
+              style={{ color: '#8B4513' }}
+            >
+              About
+            </Link>
+            <Link 
+              to="/contact" 
+              className={activeLink === 'Contact' ? 'active' : ''}
+              style={{ color: '#8B4513' }}
+            >
+              Contact
+            </Link>
+          </>
+        )}
+        {currentUser?.role === 'admin' && (
+          <Link 
+            to="/admin" 
+            className={activeLink === 'Dashboard' ? 'active' : ''}
+            style={{ color: '#8B4513' }}
+          >
+            Dashboard
+          </Link>
+        )}
       </div>
 
       <Link to="/" className="logo">
@@ -75,12 +90,16 @@ const Navbar = () => {
         
         {currentUser ? (
           <>
-            <Link to="/wishlist" aria-label="Wishlist" style={{ color: '#8B4513' }}>
-              <FiHeart />
-            </Link>
-            <Link to="/cart" aria-label="Shopping Bag" style={{ color: '#8B4513' }}>
-              <FiShoppingBag />
-            </Link>
+            {currentUser.role !== 'admin' && (
+              <>
+                <Link to="/wishlist" aria-label="Wishlist" style={{ color: '#8B4513' }}>
+                  <FiHeart />
+                </Link>
+                <Link to="/cart" aria-label="Shopping Bag" style={{ color: '#8B4513' }}>
+                  <FiShoppingBag />
+                </Link>
+              </>
+            )}
             <Link to="/profile" aria-label="Account" style={{ color: '#8B4513' }}>
               <FiUser />
             </Link>

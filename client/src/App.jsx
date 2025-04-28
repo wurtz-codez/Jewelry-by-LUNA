@@ -8,9 +8,11 @@ import Contact from './pages/Contact';
 import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
 import Profile from './pages/Profile';
+import AdminDashboard from './pages/AdminDashboard';
 import './App.css';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 
 const App = () => {
   return (
@@ -40,6 +42,11 @@ const App = () => {
             <ProtectedRoute>
               <Profile />
             </ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
           } />
           <Route path="/" element={<Home />} />
         </Routes>

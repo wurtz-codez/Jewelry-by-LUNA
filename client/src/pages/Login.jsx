@@ -32,7 +32,12 @@ const Login = () => {
       if (success) {
         setShowToast(true);
         setTimeout(() => {
-          navigate(from);
+          // Redirect to admin dashboard if user is admin
+          if (success.user?.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate(from);
+          }
         }, 1000);
       } else {
         setError(authError || 'Invalid credentials');
