@@ -88,13 +88,10 @@ router.post('/login', async (req, res) => {
 // Get current user
 router.get('/me', auth, async (req, res) => {
   try {
-    console.log('User from token:', req.user); // Debug log
     const user = await User.findById(req.user.userId).select('-password');
     if (!user) {
-      console.log('User not found with ID:', req.user.userId); // Debug log
       return res.status(404).json({ message: 'User not found' });
     }
-    console.log('Found user:', user); // Debug log
     res.json(user);
   } catch (error) {
     console.error('Error fetching user data:', error);
