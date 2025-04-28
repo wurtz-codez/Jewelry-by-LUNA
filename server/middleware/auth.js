@@ -12,7 +12,7 @@ const authMiddleware = (req, res, next) => {
   // Verify token
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = { userId: decoded.userId }; // Set the user ID from the token
+    req.user = { id: decoded.userId }; // Change userId to id to match what isAdmin middleware expects
     next();
   } catch (err) {
     res.status(401).json({ message: 'Token is not valid' });
