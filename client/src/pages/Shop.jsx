@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { FiSearch, FiShoppingCart, FiStar, FiLoader, FiRefreshCw } from 'react-icons/fi';
+import { FiSearch, FiShoppingCart, FiStar, FiLoader, FiRefreshCw, FiHeart } from 'react-icons/fi';
 import bannerImage from '../assets/Shop-page-banner.png';
 import axios from 'axios';
+import { useShop } from '../contexts/ShopContext';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -15,6 +16,7 @@ const Shop = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { addToCart, addToWishlist, wishlist } = useShop();
   
   // Fetch products from the backend API
   useEffect(() => {
@@ -68,9 +70,14 @@ const Shop = () => {
     setFilteredProducts(result);
   }, [searchTerm, selectedCategory, priceRange, products]);
   
-  // Handle adding to cart (would connect to state management in a real app)
+  // Handle adding to cart
   const handleAddToCart = (product) => {
-    // Here you would typically dispatch an action to add the item to cart
+    addToCart(product);
+  };
+
+  // Handle adding to wishlist
+  const handleAddToWishlist = (product) => {
+    addToWishlist(product);
   };
   
   // Check if price range is appropriate for products
@@ -201,14 +208,23 @@ const Shop = () => {
                   <span>{product.rating ? product.rating.toFixed(1) : 'N/A'}</span>
                 </div>
                 <p className="product-price">₹{product.price.toFixed(2)}</p>
-                <button 
-                  className="add-to-cart-btn"
-                  onClick={() => handleAddToCart(product)}
-                  disabled={!product.isAvailable || product.stock <= 0}
-                >
-                  <FiShoppingCart />
-                  {product.isAvailable && product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    className="add-to-wishlist-btn"
+                    onClick={() => handleAddToWishlist(product)}
+                    title="Add to Wishlist"
+                  >
+                    <FiHeart />
+                  </button>
+                  <button 
+                    className="add-to-cart-btn"
+                    onClick={() => handleAddToCart(product)}
+                    disabled={!product.isAvailable || product.stock <= 0}
+                  >
+                    <FiShoppingCart />
+                    {product.isAvailable && product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                  </button>
+                </div>
               </div>
             </div>
           ))
