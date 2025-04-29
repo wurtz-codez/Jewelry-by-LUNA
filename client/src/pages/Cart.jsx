@@ -2,28 +2,13 @@ import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { FiTrash2, FiShoppingBag } from 'react-icons/fi';
+import { useShop } from '../contexts/ShopContext';
 
 const Cart = () => {
-  // Mock cart data - in a real app this would come from state management
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: 'Gold Necklace',
-      price: 299.99,
-      image: '/src/assets/necklace-image.png',
-      quantity: 1
-    },
-    {
-      id: 2,
-      name: 'Silver Bracelet',
-      price: 149.99,
-      image: '/src/assets/bracelet-image.png',
-      quantity: 2
-    }
-  ]);
+  const { cart, removeFromCart, updateCartItemQuantity } = useShop();
 
   // Calculate subtotal
-  const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   
   // Shipping cost (could be calculated based on location, weight, etc.)
   const shipping = 15.00;
@@ -32,17 +17,14 @@ const Cart = () => {
   const total = subtotal + shipping;
 
   // Remove item from cart
-  const removeItem = (id) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
+  const handleRemoveItem = (id) => {
+    removeFromCart(id);
   };
 
   // Update item quantity
-  const updateQuantity = (id, newQuantity) => {
+  const handleUpdateQuantity = (id, newQuantity) => {
     if (newQuantity < 1) return;
-    
-    setCartItems(cartItems.map(item => 
-      item.id === id ? { ...item, quantity: newQuantity } : item
-    ));
+    updateCartItemQuantity(id, newQuantity);
   };
 
   return (
@@ -51,7 +33,7 @@ const Cart = () => {
       <div className="page-container py-10 px-4 max-w-6xl mx-auto flex-grow">
         <h1 className="text-3xl font-semibold mb-6">Shopping Cart</h1>
         
-        {cartItems.length > 0 ? (
+        {cart.length > 0 ? (
           <div className="flex flex-col md:flex-row gap-8">
             {/* Cart Items */}
             <div className="md:w-2/3">
@@ -67,14 +49,24 @@ const Cart = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {cartItems.map(item => (
-                      <tr key={item.id} className="border-b">
+                    {cart.map(item => (
+                      <tr key={item._id} className="border-b">
                         <td className="py-4">
                           <div className="flex items-center">
                             <img 
-                              src={item.image} 
+                              src={
+                                item.imageUrl.startsWith('http') 
+                                  ? item.imageUrl 
+                                  : item.imageUrl.startsWith('/uploads') 
+                                    ? `http://localhost:5001${item.imageUrl}` 
+                                    : `/src/assets/${item.imageUrl}`
+                              } 
                               alt={item.name} 
                               className="w-16 h-16 object-cover rounded mr-4"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = '/src/assets/placeholder.svg';
+                              }}
                             />
                             <span className="font-medium">{item.name}</span>
                           </div>
@@ -82,7 +74,7 @@ const Cart = () => {
                         <td className="py-4">
                           <div className="flex items-center justify-center">
                             <button 
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              onClick={() => handleUpdateQuantity(item._id, item.quantity - 1)}
                               className="w-8 h-8 border rounded-l-md flex items-center justify-center"
                             >
                               -
@@ -91,7 +83,7 @@ const Cart = () => {
                               {item.quantity}
                             </span>
                             <button 
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
                               className="w-8 h-8 border rounded-r-md flex items-center justify-center"
                             >
                               +
@@ -102,7 +94,7 @@ const Cart = () => {
                         <td className="py-4 text-right">₹{(item.price * item.quantity).toFixed(2)}</td>
                         <td className="py-4 text-right">
                           <button 
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => handleRemoveItem(item._id)}
                             className="text-red-500 hover:text-red-700"
                           >
                             <FiTrash2 size={18} />
