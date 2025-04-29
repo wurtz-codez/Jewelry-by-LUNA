@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FiUsers, FiShoppingBag, FiDollarSign, FiTrendingUp, FiPlusCircle, FiX, FiEdit, FiTrash2, FiUpload, FiImage } from 'react-icons/fi';
+import { FiUsers, FiShoppingBag, FiDollarSign, FiTrendingUp, FiPlusCircle, FiX, FiEdit, FiTrash2, FiUpload, FiImage, FiUser, FiUserX, FiUserCheck } from 'react-icons/fi';
 import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -443,6 +443,122 @@ const AdminDashboard = () => {
     setEditingId(null);
   };
 
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userOrders, setUserOrders] = useState([]);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [userAction, setUserAction] = useState(null);
+  const [banReason, setBanReason] = useState('');
+  const [banExpiry, setBanExpiry] = useState('');
+
+  // Fetch users when users tab is active
+  useEffect(() => {
+    if (activeTab === 'users') {
+      fetchUsers();
+    }
+  }, [activeTab]);
+
+  // Fetch all users
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/dashboard/users`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token')
+        }
+      });
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setToastMessage('Failed to fetch users');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch user details and orders
+  const fetchUserDetails = async (userId) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/dashboard/users/${userId}`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token')
+        }
+      });
+      setSelectedUser(response.data.user);
+      setUserOrders(response.data.orders);
+      setShowUserModal(true);
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      setToastMessage('Failed to fetch user details');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle user status update
+  const handleUserStatusUpdate = async () => {
+    try {
+      setLoading(true);
+      await axios.put(
+        `${API_BASE_URL}/dashboard/users/${selectedUser._id}/status`,
+        {
+          status: userAction,
+          banReason: userAction !== 'active' ? banReason : '',
+          banExpiry: userAction !== 'active' ? banExpiry : null
+        },
+        {
+          headers: {
+            'x-auth-token': localStorage.getItem('token')
+          }
+        }
+      );
+
+      setToastMessage(`User ${userAction} successfully`);
+      setToastType('success');
+      setShowToast(true);
+      setShowUserModal(false);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      setToastMessage('Failed to update user status');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle user deletion
+  const handleUserDelete = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+
+    try {
+      setLoading(true);
+      await axios.delete(`${API_BASE_URL}/dashboard/users/${userId}`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token')
+        }
+      });
+
+      setToastMessage('User deleted successfully');
+      setToastType('success');
+      setShowToast(true);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      setToastMessage('Failed to delete user');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!currentUser || currentUser.role !== 'admin') {
     return null;
   }
@@ -473,6 +589,16 @@ const AdminDashboard = () => {
               onClick={() => setActiveTab('products')}
             >
               Products
+            </button>
+            <button
+              className={`px-4 py-2 rounded-lg ${
+                activeTab === 'users'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+              onClick={() => setActiveTab('users')}
+            >
+              Users
             </button>
           </div>
         </div>
@@ -986,6 +1112,237 @@ const AdminDashboard = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'users' && (
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">User Management</h2>
+            </div>
+            <div className="p-6">
+              {loading ? (
+                <div className="flex justify-center items-center h-48">
+                  <div className="spinner-border text-purple-500" role="status">
+                    <span className="sr-only">Loading...</span>
+                  </div>
+                </div>
+              ) : users.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">No users found</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          User
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Orders
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {users.map((user) => (
+                        <tr key={user._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10">
+                                <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                  <FiUser className="text-gray-500" />
+                                </div>
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              user.status === 'active' ? 'bg-green-100 text-green-800' :
+                              user.status === 'banned' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {user.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {userOrders.filter(order => order.user === user._id).length}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              className="text-indigo-600 hover:text-indigo-900 mr-3"
+                              onClick={() => fetchUserDetails(user._id)}
+                            >
+                              <FiEdit />
+                            </button>
+                            <button
+                              className="text-red-600 hover:text-red-900"
+                              onClick={() => handleUserDelete(user._id)}
+                            >
+                              <FiTrash2 />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* User Details Modal */}
+        {showUserModal && selectedUser && (
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">User Details</h3>
+                <button
+                  className="text-gray-400 hover:text-gray-500"
+                  onClick={() => setShowUserModal(false)}
+                >
+                  <FiX />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex items-center mb-4">
+                  <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center">
+                    <FiUser className="text-gray-500" size={24} />
+                  </div>
+                  <div className="ml-4">
+                    <h4 className="text-lg font-medium text-gray-900">{selectedUser.name}</h4>
+                    <p className="text-sm text-gray-500">{selectedUser.email}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <p className="text-sm text-gray-500">Status</p>
+                    <p className="font-medium">{selectedUser.status}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Total Orders</p>
+                    <p className="font-medium">{userOrders.length}</p>
+                  </div>
+                </div>
+
+                {selectedUser.status !== 'active' && (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-500">Ban Reason</p>
+                    <p className="font-medium">{selectedUser.banReason}</p>
+                    {selectedUser.banExpiry && (
+                      <p className="text-sm text-gray-500">
+                        Expires: {new Date(selectedUser.banExpiry).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-6">
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Order History</h4>
+                {userOrders.length === 0 ? (
+                  <p className="text-gray-500">No orders found</p>
+                ) : (
+                  <div className="space-y-4">
+                    {userOrders.map((order) => (
+                      <div key={order._id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <p className="font-medium">Order #{order._id.slice(-6)}</p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p className="text-sm text-gray-500">
+                            {order.items.length} items
+                          </p>
+                          <p className="font-medium">${order.totalAmount.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-between items-center">
+                <div className="flex space-x-4">
+                  <button
+                    className={`px-4 py-2 rounded-lg ${
+                      userAction === 'banned' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'
+                    }`}
+                    onClick={() => {
+                      setUserAction('banned');
+                      setBanReason('');
+                      setBanExpiry('');
+                    }}
+                  >
+                    <FiUserX className="inline mr-2" />
+                    Ban User
+                  </button>
+                  <button
+                    className={`px-4 py-2 rounded-lg ${
+                      userAction === 'active' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'
+                    }`}
+                    onClick={() => setUserAction('active')}
+                  >
+                    <FiUserCheck className="inline mr-2" />
+                    Activate User
+                  </button>
+                </div>
+                <button
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg"
+                  onClick={handleUserStatusUpdate}
+                >
+                  Update Status
+                </button>
+              </div>
+
+              {userAction === 'banned' && (
+                <div className="mt-4">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Ban Reason
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      value={banReason}
+                      onChange={(e) => setBanReason(e.target.value)}
+                      placeholder="Enter ban reason"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Ban Expiry Date
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      value={banExpiry}
+                      onChange={(e) => setBanExpiry(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

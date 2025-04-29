@@ -23,6 +23,19 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin'],
     default: 'user'
+  },
+  status: {
+    type: String,
+    enum: ['active', 'banned', 'suspended'],
+    default: 'active'
+  },
+  banReason: {
+    type: String,
+    default: ''
+  },
+  banExpiry: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

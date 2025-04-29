@@ -9,89 +9,99 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const response = await axios.get(`${API_BASE_URL}/auth/me`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setCurrentUser(response.data);
-          setLoading(false);
-        } else {
-          setLoading(false);
-        }
-      } catch (error) {
+    // Check if user is logged in on mount
+    const token = localStorage.getItem('token');
+    if (token) {
+      validateToken(token);
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const validateToken = async (token) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/auth/validate`, {
+        headers: { 'x-auth-token': token }
+      });
+      
+      if (response.data.user) {
+        setCurrentUser(response.data.user);
+      } else {
+        throw new Error('Invalid user data');
+      }
+    } catch (error) {
+      if (error.response?.status === 403 && error.response?.data?.message === 'Account is banned') {
+        handleBannedUser(error.response.data);
+      } else {
+        // Clear invalid token
         localStorage.removeItem('token');
         setCurrentUser(null);
-        setLoading(false);
       }
-    };
-    
-    checkUser();
-  }, []);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBannedUser = (data) => {
+    logout();
+    setError({
+      message: 'Your account has been banned',
+      details: {
+        reason: data.banReason,
+        expiry: data.banExpiry
+      }
+    });
+  };
 
   const login = async (email, password) => {
     try {
+      setError(null);
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
         password
       });
       
-      const { token } = response.data;
+      const { token, user } = response.data;
       localStorage.setItem('token', token);
-      
-      // Get user data
-      const userResponse = await axios.get(`${API_BASE_URL}/auth/me`, {
-        headers: {
-          'x-auth-token': token
-        }
-      });
-      
-      setCurrentUser(userResponse.data);
-      setError('');
-      return true;
-    } catch (err) {
-      console.error('Login error:', err.response?.data); // Debug log
-      setError(err.response?.data?.message || 'Failed to login');
-      return false;
+      setCurrentUser(user);
+      return { success: true, user };
+    } catch (error) {
+      if (error.response?.status === 403 && error.response?.data?.message === 'Account is banned') {
+        handleBannedUser(error.response.data);
+        return { success: false, error: 'Account is banned' };
+      }
+      setError(error.response?.data?.message || 'Login failed');
+      return { success: false, error: error.response?.data?.message || 'Login failed' };
     }
   };
 
   const register = async (name, email, password) => {
     try {
+      setError(null);
       const response = await axios.post(`${API_BASE_URL}/auth/register`, {
         name,
         email,
         password
       });
       
-      const { token } = response.data;
+      const { token, user } = response.data;
       localStorage.setItem('token', token);
-      
-      // Get user data
-      const userResponse = await axios.get(`${API_BASE_URL}/auth/me`, {
-        headers: {
-          'x-auth-token': token
-        }
-      });
-      
-      setCurrentUser(userResponse.data);
-      setError('');
-      return true;
-    } catch (err) {
-      console.error('Registration error:', err.response?.data); // Debug log
-      setError(err.response?.data?.message || 'Failed to register');
-      return false;
+      setCurrentUser(user);
+      return { success: true, user };
+    } catch (error) {
+      console.error('Registration error:', error.response?.data);
+      setError(error.response?.data?.message || 'Registration failed');
+      return { success: false, error: error.response?.data?.message || 'Registration failed' };
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     setCurrentUser(null);
+    setError(null);
   };
 
   const value = {
