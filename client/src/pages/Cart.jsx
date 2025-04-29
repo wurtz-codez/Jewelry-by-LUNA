@@ -98,8 +98,8 @@ const Cart = () => {
                             </button>
                           </div>
                         </td>
-                        <td className="py-4 text-right">${item.price.toFixed(2)}</td>
-                        <td className="py-4 text-right">${(item.price * item.quantity).toFixed(2)}</td>
+                        <td className="py-4 text-right">₹{item.price.toFixed(2)}</td>
+                        <td className="py-4 text-right">₹{(item.price * item.quantity).toFixed(2)}</td>
                         <td className="py-4 text-right">
                           <button 
                             onClick={() => removeItem(item.id)}
@@ -121,16 +121,16 @@ const Cart = () => {
                 <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
                 <div className="flex justify-between mb-2">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Shipping</span>
-                  <span>${shipping.toFixed(2)}</span>
+                  <span>₹{shipping.toFixed(2)}</span>
                 </div>
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between mb-2 font-semibold">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₹{total.toFixed(2)}</span>
                   </div>
                 </div>
                 <button className="w-full mt-4 bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 transition flex items-center justify-center gap-2">

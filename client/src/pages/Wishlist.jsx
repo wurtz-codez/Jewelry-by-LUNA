@@ -60,7 +60,7 @@ const Wishlist = () => {
                         <span className="font-medium">{item.name}</span>
                       </div>
                     </td>
-                    <td className="py-4 text-right">${item.price.toFixed(2)}</td>
+                    <td className="py-4 text-right">₹{item.price.toFixed(2)}</td>
                     <td className="py-4 text-right">
                       <div className="flex items-center justify-end gap-4">
                         <button 

@@ -49,7 +49,7 @@ const Navbar = () => {
         >
           Shop
         </Link>
-        {!currentUser?.role === 'admin' && (
+        {currentUser?.role !== 'admin' && (
           <>
             <Link 
               to="/about" 

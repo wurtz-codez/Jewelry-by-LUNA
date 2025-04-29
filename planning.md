@@ -9,7 +9,7 @@ Jewelry by LUNA is an e-commerce platform for selling handmade jewelry. This doc
 - [x] User registration and login
 - [x] Social media authentication (Google, Facebook)
 - [x] User profile management
-- [x] Order history
+- [ ] Order history
 - [x] Saved addresses
 - [x] Wishlist management
 

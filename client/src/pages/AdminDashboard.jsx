@@ -2,9 +2,35 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { FiUsers, FiShoppingBag, FiDollarSign, FiTrendingUp, FiPlusCircle, FiX, FiEdit, FiTrash2, FiUpload, FiImage } from 'react-icons/fi';
+import { Line, Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+} from 'chart.js';
 import Toast from '../components/Toast';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -20,6 +46,16 @@ const AdminDashboard = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState('');
   const fileInputRef = useRef(null);
+
+  // Dashboard stats state
+  const [dashboardStats, setDashboardStats] = useState({
+    totalUsers: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+    recentOrders: [],
+    salesData: [],
+    topProducts: []
+  });
 
   // Form state for adding/editing products
   const [formData, setFormData] = useState({
@@ -38,13 +74,57 @@ const AdminDashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
-  // Mock data for demonstration
-  const stats = [
-    { title: 'Total Users', value: '1,234', icon: <FiUsers />, change: '+12%' },
-    { title: 'Total Orders', value: '567', icon: <FiShoppingBag />, change: '+8%' },
-    { title: 'Revenue', value: '$45,678', icon: <FiDollarSign />, change: '+15%' },
-    { title: 'Growth', value: '23%', icon: <FiTrendingUp />, change: '+5%' }
-  ];
+  // Chart options
+  const lineChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Sales Overview (Last 30 Days)',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return '$' + value;
+          }
+        }
+      }
+    }
+  };
+
+  const barChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Top Selling Products',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1
+        }
+      }
+    }
+  };
+
+  // Fetch dashboard stats when the component mounts or dashboard tab is active
+  useEffect(() => {
+    if (activeTab === 'dashboard') {
+      fetchDashboardStats();
+    }
+  }, [activeTab]);
 
   // Fetch products when the component mounts or products tab is clicked
   useEffect(() => {
@@ -64,6 +144,26 @@ const AdminDashboard = () => {
       }, 2000);
     }
   }, [currentUser, navigate]);
+
+  // Fetch dashboard statistics
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/dashboard/stats`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token')
+        }
+      });
+      setDashboardStats(response.data);
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      setToastMessage('Failed to fetch dashboard statistics');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch products from the API
   const fetchProducts = async () => {
@@ -350,97 +450,178 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
-      {showToast && (
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setShowToast(false)}
-        />
-      )}
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
           <div className="flex space-x-4">
-            <button 
-              className={`px-4 py-2 rounded-lg ${activeTab === 'dashboard' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+            <button
+              className={`px-4 py-2 rounded-lg ${
+                activeTab === 'dashboard'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
               onClick={() => setActiveTab('dashboard')}
             >
               Dashboard
             </button>
-            <button 
-              className={`px-4 py-2 rounded-lg ${activeTab === 'products' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+            <button
+              className={`px-4 py-2 rounded-lg ${
+                activeTab === 'products'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
               onClick={() => setActiveTab('products')}
             >
               Products
             </button>
           </div>
         </div>
-        
+
         {activeTab === 'dashboard' && (
-          <div>
+          <div className="space-y-8">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {stats.map((stat, index) => (
-                <div key={index} className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                      <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
-                    </div>
-                    <div className="p-3 bg-purple-100 rounded-full">
-                      {stat.icon}
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Users</p>
+                    <p className="text-2xl font-semibold text-gray-900">{dashboardStats.totalUsers}</p>
+                    <p className="text-sm text-green-600 mt-1">+12% from last month</p>
                   </div>
-                  <div className="mt-4">
-                    <span className="text-sm font-medium text-green-600">{stat.change}</span>
-                    <span className="text-sm text-gray-500"> from last month</span>
+                  <div className="p-3 bg-purple-100 rounded-full">
+                    <FiUsers className="text-purple-600" size={24} />
                   </div>
                 </div>
-              ))}
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                    <p className="text-2xl font-semibold text-gray-900">{dashboardStats.totalOrders}</p>
+                    <p className="text-sm text-green-600 mt-1">+8% from last month</p>
+                  </div>
+                  <div className="p-3 bg-green-100 rounded-full">
+                    <FiShoppingBag className="text-green-600" size={24} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+                    <p className="text-2xl font-semibold text-gray-900">${dashboardStats.totalRevenue.toFixed(2)}</p>
+                    <p className="text-sm text-green-600 mt-1">+15% from last month</p>
+                  </div>
+                  <div className="p-3 bg-blue-100 rounded-full">
+                    <FiDollarSign className="text-blue-600" size={24} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Growth</p>
+                    <p className="text-2xl font-semibold text-gray-900">23%</p>
+                    <p className="text-sm text-green-600 mt-1">+5% from last month</p>
+                  </div>
+                  <div className="p-3 bg-yellow-100 rounded-full">
+                    <FiTrendingUp className="text-yellow-600" size={24} />
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Recent Activity */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Recent Activity</h2>
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <Line
+                  data={{
+                    labels: dashboardStats.salesData.map(item => item._id),
+                    datasets: [
+                      {
+                        label: 'Daily Sales',
+                        data: dashboardStats.salesData.map(item => item.total),
+                        borderColor: 'rgb(99, 102, 241)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.5)',
+                        tension: 0.4,
+                      },
+                    ],
+                  }}
+                  options={lineChartOptions}
+                />
               </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">New order #1234</p>
-                      <p className="text-sm text-gray-500">2 minutes ago</p>
-                    </div>
-                    <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
-                      Completed
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">New user registration</p>
-                      <p className="text-sm text-gray-500">15 minutes ago</p>
-                    </div>
-                    <span className="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">
-                      New
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Product update</p>
-                      <p className="text-sm text-gray-500">1 hour ago</p>
-                    </div>
-                    <span className="px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">
-                      Updated
-                    </span>
-                  </div>
-                </div>
+
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <Bar
+                  data={{
+                    labels: dashboardStats.topProducts.map(item => item._id.name),
+                    datasets: [
+                      {
+                        label: 'Units Sold',
+                        data: dashboardStats.topProducts.map(item => item.totalSold),
+                        backgroundColor: 'rgba(16, 185, 129, 0.5)',
+                        borderColor: 'rgb(16, 185, 129)',
+                        borderWidth: 1,
+                      },
+                    ],
+                  }}
+                  options={barChartOptions}
+                />
+              </div>
+            </div>
+
+            {/* Recent Orders */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">Recent Orders</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {dashboardStats.recentOrders.map((order) => (
+                      <tr key={order._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {order._id.slice(-6)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {order.user.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          ${order.totalAmount.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
         )}
-        
+
         {activeTab === 'products' && (
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -809,6 +990,13 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 };

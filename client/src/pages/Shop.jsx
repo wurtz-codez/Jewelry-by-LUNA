@@ -105,6 +105,14 @@ const Shop = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
           />
+          {searchTerm && (
+            <button 
+              onClick={() => setSearchTerm('')}
+              className="clear-search"
+            >
+              ×
+            </button>
+          )}
         </div>
         
         <div className="filters">
@@ -146,17 +154,6 @@ const Shop = () => {
             </div>
           </div>
         </div>
-      </div>
-      
-      {/* Refresh Button */}
-      <div className="flex justify-end mb-4 mx-auto w-[90%] max-w-[1200px]">
-        <button 
-          onClick={fetchProducts}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition"
-        >
-          <FiRefreshCw className={loading ? "animate-spin" : ""} />
-          Refresh Products
-        </button>
       </div>
       
       {/* Products Display */}
@@ -203,7 +200,7 @@ const Shop = () => {
                   <FiStar className="star-icon filled" />
                   <span>{product.rating ? product.rating.toFixed(1) : 'N/A'}</span>
                 </div>
-                <p className="product-price">${product.price.toFixed(2)}</p>
+                <p className="product-price">₹{product.price.toFixed(2)}</p>
                 <button 
                   className="add-to-cart-btn"
                   onClick={() => handleAddToCart(product)}
