@@ -5,6 +5,7 @@ import { FiSearch, FiShoppingCart, FiStar, FiLoader, FiRefreshCw, FiHeart } from
 import bannerImage from '../assets/Shop-page-banner.png';
 import axios from 'axios';
 import { useShop } from '../contexts/ShopContext';
+import { useLocation } from 'react-router-dom';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -17,6 +18,23 @@ const Shop = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { addToCart, addToWishlist, wishlist } = useShop();
+  const location = useLocation();
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  
+  // Parse URL search parameters
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const searchParam = queryParams.get('search');
+    const productParam = queryParams.get('product');
+    
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+    
+    if (productParam) {
+      setSelectedProduct(productParam);
+    }
+  }, [location]);
   
   // Fetch products from the backend API
   useEffect(() => {
@@ -32,6 +50,17 @@ const Shop = () => {
       if (response.data && Array.isArray(response.data)) {
         setProducts(response.data);
         setFilteredProducts(response.data);
+        
+        // If there's a selected product, scroll to it
+        if (selectedProduct) {
+          const productDetails = response.data.find(p => p._id === selectedProduct);
+          if (productDetails) {
+            // You could implement a modal or scroll behavior here
+            // For now, we'll filter to just show this product
+            setFilteredProducts([productDetails]);
+          }
+        }
+        
         setError('');
       } else {
         setError('Received invalid data format from server');
@@ -67,8 +96,17 @@ const Shop = () => {
       product.price >= priceRange[0] && product.price <= priceRange[1]
     );
     
+    // If there's a selected product and we're not applying other filters, 
+    // only show that product
+    if (selectedProduct && !searchTerm && selectedCategory === 'all') {
+      const product = products.find(p => p._id === selectedProduct);
+      if (product) {
+        result = [product];
+      }
+    }
+    
     setFilteredProducts(result);
-  }, [searchTerm, selectedCategory, priceRange, products]);
+  }, [searchTerm, selectedCategory, priceRange, products, selectedProduct]);
   
   // Handle adding to cart
   const handleAddToCart = (product) => {
@@ -91,6 +129,16 @@ const Shop = () => {
       }
     }
   }, [products]);
+  
+  // Clear filters and selected product
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory('all');
+    setPriceRange([0, Math.max(...products.map(p => p.price)) + 1000]);
+    setSelectedProduct(null);
+    // Update URL to remove query parameters
+    window.history.pushState({}, '', '/shop');
+  };
   
   return (
     <div className="shop-page">
@@ -160,6 +208,15 @@ const Shop = () => {
               />
             </div>
           </div>
+          
+          {(searchTerm || selectedCategory !== 'all' || selectedProduct) && (
+            <button 
+              onClick={clearFilters}
+              className="clear-filters-btn"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       </div>
       
@@ -231,9 +288,9 @@ const Shop = () => {
         ) : (
           <div className="no-products">
             <p>No products found. Try adjusting your filters or <button 
-              onClick={fetchProducts}
+              onClick={clearFilters}
               className="text-purple-600 underline"
-            >refresh the page</button>.</p>
+            >clear all filters</button>.</p>
           </div>
         )}
       </div>
