@@ -18,11 +18,15 @@ const authRoutes = require('./routes/auth');
 const jewelryRoutes = require('./routes/jewelry');
 const uploadRoutes = require('./routes/upload');
 const dashboardRoutes = require('./routes/dashboard');
+const cartRoutes = require('./routes/cart');
+const wishlistRoutes = require('./routes/wishlist');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/jewelry', jewelryRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)

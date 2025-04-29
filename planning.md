@@ -1,4 +1,80 @@
-# Jewelry by LUNA - Project Planning Document
+# Jewelry by LUNA - Project Planning
+
+## Project Overview
+Jewelry by LUNA is an e-commerce platform specializing in handcrafted jewelry. The platform will showcase unique pieces, provide detailed product information, and offer a seamless shopping experience.
+
+## Core Features
+
+### 1. User Authentication & Authorization
+- [x] User registration and login
+- [x] JWT-based authentication
+- [x] Protected routes for authenticated users
+- [x] Role-based access control (admin/user)
+- [x] Password reset functionality
+- [x] Email verification
+
+### 2. Product Management
+- [x] Product listing with filters
+- [x] Detailed product pages
+- [x] Product categories and tags
+- [x] Product search functionality
+- [x] Admin product management
+- [x] Product image upload and management
+
+### 3. Shopping Experience
+- [x] Shopping cart functionality
+- [x] Wishlist feature
+- [x] User-specific cart and wishlist storage
+- [x] Quantity management in cart
+- [x] Real-time price calculations
+- [x] Checkout process
+- [x] Order history
+
+### 4. User Profile
+- [x] Profile management
+- [x] Order history
+- [x] Address management
+- [x] Wishlist management
+- [x] Account settings
+
+### 5. Admin Dashboard
+- [x] Product management
+- [x] Order management
+- [x] User management
+- [x] Sales analytics
+- [x] Inventory management
+
+### 6. Payment Integration
+- [x] Secure payment processing
+- [x] Multiple payment methods
+- [x] Order confirmation
+- [x] Payment status tracking
+
+## Technical Stack
+- Frontend: React.js with Vite
+- Backend: Node.js with Express
+- Database: MongoDB
+- Authentication: JWT
+- Payment: Stripe
+- Image Storage: Cloudinary
+- Email: Nodemailer
+
+## Recent Updates
+- Implemented user-specific cart and wishlist functionality
+- Added MongoDB models for Cart and Wishlist
+- Created API routes for cart and wishlist operations
+- Updated frontend components to handle user-specific data
+- Fixed cart and wishlist API endpoint routing issues
+- Improved error handling and user feedback
+- Removed unnecessary console logs for better security
+
+## Next Steps
+1. Implement order tracking system
+2. Add product reviews and ratings
+3. Create newsletter subscription
+4. Implement social media integration
+5. Add product recommendations
+6. Create loyalty program
 
 ## Project Overview
 Jewelry by LUNA is an e-commerce platform for selling handmade jewelry. This document outlines the planned features, implementation strategy, and technical considerations for the project.

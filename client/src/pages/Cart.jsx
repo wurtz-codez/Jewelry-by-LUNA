@@ -8,7 +8,7 @@ const Cart = () => {
   const { cart, removeFromCart, updateCartItemQuantity } = useShop();
 
   // Calculate subtotal
-  const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const subtotal = cart.reduce((total, item) => total + (item.jewelry.price * item.quantity), 0);
   
   // Shipping cost (could be calculated based on location, weight, etc.)
   const shipping = 15.00;
@@ -50,31 +50,31 @@ const Cart = () => {
                   </thead>
                   <tbody>
                     {cart.map(item => (
-                      <tr key={item._id} className="border-b">
+                      <tr key={item.jewelry._id} className="border-b">
                         <td className="py-4">
                           <div className="flex items-center">
                             <img 
                               src={
-                                item.imageUrl.startsWith('http') 
-                                  ? item.imageUrl 
-                                  : item.imageUrl.startsWith('/uploads') 
-                                    ? `http://localhost:5001${item.imageUrl}` 
-                                    : `/src/assets/${item.imageUrl}`
+                                item.jewelry.imageUrl.startsWith('http') 
+                                  ? item.jewelry.imageUrl 
+                                  : item.jewelry.imageUrl.startsWith('/uploads') 
+                                    ? `http://localhost:5001${item.jewelry.imageUrl}` 
+                                    : `/src/assets/${item.jewelry.imageUrl}`
                               } 
-                              alt={item.name} 
+                              alt={item.jewelry.name} 
                               className="w-16 h-16 object-cover rounded mr-4"
                               onError={(e) => {
                                 e.target.onerror = null;
                                 e.target.src = '/src/assets/placeholder.svg';
                               }}
                             />
-                            <span className="font-medium">{item.name}</span>
+                            <span className="font-medium">{item.jewelry.name}</span>
                           </div>
                         </td>
                         <td className="py-4">
                           <div className="flex items-center justify-center">
                             <button 
-                              onClick={() => handleUpdateQuantity(item._id, item.quantity - 1)}
+                              onClick={() => handleUpdateQuantity(item.jewelry._id, item.quantity - 1)}
                               className="w-8 h-8 border rounded-l-md flex items-center justify-center"
                             >
                               -
@@ -83,18 +83,18 @@ const Cart = () => {
                               {item.quantity}
                             </span>
                             <button 
-                              onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
+                              onClick={() => handleUpdateQuantity(item.jewelry._id, item.quantity + 1)}
                               className="w-8 h-8 border rounded-r-md flex items-center justify-center"
                             >
                               +
                             </button>
                           </div>
                         </td>
-                        <td className="py-4 text-right">₹{item.price.toFixed(2)}</td>
-                        <td className="py-4 text-right">₹{(item.price * item.quantity).toFixed(2)}</td>
+                        <td className="py-4 text-right">₹{item.jewelry.price.toFixed(2)}</td>
+                        <td className="py-4 text-right">₹{(item.jewelry.price * item.quantity).toFixed(2)}</td>
                         <td className="py-4 text-right">
                           <button 
-                            onClick={() => handleRemoveItem(item._id)}
+                            onClick={() => handleRemoveItem(item.jewelry._id)}
                             className="text-red-500 hover:text-red-700"
                           >
                             <FiTrash2 size={18} />

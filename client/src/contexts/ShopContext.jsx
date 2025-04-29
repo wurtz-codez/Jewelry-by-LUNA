@@ -1,68 +1,141 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
+import { useAuth } from './AuthContext';
+
+const API_BASE_URL = 'http://localhost:5001/api';
 
 const ShopContext = createContext();
 
 export const ShopProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
+  const { currentUser } = useAuth();
 
-  // Load wishlist from localStorage on initial load
+  // Fetch cart and wishlist when user logs in
   useEffect(() => {
-    const savedWishlist = localStorage.getItem('wishlist');
-    if (savedWishlist) {
-      setWishlist(JSON.parse(savedWishlist));
-    }
-  }, []);
-
-  // Save wishlist to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
-
-  const addToWishlist = (product) => {
-    if (!wishlist.some(item => item._id === product._id)) {
-      setWishlist([...wishlist, product]);
-    }
-  };
-
-  const removeFromWishlist = (productId) => {
-    setWishlist(wishlist.filter(item => item._id !== productId));
-  };
-
-  const addToCart = (product) => {
-    const existingItem = cart.find(item => item._id === product._id);
-    if (existingItem) {
-      setCart(cart.map(item => 
-        item._id === product._id 
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
+    if (currentUser) {
+      fetchCart();
+      fetchWishlist();
     } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
+      setCart([]);
+      setWishlist([]);
+    }
+  }, [currentUser]);
+
+  const fetchCart = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await axios.get(`${API_BASE_URL}/cart`, {
+        headers: { 'x-auth-token': token }
+      });
+      setCart(response.data.items || []);
+    } catch (error) {
+      console.error('Error fetching cart:', error);
     }
   };
 
-  const removeFromCart = (productId) => {
-    setCart(cart.filter(item => item._id !== productId));
+  const fetchWishlist = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await axios.get(`${API_BASE_URL}/wishlist`, {
+        headers: { 'x-auth-token': token }
+      });
+      setWishlist(response.data.items || []);
+    } catch (error) {
+      console.error('Error fetching wishlist:', error);
+    }
   };
 
-  const updateCartItemQuantity = (productId, quantity) => {
-    if (quantity < 1) return;
-    setCart(cart.map(item => 
-      item._id === productId 
-        ? { ...item, quantity }
-        : item
-    ));
+  const addToCart = async (product) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      await axios.post(
+        `${API_BASE_URL}/cart/items`,
+        { jewelryId: product._id, quantity: 1 },
+        { headers: { 'x-auth-token': token } }
+      );
+      await fetchCart();
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    }
+  };
+
+  const removeFromCart = async (productId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      await axios.delete(
+        `${API_BASE_URL}/cart/items/${productId}`,
+        { headers: { 'x-auth-token': token } }
+      );
+      await fetchCart();
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+    }
+  };
+
+  const updateCartItemQuantity = async (productId, quantity) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      await axios.put(
+        `${API_BASE_URL}/cart/items/${productId}`,
+        { quantity },
+        { headers: { 'x-auth-token': token } }
+      );
+      await fetchCart();
+    } catch (error) {
+      console.error('Error updating cart quantity:', error);
+    }
+  };
+
+  const addToWishlist = async (product) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      await axios.post(
+        `${API_BASE_URL}/wishlist/items`,
+        { jewelryId: product._id },
+        { headers: { 'x-auth-token': token } }
+      );
+      await fetchWishlist();
+    } catch (error) {
+      console.error('Error adding to wishlist:', error);
+    }
+  };
+
+  const removeFromWishlist = async (productId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      await axios.delete(
+        `${API_BASE_URL}/wishlist/items/${productId}`,
+        { headers: { 'x-auth-token': token } }
+      );
+      await fetchWishlist();
+    } catch (error) {
+      console.error('Error removing from wishlist:', error);
+    }
   };
 
   const value = {
     cart,
     wishlist,
-    addToWishlist,
-    removeFromWishlist,
     addToCart,
     removeFromCart,
-    updateCartItemQuantity
+    updateCartItemQuantity,
+    addToWishlist,
+    removeFromWishlist
   };
 
   return (

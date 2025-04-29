@@ -12,35 +12,26 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const checkUserLoggedIn = async () => {
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-      
+    const checkUser = async () => {
       try {
-        console.log('Checking user with token:', token); // Debug log
-        const response = await axios.get(`${API_BASE_URL}/auth/me`, {
-          headers: {
-            'x-auth-token': token
-          }
-        });
-        
-        console.log('User data received:', response.data); // Debug log
-        setCurrentUser(response.data);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error verifying authentication:', err);
-        console.error('Error details:', err.response?.data); // Debug log
+        const token = localStorage.getItem('token');
+        if (token) {
+          const response = await axios.get(`${API_BASE_URL}/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setCurrentUser(response.data);
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
         localStorage.removeItem('token');
         setCurrentUser(null);
         setLoading(false);
       }
     };
     
-    checkUserLoggedIn();
+    checkUser();
   }, []);
 
   const login = async (email, password) => {
