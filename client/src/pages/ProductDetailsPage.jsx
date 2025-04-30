@@ -1,0 +1,462 @@
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import placeholderImage from '../assets/necklace-image.png';
+import { useShop } from '../contexts/ShopContext';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+
+const API_BASE_URL = 'http://localhost:5001/api';
+
+function ProductDetailsPage() {
+  const { id } = useParams();
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedTab, setSelectedTab] = useState('Most Helpful');
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
+  
+  // Check if product is in wishlist
+  const isInWishlist = wishlist.some(item => item._id === product?._id);
+  
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${API_BASE_URL}/jewelry/${id}`);
+        setProduct(response.data);
+        setError('');
+      } catch (err) {
+        setError('Failed to load product details. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+  
+  // Get the product's main image URL
+  const mainImage = product?.imageUrl 
+    ? (product.imageUrl.startsWith('http') 
+        ? product.imageUrl 
+        : product.imageUrl.startsWith('/uploads') 
+          ? `${API_BASE_URL}${product.imageUrl}`
+          : placeholderImage)
+    : placeholderImage;
+  
+  // Handle adding to cart
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product);
+    }
+  };
+
+  // Handle adding/removing from wishlist
+  const handleWishlistToggle = () => {
+    if (product) {
+      if (isInWishlist) {
+        removeFromWishlist(product._id);
+      } else {
+        addToWishlist(product);
+      }
+    }
+  };
+  
+  // Related products data - will be replaced with actual related products
+  const relatedProducts = [
+    { id: 1, name: 'Heart Earrings', price: 20000.00, rating: 3.7, image: placeholderImage },
+    { id: 2, name: 'Heart Earrings', price: 20000.00, rating: 3.7, image: placeholderImage },
+    { id: 3, name: 'Heart Earrings', price: 20000.00, rating: 3.7, image: placeholderImage },
+    { id: 4, name: 'Heart Earrings', price: 20000.00, rating: 3.7, image: placeholderImage },
+  ];
+  
+  // Rating data - will be replaced with actual rating data
+  const ratingData = [
+    { stars: 5, count: 25 },
+    { stars: 4, count: 4 },
+    { stars: 3, count: 0 },
+    { stars: 2, count: 2 },
+    { stars: 1, count: 2 },
+  ];
+  
+  // Reviews data - will be replaced with actual reviews
+  const reviews = [
+    {
+      id: 1,
+      user: 'Ketan',
+      date: '12 April 2024',
+      rating: 5,
+      comment: 'Perfect fitting , attractive print',
+      helpful: 0,
+    }
+  ];
+  
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      if (i <= Math.floor(rating)) {
+        stars.push(<span key={i} style={{ color: '#FFD700', marginRight: '2px' }}>★</span>);
+      } else if (i - 0.5 <= rating) {
+        stars.push(<span key={i} style={{ color: '#FFD700', marginRight: '2px' }}>★</span>);
+      } else {
+        stars.push(<span key={i} style={{ color: '#FFD700', marginRight: '2px' }}>☆</span>);
+      }
+    }
+    return stars;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+            <p className="text-red-600">{error}</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+  
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="container mx-auto px-4 py-8">
+        <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+          <div style={{ display: 'flex', gap: '40px', marginBottom: '40px' }}>
+            <div style={{ display: 'flex', gap: '20px', flex: 1 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div 
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    border: `1px solid #000`,
+                    cursor: 'pointer',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <img src={mainImage} alt="Product thumbnail" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center' }}>
+                  <button style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    border: '1px solid #e0e0e0',
+                    background: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer'
+                  }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 17V3" />
+                      <path d="m6 11 6 6 6-6" />
+                      <path d="M19 21H5" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div style={{ flex: 1, maxWidth: '400px' }}>
+                <img src={mainImage} alt="Main product" style={{ width: '100%', height: 'auto', objectFit: 'cover' }} />
+              </div>
+            </div>
+            
+            <div style={{ flex: 1 }}>
+              <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 5px 0' }}>{product?.name || 'Product Name'}</h1>
+              <p style={{ color: '#666', margin: '0 0 15px 0' }}>{product?.description || 'Product description'}</p>
+              
+              <div style={{ display: 'inline-flex', alignItems: 'center', background: '#333', color: 'white', padding: '5px 10px', borderRadius: '20px', marginBottom: '15px' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+                <span style={{ marginLeft: '5px' }}>{product?.rating || '4.5'}</span>
+              </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+                <span style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{product?.price?.toFixed(2) || '0.00'}</span>
+                {product?.originalPrice && (
+                  <>
+                    <span style={{ textDecoration: 'line-through', color: '#999' }}>₹{product.originalPrice.toFixed(2)}</span>
+                    <span style={{ color: '#4CAF50', fontWeight: 'bold' }}>
+                      {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                    </span>
+                  </>
+                )}
+              </div>
+              
+              <p style={{ color: '#666', marginBottom: '20px', fontSize: '14px' }}>inclusive of all the taxes</p>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <button style={{
+                  padding: '10px 20px',
+                  background: '#e0e0e0',
+                  border: 'none',
+                  cursor: 'pointer',
+                  marginRight: '10px'
+                }}>{product?.category || 'Category'}</button>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
+                <button 
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: '#8B4513',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                  onClick={handleAddToCart}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="8" cy="21" r="1" />
+                    <circle cx="19" cy="21" r="1" />
+                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+                  </svg>
+                  Add to Cart
+                </button>
+                <button 
+                  style={{
+                    padding: '12px',
+                    background: 'white',
+                    color: isInWishlist ? '#FF4081' : '#333',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                  onClick={handleWishlistToggle}
+                >
+                  {isInWishlist ? (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                      Wishlisted
+                    </>
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      </svg>
+                      Wishlist
+                    </>
+                  )}
+                </button>
+              </div>
+              
+              <div>
+                <h2 style={{ fontSize: '18px', marginBottom: '15px' }}>Product Description</h2>
+                <p style={{ color: '#333', lineHeight: '1.6', marginBottom: '15px', whiteSpace: 'pre-line' }}>
+                  {product?.detailedDescription || 'Product description will be loaded here.'}
+                </p>
+              </div>
+              
+              <div style={{ marginTop: '30px' }}>
+                <h3 style={{ fontSize: '16px', marginBottom: '15px' }}>Hear what our customers say (1)</h3>
+                
+                <div style={{ display: 'flex', borderBottom: '1px solid #e0e0e0', marginBottom: '20px' }}>
+                  <button 
+                    style={{
+                      padding: '10px 15px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      color: 'black',
+                      borderBottom: selectedTab === 'Most Helpful' ? '2px solid #333' : 'none',
+                      fontWeight: selectedTab === 'Most Helpful' ? 'bold' : 'normal'
+                    }}
+                    onClick={() => setSelectedTab('Most Helpful')}
+                  >
+                    Most Helpful
+                  </button>
+                  <button 
+                    style={{
+                      padding: '10px 15px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      color: 'black',
+                      borderBottom: selectedTab === 'Most Recent' ? '2px solid #333' : 'none',
+                      fontWeight: selectedTab === 'Most Recent' ? 'bold' : 'normal'
+                    }}
+                    onClick={() => setSelectedTab('Most Recent')}
+                  >
+                    Most Recent
+                  </button>
+                </div>
+                
+                <div>
+                  {reviews.map(review => (
+                    <div key={review.id} style={{ marginBottom: '20px' }}>
+                      <div style={{ marginBottom: '5px' }}>
+                        {renderStars(review.rating)}
+                      </div>
+                      <p style={{ marginBottom: '10px' }}>{review.comment}</p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <div>
+                          <span style={{ fontWeight: 'bold' }}>{review.user}</span>
+                          <span style={{ marginLeft: '10px', color: '#666' }}>{review.date}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <button style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}>
+                            <span>({review.helpful})</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                            </svg>
+                          </button>
+                          <span style={{ color: '#666' }}>People found this helpful</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '40px', marginBottom: '40px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>{product?.rating || '4.5'}</h2>
+              <div style={{ marginBottom: '10px' }}>{renderStars(product?.rating || 4.5)}</div>
+              <p style={{ marginBottom: '10px' }}>33 ratings</p>
+              <button style={{
+                padding: '8px 16px',
+                background: '#333',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}>RATE</button>
+            </div>
+            
+            <div style={{ flex: 1 }}>
+              {ratingData.map(item => (
+                <div key={item.stars} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+                  <span style={{ width: '50px' }}>{item.stars} ★</span>
+                  <div style={{ flex: 1, height: '8px', background: '#e0e0e0', borderRadius: '4px' }}>
+                    <div 
+                      style={{ 
+                        height: '100%', 
+                        background: '#FFD700',
+                        borderRadius: '4px',
+                        width: `${(item.count / 33) * 100}%`
+                      }}
+                    ></div>
+                  </div>
+                  <span style={{ width: '40px' }}>({item.count})</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <h2 style={{ marginBottom: '20px' }}>You May Also Like</h2>
+            
+            <div style={{ position: 'relative' }}>
+              <button style={{
+                position: 'absolute',
+                left: '-30px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'white',
+                border: '1px solid #e0e0e0',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+              </button>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+                {relatedProducts.map(product => (
+                  <div key={product.id} style={{ border: '1px solid #e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '200px', overflow: 'hidden' }}>
+                      <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <div style={{ padding: '15px' }}>
+                      <p style={{ color: '#666', marginBottom: '5px' }}>crg</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '5px' }}>
+                        <span style={{ color: '#FFD700' }}>★</span>
+                        <span>{product.rating}</span>
+                      </div>
+                      <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>₹{product.price.toFixed(2)}</p>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '5px'
+                        }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                          </svg>
+                        </button>
+                        <button style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '5px'
+                        }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="8" cy="21" r="1" />
+                            <circle cx="19" cy="21" r="1" />
+                            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+}
+
+export default ProductDetailsPage; 

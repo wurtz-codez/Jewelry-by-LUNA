@@ -9,6 +9,7 @@ import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
+import ProductDetailsPage from './pages/ProductDetailsPage';
 import './App.css';
 import { AuthProvider } from './contexts/AuthContext';
 import { ShopProvider } from './contexts/ShopContext';
@@ -26,6 +27,11 @@ const App = () => {
             <Route path="/shop" element={
               <ProtectedRoute>
                 <Shop />
+              </ProtectedRoute>
+            } />
+            <Route path="/product/:id" element={
+              <ProtectedRoute>
+                <ProductDetailsPage />
               </ProtectedRoute>
             } />
             <Route path="/about" element={<About />} />

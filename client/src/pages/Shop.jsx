@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { FiSearch, FiShoppingCart, FiStar, FiLoader, FiRefreshCw, FiHeart } from 'react-icons/fi';
@@ -10,6 +11,7 @@ import { useLocation } from 'react-router-dom';
 const API_BASE_URL = 'http://localhost:5001/api';
 
 const Shop = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState([0, 30000]); // Set higher default maximum
@@ -116,6 +118,11 @@ const Shop = () => {
   // Handle adding to wishlist
   const handleAddToWishlist = (product) => {
     addToWishlist(product);
+  };
+
+  // Handle product click
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`);
   };
   
   // Check if price range is appropriate for products
@@ -241,56 +248,59 @@ const Shop = () => {
           </div>
         ) : filteredProducts.length > 0 ? (
           filteredProducts.map(product => (
-            <div key={product._id} className="product-card">
+            <div 
+              key={product._id} 
+              className="product-card"
+              onClick={() => handleProductClick(product._id)}
+              style={{ cursor: 'pointer' }}
+            >
               <div className="product-image">
                 <img 
                   src={
                     product.imageUrl.startsWith('http') 
                       ? product.imageUrl 
                       : product.imageUrl.startsWith('/uploads') 
-                        ? `http://localhost:5001${product.imageUrl}` 
-                        : `/src/assets/${product.imageUrl}`
-                  } 
-                  alt={product.name} 
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = '/src/assets/placeholder.svg';
-                  }}
+                      ? `${API_BASE_URL}${product.imageUrl}`
+                      : '/placeholder.svg'
+                  }
+                  alt={product.name}
                 />
               </div>
               <div className="product-info">
-                <h3>{product.name}</h3>
-                <div className="product-rating">
-                  <FiStar className="star-icon filled" />
-                  <span>{product.rating ? product.rating.toFixed(1) : 'N/A'}</span>
-                </div>
+                <h3 className="product-name">{product.name}</h3>
                 <p className="product-price">₹{product.price.toFixed(2)}</p>
-                <div className="flex gap-2">
+                <div className="product-rating">
+                  <FiStar className="star-icon" />
+                  <span>{product.rating || '4.5'}</span>
+                </div>
+                <div className="product-actions">
                   <button 
-                    className="add-to-wishlist-btn"
-                    onClick={() => handleAddToWishlist(product)}
-                    title="Add to Wishlist"
+                    className="wishlist-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddToWishlist(product);
+                    }}
                   >
-                    <FiHeart />
+                    <FiHeart 
+                      className={wishlist.some(item => item._id === product._id) ? 'active' : ''} 
+                    />
                   </button>
                   <button 
                     className="add-to-cart-btn"
-                    onClick={() => handleAddToCart(product)}
-                    disabled={!product.isAvailable || product.stock <= 0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddToCart(product);
+                    }}
                   >
                     <FiShoppingCart />
-                    {product.isAvailable && product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
                   </button>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="no-products">
-            <p>No products found. Try adjusting your filters or <button 
-              onClick={clearFilters}
-              className="text-purple-600 underline"
-            >clear all filters</button>.</p>
+          <div className="text-center py-12">
+            <p>No products found matching your criteria.</p>
           </div>
         )}
       </div>
