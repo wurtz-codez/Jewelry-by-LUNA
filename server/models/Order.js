@@ -31,6 +31,11 @@ const orderSchema = new mongoose.Schema({
     enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
     default: 'pending'
   },
+  requestStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
   shippingAddress: {
     street: String,
     city: String,
@@ -40,7 +45,7 @@ const orderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    required: true
+    required: false // Changed from required: true to make it optional
   },
   paymentStatus: {
     type: String,
@@ -53,4 +58,4 @@ const orderSchema = new mongoose.Schema({
 
 const Order = mongoose.model('Order', orderSchema);
 
-module.exports = Order; 
+module.exports = Order;

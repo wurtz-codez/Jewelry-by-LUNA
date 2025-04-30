@@ -5,6 +5,9 @@ import Footer from '../components/Footer';
 import { FiEdit, FiUser, FiShoppingBag, FiHeart, FiLogOut } from 'react-icons/fi';
 import Toast from '../components/Toast';
 import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
+
+const API_BASE_URL = 'http://localhost:5001/api';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -22,15 +25,10 @@ const Profile = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
+  const [orders, setOrders] = useState([]);
   
   // State for active tab
   const [activeTab, setActiveTab] = useState('profile');
-
-  // Mock order data
-  const orders = [
-    { id: '1234', date: '2025-04-20', status: 'Delivered', total: 449.98 },
-    { id: '5678', date: '2025-04-15', status: 'Shipped', total: 199.99 }
-  ];
 
   useEffect(() => {
     if (currentUser) {
@@ -39,111 +37,126 @@ const Profile = () => {
         name: currentUser.name,
         email: currentUser.email
       });
+      fetchOrders();
     }
   }, [currentUser]);
+
+  const fetchOrders = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await axios.get(`${API_BASE_URL}/order/user`, {
+        headers: { 'x-auth-token': token }
+      });
+      setOrders(response.data);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      setError('Failed to fetch orders');
+    }
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-100 text-green-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-yellow-100 text-yellow-800';
+    }
+  };
+
   return (
-    <div className="profile-page min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
-      {showToast && (
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setShowToast(false)}
-        />
-      )}
-      <div className="page-container py-10 px-4 max-w-6xl mx-auto flex-grow">
-        <h1 className="text-3xl font-semibold mb-6">My Account</h1>
-        
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <p>Loading user data...</p>
+      <div className="container mx-auto px-4 py-8">
+        {!currentUser ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 mb-4">Please log in to view your profile</p>
+            <button
+              onClick={() => navigate('/login')}
+              className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition"
+            >
+              Login
+            </button>
           </div>
         ) : (
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Sidebar */}
-            <div className="md:w-1/4">
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="text-center mb-6">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-3">
-                    <FiUser className="text-gray-600" size={32} />
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-col md:flex-row gap-8">
+              {/* Sidebar */}
+              <div className="md:w-1/4">
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                      <FiUser size={24} className="text-gray-500" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold">{user.name}</h2>
+                      <p className="text-gray-500">{user.email}</p>
+                    </div>
                   </div>
-                  <h2 className="text-xl font-medium">{user.name}</h2>
-                  <p className="text-gray-500">{user.email}</p>
+                  <nav className="profile-nav">
+                    <button 
+                      className={`w-full text-left py-2 px-3 rounded mb-1 flex items-center gap-2 transition ${activeTab === 'profile' ? 'bg-gray-100 text-black' : 'hover:bg-gray-50'}`}
+                      onClick={() => setActiveTab('profile')}
+                    >
+                      <FiUser /> Profile
+                    </button>
+                    <button 
+                      className={`w-full text-left py-2 px-3 rounded mb-1 flex items-center gap-2 transition ${activeTab === 'orders' ? 'bg-gray-100 text-black' : 'hover:bg-gray-50'}`}
+                      onClick={() => setActiveTab('orders')}
+                    >
+                      <FiShoppingBag /> Orders
+                    </button>
+                    <button 
+                      className={`w-full text-left py-2 px-3 rounded mb-1 flex items-center gap-2 transition ${activeTab === 'wishlist' ? 'bg-gray-100 text-black' : 'hover:bg-gray-50'}`}
+                      onClick={() => setActiveTab('wishlist')}
+                    >
+                      <FiHeart /> Wishlist
+                    </button>
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full text-left py-2 px-3 rounded mb-1 flex items-center gap-2 text-red-500 hover:bg-red-50 transition"
+                    >
+                      <FiLogOut /> Logout
+                    </button>
+                  </nav>
                 </div>
-                
-                <nav className="profile-nav">
-                  <button 
-                    className={`w-full text-left py-2 px-3 rounded mb-1 flex items-center gap-2 transition ${activeTab === 'profile' ? 'bg-gray-100 text-black' : 'hover:bg-gray-50'}`}
-                    onClick={() => setActiveTab('profile')}
-                  >
-                    <FiUser /> Profile
-                  </button>
-                  <button 
-                    className={`w-full text-left py-2 px-3 rounded mb-1 flex items-center gap-2 transition ${activeTab === 'orders' ? 'bg-gray-100 text-black' : 'hover:bg-gray-50'}`}
-                    onClick={() => setActiveTab('orders')}
-                  >
-                    <FiShoppingBag /> Orders
-                  </button>
-                  <button 
-                    className={`w-full text-left py-2 px-3 rounded mb-1 flex items-center gap-2 transition ${activeTab === 'wishlist' ? 'bg-gray-100 text-black' : 'hover:bg-gray-50'}`}
-                    onClick={() => setActiveTab('wishlist')}
-                  >
-                    <FiHeart /> Wishlist
-                  </button>
-                  <button 
-                    onClick={handleLogout}
-                    className="w-full text-left py-2 px-3 rounded mb-1 flex items-center gap-2 text-red-500 hover:bg-red-50 transition"
-                  >
-                    <FiLogOut /> Logout
-                  </button>
-                </nav>
               </div>
-            </div>
-            
-            {/* Main content */}
-            <div className="md:w-3/4">
-              <div className="bg-white rounded-lg shadow-md p-6">
+              
+              {/* Main content */}
+              <div className="md:w-3/4">
                 {activeTab === 'profile' && (
-                  <div className="profile-info">
-                    <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-xl font-semibold">Personal Information</h2>
-                      <button className="text-gray-500 hover:text-gray-700 flex items-center gap-1">
-                        <FiEdit size={16} /> Edit
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-xl font-semibold">Profile Information</h2>
+                      <button className="text-blue-500 hover:text-blue-700">
+                        <FiEdit size={20} />
                       </button>
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
                       <div>
-                        <h3 className="text-gray-500 text-sm mb-1">Full Name</h3>
+                        <label className="block text-gray-500 mb-1">Name</label>
                         <p className="font-medium">{user.name}</p>
                       </div>
                       <div>
-                        <h3 className="text-gray-500 text-sm mb-1">Email Address</h3>
+                        <label className="block text-gray-500 mb-1">Email</label>
                         <p className="font-medium">{user.email}</p>
                       </div>
                       <div>
-                        <h3 className="text-gray-500 text-sm mb-1">Phone Number</h3>
+                        <label className="block text-gray-500 mb-1">Phone</label>
                         <p className="font-medium">{user.phone}</p>
                       </div>
                       <div>
-                        <h3 className="text-gray-500 text-sm mb-1">Default Address</h3>
+                        <label className="block text-gray-500 mb-1">Address</label>
                         <p className="font-medium">{user.address}</p>
                       </div>
-                    </div>
-                    
-                    <div className="mt-8">
-                      <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">Security</h2>
-                      </div>
-                      <button className="text-gray-700 hover:text-black underline font-medium">
-                        Change Password
-                      </button>
                     </div>
                   </div>
                 )}
@@ -165,19 +178,15 @@ const Profile = () => {
                         </thead>
                         <tbody>
                           {orders.map(order => (
-                            <tr key={order.id} className="border-b">
-                              <td className="py-4">#{order.id}</td>
-                              <td className="py-4">{order.date}</td>
+                            <tr key={order._id} className="border-b">
+                              <td className="py-4">#{order._id.slice(-6)}</td>
+                              <td className="py-4">{new Date(order.createdAt).toLocaleDateString()}</td>
                               <td className="py-4">
-                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                  order.status === 'Delivered' 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-blue-100 text-blue-800'
-                                }`}>
-                                  {order.status}
+                                <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(order.requestStatus)}`}>
+                                  {order.requestStatus}
                                 </span>
                               </td>
-                              <td className="py-4 text-right">${order.total.toFixed(2)}</td>
+                              <td className="py-4 text-right">₹{order.totalAmount.toFixed(2)}</td>
                               <td className="py-4 text-right">
                                 <button className="text-blue-500 hover:underline">
                                   View Details
@@ -211,6 +220,13 @@ const Profile = () => {
         )}
       </div>
       <Footer />
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 };

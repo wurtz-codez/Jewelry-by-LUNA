@@ -6,7 +6,7 @@ const API_BASE_URL = 'http://localhost:5001/api';
 
 const ShopContext = createContext();
 
-export const ShopProvider = ({ children }) => {
+const ShopProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const { currentUser } = useAuth();
@@ -135,7 +135,8 @@ export const ShopProvider = ({ children }) => {
     removeFromCart,
     updateCartItemQuantity,
     addToWishlist,
-    removeFromWishlist
+    removeFromWishlist,
+    fetchCart
   };
 
   return (
@@ -145,10 +146,12 @@ export const ShopProvider = ({ children }) => {
   );
 };
 
-export const useShop = () => {
+const useShop = () => {
   const context = useContext(ShopContext);
   if (!context) {
     throw new Error('useShop must be used within a ShopProvider');
   }
   return context;
-}; 
+};
+
+export { ShopProvider, useShop }; 

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FiUsers, FiShoppingBag, FiDollarSign, FiTrendingUp, FiPlusCircle, FiX, FiEdit, FiTrash2, FiUpload, FiImage, FiUser, FiUserX, FiUserCheck } from 'react-icons/fi';
+import { FiUsers, FiShoppingBag, FiDollarSign, FiTrendingUp, FiPlusCircle, FiX, FiEdit, FiTrash2, FiUpload, FiImage, FiUser, FiUserX, FiUserCheck, FiCheck, FiLoader } from 'react-icons/fi';
 import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -559,6 +559,117 @@ const AdminDashboard = () => {
     }
   };
 
+  const [orderRequests, setOrderRequests] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+
+  const fetchOrderRequests = async () => {
+    try {
+      setLoadingOrders(true);
+      const response = await axios.get(`${API_BASE_URL}/order/admin`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token')
+        }
+      });
+      setOrderRequests(response.data);
+    } catch (error) {
+      console.error('Error fetching order requests:', error);
+      setToastMessage('Failed to fetch order requests');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  const handleOrderStatusUpdate = async (orderId, status) => {
+    try {
+      await axios.put(
+        `${API_BASE_URL}/order/${orderId}/status`,
+        { status },
+        {
+          headers: {
+            'x-auth-token': localStorage.getItem('token')
+          }
+        }
+      );
+      setToastMessage(`Order request ${status} successfully`);
+      setToastType('success');
+      setShowToast(true);
+      
+      // Refresh both order lists to ensure UI is updated
+      fetchOrderRequests();
+      fetchAllOrders();
+      
+      // If we're updating from the modal, refresh the selected order details
+      if (selectedOrder && selectedOrder._id === orderId) {
+        fetchOrderDetails(orderId);
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      setToastMessage('Failed to update order status');
+      setToastType('error');
+      setShowToast(true);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrderRequests();
+  }, []);
+
+  // Fetch orders when orders tab is active
+  useEffect(() => {
+    if (activeTab === 'orders') {
+      fetchAllOrders();
+    }
+  }, [activeTab]);
+
+  // State for orders management
+  const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [loadingOrderDetails, setLoadingOrderDetails] = useState(false);
+
+  // Fetch all orders
+  const fetchAllOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/order/admin`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token')
+        }
+      });
+      setOrders(response.data);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      setToastMessage('Failed to fetch orders');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch order details
+  const fetchOrderDetails = async (orderId) => {
+    try {
+      setLoadingOrderDetails(true);
+      const response = await axios.get(`${API_BASE_URL}/order/${orderId}`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token')
+        }
+      });
+      setSelectedOrder(response.data);
+      setShowOrderModal(true);
+    } catch (error) {
+      console.error('Error fetching order details:', error);
+      setToastMessage('Failed to fetch order details');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setLoadingOrderDetails(false);
+    }
+  };
+
   if (!currentUser || currentUser.role !== 'admin') {
     return null;
   }
@@ -589,6 +700,16 @@ const AdminDashboard = () => {
               onClick={() => setActiveTab('products')}
             >
               Products
+            </button>
+            <button
+              className={`px-4 py-2 rounded-lg ${
+                activeTab === 'orders'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+              onClick={() => setActiveTab('orders')}
+            >
+              Orders
             </button>
             <button
               className={`px-4 py-2 rounded-lg ${
@@ -741,6 +862,90 @@ const AdminDashboard = () => {
                         </td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">Order Requests</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {loadingOrders ? (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-4 text-center">
+                          <div className="flex justify-center">
+                            <div className="animate-spin text-gray-500 mr-2">
+                              <FiLoader size={20} />
+                            </div>
+                            <p>Loading orders...</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : orderRequests.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                          No order requests found
+                        </td>
+                      </tr>
+                    ) : (
+                      orderRequests.map((order) => (
+                        <tr key={order._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {order._id.slice(-6)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {order.user.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ₹{order.totalAmount.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                              order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {order.requestStatus}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {order.requestStatus === 'pending' && (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleOrderStatusUpdate(order._id, 'approved')}
+                                  className="text-green-600 hover:text-green-800"
+                                >
+                                  <FiCheck size={20} />
+                                </button>
+                                <button
+                                  onClick={() => handleOrderStatusUpdate(order._id, 'rejected')}
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  <FiX size={20} />
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1346,6 +1551,83 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
+
+        {activeTab === 'orders' && (
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">Order Management</h2>
+            </div>
+            <div className="p-6">
+              {loading ? (
+                <div className="flex justify-center items-center h-48">
+                  <div className="animate-spin text-purple-500">
+                    <FiLoader size={24} />
+                  </div>
+                </div>
+              ) : orders.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">No orders found</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {orders.map((order) => (
+                        <tr key={order._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {order._id.slice(-6)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {order.user && typeof order.user === 'object' ? order.user.name : 'Unknown'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {order.items ? order.items.length : 0} items
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${order.totalAmount.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                              order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {order.requestStatus}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <div className="flex space-x-2">
+                              <button 
+                                className="text-indigo-600 hover:text-indigo-900"
+                                onClick={() => fetchOrderDetails(order._id)}
+                              >
+                                View Details
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
       {showToast && (
         <Toast
@@ -1353,6 +1635,166 @@ const AdminDashboard = () => {
           type={toastType}
           onClose={() => setShowToast(false)}
         />
+      )}
+      {/* Order Details Modal */}
+      {showOrderModal && selectedOrder && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Order Details</h3>
+              <button
+                className="text-gray-400 hover:text-gray-500"
+                onClick={() => setShowOrderModal(false)}
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            {loadingOrderDetails ? (
+              <div className="flex justify-center items-center h-48">
+                <div className="animate-spin text-purple-500">
+                  <FiLoader size={24} />
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-2">Order Information</h4>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p><span className="font-medium">Order ID:</span> {selectedOrder._id}</p>
+                      <p><span className="font-medium">Date:</span> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+                      <p><span className="font-medium">Status:</span> 
+                        <span className={`ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          selectedOrder.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                          selectedOrder.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {selectedOrder.requestStatus}
+                        </span>
+                      </p>
+                      <p><span className="font-medium">Total Amount:</span> ${selectedOrder.totalAmount.toFixed(2)}</p>
+                      {selectedOrder.paymentMethod && (
+                        <p><span className="font-medium">Payment Method:</span> {selectedOrder.paymentMethod}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-2">Customer Information</h4>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      {selectedOrder.user && typeof selectedOrder.user === 'object' ? (
+                        <>
+                          <p><span className="font-medium">Name:</span> {selectedOrder.user.name}</p>
+                          <p><span className="font-medium">Email:</span> {selectedOrder.user.email}</p>
+                          <p><span className="font-medium">Phone:</span> {selectedOrder.user.phone || 'Not provided'}</p>
+
+                          {selectedOrder.shippingAddress && (
+                            <>
+                              <p className="font-medium mt-2">Shipping Address:</p>
+                              <p>{selectedOrder.shippingAddress.street || selectedOrder.shippingAddress.address}</p>
+                              <p>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} {selectedOrder.shippingAddress.zipCode}</p>
+                              <p>{selectedOrder.shippingAddress.country}</p>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <p>User information not available</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <h4 className="font-medium text-gray-700 mb-2">Order Items</h4>
+                <div className="overflow-x-auto bg-gray-50 rounded-lg mb-6">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {selectedOrder.items && selectedOrder.items.map((item, index) => (
+                        <tr key={index}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              {item.jewelry && typeof item.jewelry === 'object' && item.jewelry.imageUrl && (
+                                <div className="h-12 w-12 flex-shrink-0 mr-4">
+                                  <img 
+                                    className="h-12 w-12 object-cover rounded-md" 
+                                    src={item.jewelry.imageUrl} 
+                                    alt={item.jewelry.name}
+                                    onError={(e) => {
+                                      e.target.onerror = null;
+                                      e.target.src = '/src/assets/placeholder.svg';
+                                    }}
+                                  />
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                {item.jewelry && typeof item.jewelry === 'object' ? item.jewelry.name : 'Unknown Product'}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            ${item.price ? item.price.toFixed(2) : '0.00'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {item.quantity}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-gray-100">
+                      <tr>
+                        <td colSpan="3" className="px-6 py-4 text-right font-medium">Total:</td>
+                        <td className="px-6 py-4 font-medium">${selectedOrder.totalAmount.toFixed(2)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+
+                {selectedOrder.notes && (
+                  <div className="mb-6">
+                    <h4 className="font-medium text-gray-700 mb-2">Order Notes</h4>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p>{selectedOrder.notes}</p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedOrder.requestStatus === 'pending' && (
+                  <div className="flex space-x-4 justify-end mt-4">
+                    <button 
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                      onClick={() => {
+                        handleOrderStatusUpdate(selectedOrder._id, 'rejected');
+                        setShowOrderModal(false);
+                      }}
+                    >
+                      Reject Order
+                    </button>
+                    <button 
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                      onClick={() => {
+                        handleOrderStatusUpdate(selectedOrder._id, 'approved');
+                        setShowOrderModal(false);
+                      }}
+                    >
+                      Approve Order
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
