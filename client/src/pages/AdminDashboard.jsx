@@ -77,6 +77,8 @@ const AdminDashboard = () => {
 
   const [newCategory, setNewCategory] = useState('');
   const [newTag, setNewTag] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
+  const [customTag, setCustomTag] = useState('');
 
   // Chart options
   const lineChartOptions = {
@@ -681,11 +683,21 @@ const AdminDashboard = () => {
   };
 
   const handleAddCategory = () => {
-    if (newCategory.trim() && !formData.categories.includes(newCategory.trim())) {
+    // For regular dropdown selection
+    if (newCategory && newCategory !== 'custom' && !formData.categories.includes(newCategory.trim())) {
       setFormData(prev => ({
         ...prev,
         categories: [...prev.categories, newCategory.trim()]
       }));
+      setNewCategory('');
+    } 
+    // For custom input
+    else if (newCategory === 'custom' && customCategory.trim() && !formData.categories.includes(customCategory.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        categories: [...prev.categories, customCategory.trim()]
+      }));
+      setCustomCategory('');
       setNewCategory('');
     }
   };
@@ -698,11 +710,21 @@ const AdminDashboard = () => {
   };
 
   const handleAddTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+    // For regular dropdown selection
+    if (newTag && newTag !== 'custom' && !formData.tags.includes(newTag.trim())) {
       setFormData(prev => ({
         ...prev,
         tags: [...prev.tags, newTag.trim()]
       }));
+      setNewTag('');
+    }
+    // For custom input
+    else if (newTag === 'custom' && customTag.trim() && !formData.tags.includes(customTag.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, customTag.trim()]
+      }));
+      setCustomTag('');
       setNewTag('');
     }
   };
@@ -1178,23 +1200,39 @@ const AdminDashboard = () => {
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <input
-                        type="text"
+                      <select 
                         value={newCategory}
                         onChange={(e) => setNewCategory(e.target.value)}
                         className="flex-1 p-2 border border-gray-300 rounded-md"
-                        placeholder="Add new category"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddCategory();
-                          }
-                        }}
-                      />
+                      >
+                        <option value="">Select a category</option>
+                        {['necklace', 'earrings', 'bracelet', 'ring', 'pendant', 'set'].map(cat => (
+                          <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                        ))}
+                        <option value="custom">+ Add custom category</option>
+                      </select>
+                      {newCategory === 'custom' ? (
+                        <div className="flex flex-1 gap-2">
+                          <input
+                            type="text"
+                            value={customCategory}
+                            onChange={(e) => setCustomCategory(e.target.value)}
+                            className="flex-1 p-2 border border-gray-300 rounded-md"
+                            placeholder="Enter custom category"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddCategory();
+                              }
+                            }}
+                          />
+                        </div>
+                      ) : null}
                       <button
                         type="button"
                         onClick={handleAddCategory}
                         className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                        disabled={(newCategory === 'custom' && !customCategory.trim()) || !newCategory}
                       >
                         Add
                       </button>
@@ -1226,23 +1264,39 @@ const AdminDashboard = () => {
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <input
-                        type="text"
+                      <select 
                         value={newTag}
                         onChange={(e) => setNewTag(e.target.value)}
                         className="flex-1 p-2 border border-gray-300 rounded-md"
-                        placeholder="Add new tag"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddTag();
-                          }
-                        }}
-                      />
+                      >
+                        <option value="">Select a tag</option>
+                        {['new arrival', 'trending', 'best seller', 'sale', 'limited edition', 'premium', 'handcrafted'].map(tag => (
+                          <option key={tag} value={tag}>{tag.charAt(0).toUpperCase() + tag.slice(1)}</option>
+                        ))}
+                        <option value="custom">+ Add custom tag</option>
+                      </select>
+                      {newTag === 'custom' ? (
+                        <div className="flex flex-1 gap-2">
+                          <input
+                            type="text"
+                            value={customTag}
+                            onChange={(e) => setCustomTag(e.target.value)}
+                            className="flex-1 p-2 border border-gray-300 rounded-md"
+                            placeholder="Enter custom tag"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddTag();
+                              }
+                            }}
+                          />
+                        </div>
+                      ) : null}
                       <button
                         type="button"
                         onClick={handleAddTag}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        disabled={(newTag === 'custom' && !customTag.trim()) || !newTag}
                       >
                         Add
                       </button>

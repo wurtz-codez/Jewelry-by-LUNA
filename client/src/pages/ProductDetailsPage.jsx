@@ -123,7 +123,7 @@ function ProductDetailsPage() {
       return <span style={{ color: 'orange', fontWeight: 'bold' }}>Low Stock - Only {product.stock} left</span>;
     }
     
-    return <span style={{ color: 'green', fontWeight: 'bold' }}>In Stock ({product.stock} available)</span>;
+    return <span style={{ color: 'green', fontWeight: 'bold' }}>In Stock</span>;
   };
 
   if (loading) {
@@ -228,14 +228,54 @@ function ProductDetailsPage() {
                 {renderStockStatus()}
               </div>
               
+              {/* Categories */}
               <div style={{ marginBottom: '20px' }}>
-                <button style={{
-                  padding: '10px 20px',
-                  background: '#e0e0e0',
-                  border: 'none',
-                  cursor: 'pointer',
-                  marginRight: '10px'
-                }}>{product?.category || 'Category'}</button>
+                <p style={{ fontWeight: 'medium', marginBottom: '5px' }}>Categories:</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {product?.categories && product.categories.length > 0 ? 
+                    product.categories.map((category, index) => (
+                      <span 
+                        key={index}
+                        style={{ 
+                          padding: '6px 12px', 
+                          background: '#e0e0e0',
+                          borderRadius: '16px', 
+                          fontSize: '14px',
+                          textTransform: 'capitalize' 
+                        }}
+                      >
+                        {category}
+                      </span>
+                    )) : 
+                    <span style={{ color: '#666' }}>No categories</span>
+                  }
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ fontWeight: 'medium', marginBottom: '5px' }}>Tags:</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {product?.tags && product.tags.length > 0 ? 
+                    product.tags.map((tag, index) => (
+                      <span 
+                        key={index} 
+                        style={{ 
+                          padding: '6px 12px',
+                          background: '#f0f8ff', 
+                          color: '#1e90ff',
+                          border: '1px solid #1e90ff',
+                          borderRadius: '16px',
+                          fontSize: '14px',
+                          textTransform: 'capitalize'
+                        }}
+                      >
+                        {tag}
+                      </span>
+                    )) : 
+                    <span style={{ color: '#666' }}>No tags</span>
+                  }
+                </div>
               </div>
               
               <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
@@ -301,8 +341,20 @@ function ProductDetailsPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <tbody>
                     <tr>
-                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', fontWeight: 'bold', width: '40%' }}>Category</td>
-                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', textTransform: 'capitalize' }}>{product?.category || 'N/A'}</td>
+                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', fontWeight: 'bold', width: '40%' }}>Categories</td>
+                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', textTransform: 'capitalize' }}>
+                        {product?.categories && product.categories.length > 0 
+                          ? product.categories.join(', ') 
+                          : 'N/A'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', fontWeight: 'bold' }}>Tags</td>
+                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', textTransform: 'capitalize' }}>
+                        {product?.tags && product.tags.length > 0 
+                          ? product.tags.join(', ') 
+                          : 'N/A'}
+                      </td>
                     </tr>
                     <tr>
                       <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', fontWeight: 'bold' }}>Availability</td>
