@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const User = require('../models/User');
+const Jewelry = require('../models/Jewelry');
 const auth = require('../middleware/auth');
 
 // Middleware to check if user is admin
@@ -28,6 +30,32 @@ router.post('/request', auth, async (req, res) => {
       return res.status(400).json({ message: 'Cart is empty' });
     }
 
+    // Extract shipping and payment details from request body
+    const { shippingAddress, paymentMethod, couponCode } = req.body;
+    
+    // Calculate discount if coupon is provided
+    let discount = 0;
+    if (couponCode) {
+      // In a real app, you'd validate the coupon from a database
+      // For demo purposes, we'll use a simple validation
+      const validCoupons = {
+        'WELCOME10': 10,
+        'SUMMER25': 25,
+        'LUNA15': 15
+      };
+      
+      if (validCoupons[couponCode]) {
+        const discountPercentage = validCoupons[couponCode];
+        const subtotal = cart.items.reduce((total, item) => total + (item.jewelry.price * item.quantity), 0);
+        discount = subtotal * (discountPercentage / 100);
+      }
+    }
+    
+    // Calculate total amount with shipping and discount
+    const shipping = 15.00; // Fixed shipping cost
+    const subtotal = cart.items.reduce((total, item) => total + (item.jewelry.price * item.quantity), 0);
+    const totalAmount = subtotal + shipping - discount;
+
     const order = new Order({
       user: req.user.id,
       items: cart.items.map(item => ({
@@ -35,9 +63,12 @@ router.post('/request', auth, async (req, res) => {
         quantity: item.quantity,
         price: item.jewelry.price
       })),
-      totalAmount: cart.items.reduce((total, item) => total + (item.jewelry.price * item.quantity), 0),
+      totalAmount,
       status: 'pending',
-      requestStatus: 'pending'
+      requestStatus: 'pending',
+      shippingAddress,
+      paymentMethod,
+      paymentStatus: 'pending'
     });
 
     await order.save();
@@ -109,14 +140,65 @@ router.get('/:orderId', auth, async (req, res) => {
 router.put('/:orderId/status', auth, isAdmin, async (req, res) => {
   try {
     const { status } = req.body;
-    const order = await Order.findById(req.params.orderId);
+    const order = await Order.findById(req.params.orderId)
+      .populate('items.jewelry');
     
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    order.requestStatus = status;
-    await order.save();
+    // If the status is changing to approved, reduce stock for each item
+    if (status === 'approved' && order.requestStatus !== 'approved') {
+      // Start a session for transaction to ensure all stock updates or none
+      const session = await mongoose.startSession();
+      session.startTransaction();
+      
+      try {
+        // Validate sufficient stock before making any changes
+        for (const item of order.items) {
+          if (!item.jewelry || typeof item.jewelry !== 'object') {
+            throw new Error(`Invalid jewelry reference for item in order ${order._id}`);
+          }
+          
+          if (item.jewelry.stock < item.quantity) {
+            throw new Error(`Insufficient stock for ${item.jewelry.name}. Available: ${item.jewelry.stock}, Requested: ${item.quantity}`);
+          }
+        }
+        
+        // Update stock for each item in the order
+        for (const item of order.items) {
+          const updatedJewelry = await Jewelry.findByIdAndUpdate(
+            item.jewelry._id,
+            { $inc: { stock: -item.quantity } },
+            { new: true, session, runValidators: true }
+          );
+          
+          if (updatedJewelry.stock < 0) {
+            throw new Error(`Stock cannot be negative for ${item.jewelry.name}`);
+          }
+        }
+        
+        // Update order status
+        order.requestStatus = status;
+        await order.save({ session });
+        
+        // Commit the transaction
+        await session.commitTransaction();
+        
+      } catch (error) {
+        // If any error occurs, abort the transaction
+        await session.abortTransaction();
+        console.error('Error processing order approval:', error);
+        return res.status(400).json({ message: error.message });
+      } finally {
+        // End the session
+        session.endSession();
+      }
+    } else {
+      // Just update the status if not approving
+      order.requestStatus = status;
+      await order.save();
+    }
 
     res.json(order);
   } catch (error) {

@@ -2,12 +2,24 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { FiEdit, FiUser, FiShoppingBag, FiHeart, FiLogOut } from 'react-icons/fi';
+import { FiEdit, FiUser, FiShoppingBag, FiHeart, FiLogOut, FiX, FiLoader, FiMapPin, FiCreditCard } from 'react-icons/fi';
 import Toast from '../components/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:5001/api';
+
+// Function to format payment method display
+const formatPaymentMethod = (method) => {
+  if (!method) return 'Not specified';
+  
+  switch(method) {
+    case 'cod': return 'Cash on Delivery';
+    case 'card': return 'Credit/Debit Card';
+    case 'upi': return 'UPI Payment';
+    default: return method;
+  }
+};
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -29,6 +41,11 @@ const Profile = () => {
   
   // State for active tab
   const [activeTab, setActiveTab] = useState('profile');
+  
+  // State for order details modal
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [loadingOrderDetails, setLoadingOrderDetails] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -53,6 +70,28 @@ const Profile = () => {
     } catch (error) {
       console.error('Error fetching orders:', error);
       setError('Failed to fetch orders');
+    }
+  };
+  
+  // Fetch order details
+  const fetchOrderDetails = async (orderId) => {
+    try {
+      setLoadingOrderDetails(true);
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      const response = await axios.get(`${API_BASE_URL}/order/${orderId}`, {
+        headers: { 'x-auth-token': token }
+      });
+      setSelectedOrder(response.data);
+      setShowOrderModal(true);
+    } catch (error) {
+      console.error('Error fetching order details:', error);
+      setToastMessage('Failed to fetch order details');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setLoadingOrderDetails(false);
     }
   };
 
@@ -162,40 +201,45 @@ const Profile = () => {
                 )}
                 
                 {activeTab === 'orders' && (
-                  <div className="orders-info">
+                  <div className="bg-white rounded-lg shadow-md p-6">
                     <h2 className="text-xl font-semibold mb-4">Order History</h2>
                     
                     {orders.length > 0 ? (
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b">
-                            <th className="text-left pb-2">Order ID</th>
-                            <th className="text-left pb-2">Date</th>
-                            <th className="text-left pb-2">Status</th>
-                            <th className="text-right pb-2">Total</th>
-                            <th className="text-right pb-2">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {orders.map(order => (
-                            <tr key={order._id} className="border-b">
-                              <td className="py-4">#{order._id.slice(-6)}</td>
-                              <td className="py-4">{new Date(order.createdAt).toLocaleDateString()}</td>
-                              <td className="py-4">
-                                <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(order.requestStatus)}`}>
-                                  {order.requestStatus}
-                                </span>
-                              </td>
-                              <td className="py-4 text-right">₹{order.totalAmount.toFixed(2)}</td>
-                              <td className="py-4 text-right">
-                                <button className="text-blue-500 hover:underline">
-                                  View Details
-                                </button>
-                              </td>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left pb-3">Order ID</th>
+                              <th className="text-left pb-3">Date</th>
+                              <th className="text-left pb-3">Status</th>
+                              <th className="text-right pb-3">Total</th>
+                              <th className="text-right pb-3">Actions</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {orders.map(order => (
+                              <tr key={order._id} className="border-b hover:bg-gray-50">
+                                <td className="py-4">#{order._id.slice(-6)}</td>
+                                <td className="py-4">{new Date(order.createdAt).toLocaleDateString()}</td>
+                                <td className="py-4">
+                                  <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(order.requestStatus)}`}>
+                                    {order.requestStatus}
+                                  </span>
+                                </td>
+                                <td className="py-4 text-right">₹{order.totalAmount.toFixed(2)}</td>
+                                <td className="py-4 text-right">
+                                  <button 
+                                    className="text-blue-500 hover:underline"
+                                    onClick={() => fetchOrderDetails(order._id)}
+                                  >
+                                    View Details
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     ) : (
                       <div className="text-center py-8">
                         <p className="text-gray-500">You haven't placed any orders yet.</p>
@@ -219,7 +263,154 @@ const Profile = () => {
           </div>
         )}
       </div>
+      
+      {/* Order Details Modal */}
+      {showOrderModal && selectedOrder && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 border-b pb-4">
+              <h3 className="text-lg font-medium text-gray-900">Order Details</h3>
+              <button
+                className="text-gray-400 hover:text-gray-500"
+                onClick={() => setShowOrderModal(false)}
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            {loadingOrderDetails ? (
+              <div className="flex justify-center items-center h-48">
+                <div className="animate-spin text-purple-500">
+                  <FiLoader size={24} />
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
+                      <FiShoppingBag className="mr-2" /> Order Information
+                    </h4>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p><span className="font-medium">Order ID:</span> {selectedOrder._id}</p>
+                      <p><span className="font-medium">Date:</span> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+                      <p><span className="font-medium">Status:</span> 
+                        <span className={`ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          selectedOrder.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                          selectedOrder.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {selectedOrder.requestStatus}
+                        </span>
+                      </p>
+                      <p><span className="font-medium">Total Amount:</span> ₹{selectedOrder.totalAmount.toFixed(2)}</p>
+                      <p><span className="font-medium">Payment Method:</span> {formatPaymentMethod(selectedOrder.paymentMethod)}</p>
+                      <p><span className="font-medium">Payment Status:</span> 
+                        <span className={`ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          selectedOrder.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' :
+                          selectedOrder.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {selectedOrder.paymentStatus || 'pending'}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
+                      <FiMapPin className="mr-2" /> Shipping Information
+                    </h4>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      {selectedOrder.shippingAddress ? (
+                        <>
+                          <p className="font-medium mb-1">Delivery Address:</p>
+                          <p>{selectedOrder.shippingAddress.street || 'No street address provided'}</p>
+                          {selectedOrder.shippingAddress.landmark && (
+                            <p>Landmark: {selectedOrder.shippingAddress.landmark}</p>
+                          )}
+                          <p>
+                            {selectedOrder.shippingAddress.city || ''}{selectedOrder.shippingAddress.city && selectedOrder.shippingAddress.state ? ', ' : ''}
+                            {selectedOrder.shippingAddress.state || ''}
+                            {selectedOrder.shippingAddress.zipCode ? ' - ' + selectedOrder.shippingAddress.zipCode : ''}
+                          </p>
+                          <p>{selectedOrder.shippingAddress.country || ''}</p>
+                        </>
+                      ) : (
+                        <p>No shipping address provided</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <h4 className="font-medium text-gray-700 mb-2">Order Items</h4>
+                <div className="overflow-x-auto bg-gray-50 rounded-lg mb-6">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {selectedOrder.items && selectedOrder.items.map((item, index) => (
+                        <tr key={index}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              {item.jewelry && typeof item.jewelry === 'object' && item.jewelry.imageUrl && (
+                                <div className="h-12 w-12 flex-shrink-0 mr-4">
+                                  <img 
+                                    className="h-12 w-12 object-cover rounded-md" 
+                                    src={
+                                      item.jewelry.imageUrl.startsWith('http') 
+                                        ? item.jewelry.imageUrl 
+                                        : item.jewelry.imageUrl.startsWith('/uploads') 
+                                          ? `${API_BASE_URL}${item.jewelry.imageUrl}` 
+                                          : '/src/assets/placeholder.svg'
+                                    }
+                                    alt={item.jewelry.name}
+                                    onError={(e) => {
+                                      e.target.onerror = null;
+                                      e.target.src = '/src/assets/placeholder.svg';
+                                    }}
+                                  />
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                {item.jewelry && typeof item.jewelry === 'object' ? item.jewelry.name : 'Unknown Product'}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            ₹{item.price ? item.price.toFixed(2) : '0.00'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {item.quantity}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            ₹{(item.price * item.quantity).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-gray-100">
+                      <tr>
+                        <td colSpan="3" className="px-6 py-4 text-right font-medium">Total:</td>
+                        <td className="px-6 py-4 font-medium">₹{selectedOrder.totalAmount.toFixed(2)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      
       <Footer />
+      
       {showToast && (
         <Toast
           message={toastMessage}

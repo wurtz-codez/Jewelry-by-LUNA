@@ -48,7 +48,7 @@ function ProductDetailsPage() {
   
   // Handle adding to cart
   const handleAddToCart = () => {
-    if (product) {
+    if (product && product.stock > 0 && product.isAvailable) {
       addToCart(product);
     }
   };
@@ -105,6 +105,25 @@ function ProductDetailsPage() {
       }
     }
     return stars;
+  };
+
+  // Function to determine stock status display
+  const renderStockStatus = () => {
+    if (!product) return null;
+    
+    if (!product.isAvailable) {
+      return <span style={{ color: 'red', fontWeight: 'bold' }}>Currently Unavailable</span>;
+    }
+    
+    if (product.stock <= 0) {
+      return <span style={{ color: 'red', fontWeight: 'bold' }}>Out of Stock</span>;
+    }
+    
+    if (product.stock <= 5) {
+      return <span style={{ color: 'orange', fontWeight: 'bold' }}>Low Stock - Only {product.stock} left</span>;
+    }
+    
+    return <span style={{ color: 'green', fontWeight: 'bold' }}>In Stock ({product.stock} available)</span>;
   };
 
   if (loading) {
@@ -202,7 +221,12 @@ function ProductDetailsPage() {
                 )}
               </div>
               
-              <p style={{ color: '#666', marginBottom: '20px', fontSize: '14px' }}>inclusive of all the taxes</p>
+              <p style={{ color: '#666', marginBottom: '10px', fontSize: '14px' }}>inclusive of all the taxes</p>
+              
+              {/* Stock Status */}
+              <div style={{ marginBottom: '20px' }}>
+                {renderStockStatus()}
+              </div>
               
               <div style={{ marginBottom: '20px' }}>
                 <button style={{
@@ -219,24 +243,25 @@ function ProductDetailsPage() {
                   style={{
                     flex: 1,
                     padding: '12px',
-                    background: '#8B4513',
+                    background: (product?.stock > 0 && product?.isAvailable) ? '#8B4513' : '#cccccc',
                     color: 'white',
                     border: 'none',
                     borderRadius: '4px',
-                    cursor: 'pointer',
+                    cursor: (product?.stock > 0 && product?.isAvailable) ? 'pointer' : 'not-allowed',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px'
                   }}
                   onClick={handleAddToCart}
+                  disabled={!product?.stock || product?.stock <= 0 || !product?.isAvailable}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="8" cy="21" r="1" />
                     <circle cx="19" cy="21" r="1" />
                     <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
                   </svg>
-                  Add to Cart
+                  {(product?.stock > 0 && product?.isAvailable) ? 'Add to Cart' : 'Out of Stock'}
                 </button>
                 <button 
                   style={{
@@ -270,82 +295,35 @@ function ProductDetailsPage() {
                   )}
                 </button>
               </div>
+
+              <div style={{ marginBottom: '20px', borderTop: '1px solid #e0e0e0', paddingTop: '15px' }}>
+                <h2 style={{ fontSize: '18px', marginBottom: '10px' }}>Product Specifications</h2>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', fontWeight: 'bold', width: '40%' }}>Category</td>
+                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', textTransform: 'capitalize' }}>{product?.category || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', fontWeight: 'bold' }}>Availability</td>
+                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0' }}>{product?.isAvailable ? 'Yes' : 'No'}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '8px 0', fontWeight: 'bold' }}>Rating</td>
+                      <td style={{ padding: '8px 0', display: 'flex', alignItems: 'center' }}>
+                        {renderStars(product?.rating || 0)} 
+                        <span style={{ marginLeft: '5px' }}>({product?.rating || '0'})</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               
               <div>
                 <h2 style={{ fontSize: '18px', marginBottom: '15px' }}>Product Description</h2>
                 <p style={{ color: '#333', lineHeight: '1.6', marginBottom: '15px', whiteSpace: 'pre-line' }}>
                   {product?.detailedDescription || 'Product description will be loaded here.'}
                 </p>
-              </div>
-              
-              <div style={{ marginTop: '30px' }}>
-                <h3 style={{ fontSize: '16px', marginBottom: '15px' }}>Hear what our customers say (1)</h3>
-                
-                <div style={{ display: 'flex', borderBottom: '1px solid #e0e0e0', marginBottom: '20px' }}>
-                  <button 
-                    style={{
-                      padding: '10px 15px',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      color: 'black',
-                      borderBottom: selectedTab === 'Most Helpful' ? '2px solid #333' : 'none',
-                      fontWeight: selectedTab === 'Most Helpful' ? 'bold' : 'normal'
-                    }}
-                    onClick={() => setSelectedTab('Most Helpful')}
-                  >
-                    Most Helpful
-                  </button>
-                  <button 
-                    style={{
-                      padding: '10px 15px',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      color: 'black',
-                      borderBottom: selectedTab === 'Most Recent' ? '2px solid #333' : 'none',
-                      fontWeight: selectedTab === 'Most Recent' ? 'bold' : 'normal'
-                    }}
-                    onClick={() => setSelectedTab('Most Recent')}
-                  >
-                    Most Recent
-                  </button>
-                </div>
-                
-                <div>
-                  {reviews.map(review => (
-                    <div key={review.id} style={{ marginBottom: '20px' }}>
-                      <div style={{ marginBottom: '5px' }}>
-                        {renderStars(review.rating)}
-                      </div>
-                      <p style={{ marginBottom: '10px' }}>{review.comment}</p>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <div>
-                          <span style={{ fontWeight: 'bold' }}>{review.user}</span>
-                          <span style={{ marginLeft: '10px', color: '#666' }}>{review.date}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                          <button style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px'
-                          }}>
-                            <span>({review.helpful})</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-                            </svg>
-                          </button>
-                          <span style={{ color: '#666' }}>People found this helpful</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
@@ -459,4 +437,4 @@ function ProductDetailsPage() {
   );
 }
 
-export default ProductDetailsPage; 
+export default ProductDetailsPage;
