@@ -15,11 +15,16 @@ const jewelrySchema = new mongoose.Schema({
     required: true,
     min: 0
   },
-  category: {
+  categories: [{
     type: String,
     required: true,
-    enum: ['necklace', 'bracelet', 'earring', 'ring', 'other']
-  },
+    trim: true
+  }],
+  tags: [{
+    type: String,
+    required: true,
+    trim: true
+  }],
   imageUrl: {
     type: String,
     required: true

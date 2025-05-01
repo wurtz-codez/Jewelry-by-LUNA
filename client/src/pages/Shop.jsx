@@ -22,6 +22,7 @@ const Shop = () => {
   const { addToCart, addToWishlist, wishlist } = useShop();
   const location = useLocation();
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedTag, setSelectedTag] = useState('all');
   
   // Parse URL search parameters
   useEffect(() => {
@@ -76,39 +77,35 @@ const Shop = () => {
   
   // Filter products based on search, category, and price
   useEffect(() => {
-    if (products.length === 0) return;
+    let filtered = products;
     
-    let result = products;
-    
-    // Filter by search term
     if (searchTerm) {
-      result = result.filter(product => 
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.description.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
-    // Filter by category
     if (selectedCategory !== 'all') {
-      result = result.filter(product => product.category === selectedCategory);
+      filtered = filtered.filter(product => product.categories.includes(selectedCategory));
+    }
+
+    if (selectedTag !== 'all') {
+      filtered = filtered.filter(product => product.tags.includes(selectedTag));
     }
     
-    // Filter by price range
-    result = result.filter(product => 
-      product.price >= priceRange[0] && product.price <= priceRange[1]
-    );
-    
-    // If there's a selected product and we're not applying other filters, 
-    // only show that product
-    if (selectedProduct && !searchTerm && selectedCategory === 'all') {
-      const product = products.find(p => p._id === selectedProduct);
-      if (product) {
-        result = [product];
-      }
+    if (priceRange[0] > 0 || priceRange[1] < Infinity) {
+      filtered = filtered.filter(product => 
+        product.price >= priceRange[0] && product.price <= priceRange[1]
+      );
     }
     
-    setFilteredProducts(result);
-  }, [searchTerm, selectedCategory, priceRange, products, selectedProduct]);
+    setFilteredProducts(filtered);
+  }, [products, searchTerm, selectedCategory, selectedTag, priceRange]);
+  
+  // Get all unique categories and tags from products
+  const allCategories = [...new Set(products.flatMap(product => product.categories))];
+  const allTags = [...new Set(products.flatMap(product => product.tags))];
   
   // Handle adding to cart
   const handleAddToCart = (product) => {
@@ -141,7 +138,8 @@ const Shop = () => {
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('all');
-    setPriceRange([0, Math.max(...products.map(p => p.price)) + 1000]);
+    setSelectedTag('all');
+    setPriceRange([0, Infinity]);
     setSelectedProduct(null);
     // Update URL to remove query parameters
     window.history.pushState({}, '', '/shop');
@@ -186,11 +184,27 @@ const Shop = () => {
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
               <option value="all">All Categories</option>
-              <option value="necklace">Necklaces</option>
-              <option value="bracelet">Bracelets</option>
-              <option value="earring">Earrings</option>
-              <option value="ring">Rings</option>
-              <option value="other">Other</option>
+              {allCategories.map(category => (
+                <option key={category} value={category}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="filter-group">
+            <label htmlFor="tag">Tag:</label>
+            <select 
+              id="tag" 
+              value={selectedTag} 
+              onChange={(e) => setSelectedTag(e.target.value)}
+            >
+              <option value="all">All Tags</option>
+              {allTags.map(tag => (
+                <option key={tag} value={tag}>
+                  {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                </option>
+              ))}
             </select>
           </div>
           
@@ -265,6 +279,11 @@ const Shop = () => {
                   }
                   alt={product.name}
                 />
+                {product.tags && product.tags.map((tag, index) => (
+                  <div key={index} className={`product-tag ${tag.replace(/\s+/g, '-')}`}>
+                    {tag}
+                  </div>
+                ))}
               </div>
               <div className="product-info">
                 <h3 className="product-name">{product.name}</h3>

@@ -62,7 +62,8 @@ const AdminDashboard = () => {
     name: '',
     description: '',
     price: '',
-    category: 'necklace',
+    categories: ['necklace'],
+    tags: ['new arrival'],
     imageUrl: '',
     stock: 1,
     detailedDescription: '',
@@ -73,6 +74,9 @@ const AdminDashboard = () => {
   const [formErrors, setFormErrors] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
+
+  const [newCategory, setNewCategory] = useState('');
+  const [newTag, setNewTag] = useState('');
 
   // Chart options
   const lineChartOptions = {
@@ -128,7 +132,7 @@ const AdminDashboard = () => {
 
   // Fetch products when the component mounts or products tab is clicked
   useEffect(() => {
-    if (activeTab === 'products') {
+    if (activeTab === 'products' || activeTab === 'add-product') {
       fetchProducts();
     }
   }, [activeTab]);
@@ -170,12 +174,13 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/jewelry`);
-      setProducts(response.data);
+      setProducts(response.data || []);
     } catch (error) {
       console.error('Error fetching products:', error);
       setToastMessage('Failed to fetch products');
       setToastType('error');
       setShowToast(true);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -282,6 +287,7 @@ const AdminDashboard = () => {
       errors.stock = 'Stock must be a non-negative number';
     if (!formData.imageUrl.trim()) errors.imageUrl = 'Image URL is required';
     if (!formData.detailedDescription.trim()) errors.detailedDescription = 'Detailed description is required';
+    if (!formData.tags.length) errors.tags = 'At least one tag is required';
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -385,7 +391,8 @@ const AdminDashboard = () => {
       name: product.name,
       description: product.description,
       price: product.price.toString(),
-      category: product.category,
+      categories: product.categories || ['necklace'],
+      tags: product.tags || ['new arrival'],
       imageUrl: product.imageUrl,
       stock: product.stock,
       detailedDescription: product.detailedDescription || '',
@@ -431,13 +438,16 @@ const AdminDashboard = () => {
       name: '',
       description: '',
       price: '',
-      category: 'necklace',
+      categories: ['necklace'],
+      tags: ['new arrival'],
       imageUrl: '',
       stock: 1,
       detailedDescription: '',
       rating: 0,
       isAvailable: true
     });
+    setNewCategory('');
+    setNewTag('');
     setFormErrors({});
     setIsEditing(false);
     setEditingId(null);
@@ -668,6 +678,40 @@ const AdminDashboard = () => {
     } finally {
       setLoadingOrderDetails(false);
     }
+  };
+
+  const handleAddCategory = () => {
+    if (newCategory.trim() && !formData.categories.includes(newCategory.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        categories: [...prev.categories, newCategory.trim()]
+      }));
+      setNewCategory('');
+    }
+  };
+
+  const handleRemoveCategory = (categoryToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      categories: prev.categories.filter(category => category !== categoryToRemove)
+    }));
+  };
+
+  const handleAddTag = () => {
+    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag.trim()]
+      }));
+      setNewTag('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
   };
 
   if (!currentUser || currentUser.role !== 'admin') {
@@ -975,7 +1019,7 @@ const AdminDashboard = () => {
                     <span className="sr-only">Loading...</span>
                   </div>
                 </div>
-              ) : products.length === 0 ? (
+              ) : !products || products.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500">No products found</p>
                   <button 
@@ -1032,7 +1076,9 @@ const AdminDashboard = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900 capitalize">{product.category}</div>
+                            <div className="text-sm text-gray-900 capitalize">
+                              {product.categories ? product.categories.join(', ') : 'Uncategorized'}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
@@ -1112,20 +1158,98 @@ const AdminDashboard = () => {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Category*
+                      Categories*
                     </label>
-                    <select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    >
-                      <option value="necklace">Necklace</option>
-                      <option value="bracelet">Bracelet</option>
-                      <option value="earring">Earring</option>
-                      <option value="ring">Ring</option>
-                      <option value="other">Other</option>
-                    </select>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {formData.categories.map((category, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
+                        >
+                          {category}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCategory(category)}
+                            className="ml-2 text-purple-600 hover:text-purple-800"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newCategory}
+                        onChange={(e) => setNewCategory(e.target.value)}
+                        className="flex-1 p-2 border border-gray-300 rounded-md"
+                        placeholder="Add new category"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddCategory();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddCategory}
+                        className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    {formErrors.categories && (
+                      <p className="mt-1 text-sm text-red-500">{formErrors.categories}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tags*
+                    </label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {formData.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                        >
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTag(tag)}
+                            className="ml-2 text-blue-600 hover:text-blue-800"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        className="flex-1 p-2 border border-gray-300 rounded-md"
+                        placeholder="Add new tag"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddTag();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddTag}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    {formErrors.tags && (
+                      <p className="mt-1 text-sm text-red-500">{formErrors.tags}</p>
+                    )}
                   </div>
                   
                   <div>

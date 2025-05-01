@@ -1,0 +1,44 @@
+.product-tag {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: white;
+}
+
+.product-tag.new-arrival {
+  background-color: #4CAF50;
+}
+
+.product-tag.season-end {
+  background-color: #FF5722;
+}
+
+.product-tag.diwali-sale {
+  background-color: #FFC107;
+  color: #000;
+}
+
+.product-tag.summer-collection {
+  background-color: #2196F3;
+}
+
+.product-tag.winter-collection {
+  background-color: #9C27B0;
+}
+
+.product-tag.limited-edition {
+  background-color: #E91E63;
+}
+
+.product-tag.best-seller {
+  background-color: #FF9800;
+}
+
+.product-tag.clearance {
+  background-color: #F44336;
+} 
