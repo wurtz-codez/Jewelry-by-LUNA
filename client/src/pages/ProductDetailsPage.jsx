@@ -15,10 +15,82 @@ function ProductDetailsPage() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
   
   // Check if product is in wishlist
   const isInWishlist = wishlist.some(item => item._id === product?._id);
+  
+  // Function to fetch related products
+  const fetchRelatedProducts = async (product) => {
+    try {
+      if (!product) {
+        setRelatedProducts([]);
+        return;
+      }
+
+      // Fetch all products
+      const response = await axios.get(`${API_BASE_URL}/jewelry`);
+      if (!response.data || !Array.isArray(response.data)) {
+        setRelatedProducts([]);
+        return;
+      }
+
+      let filteredProducts = response.data.filter(p => p._id !== product._id);
+
+      // First try to find products with matching categories
+      if (product.categories?.length > 0) {
+        const categoryMatches = filteredProducts.filter(p => 
+          p.categories?.some(category => product.categories.includes(category))
+        );
+        if (categoryMatches.length >= 4) {
+          setRelatedProducts(categoryMatches.slice(0, 4));
+          return;
+        }
+      }
+
+      // Then try to find products with matching tags
+      if (product.tags?.length > 0) {
+        const tagMatches = filteredProducts.filter(p => 
+          p.tags?.some(tag => product.tags.includes(tag))
+        );
+        if (tagMatches.length >= 4) {
+          setRelatedProducts(tagMatches.slice(0, 4));
+          return;
+        }
+      }
+
+      // If not enough matches, try to find new arrivals (products with "new arrival" tag)
+      const newArrivals = filteredProducts.filter(p => 
+        p.tags?.includes('new arrival')
+      );
+      if (newArrivals.length >= 4) {
+        setRelatedProducts(newArrivals.slice(0, 4));
+        return;
+      }
+
+      // If still not enough, get random products from different categories
+      const uniqueCategories = new Set();
+      const randomProducts = filteredProducts.filter(p => {
+        if (p.categories?.length > 0 && !uniqueCategories.has(p.categories[0])) {
+          uniqueCategories.add(p.categories[0]);
+          return true;
+        }
+        return false;
+      });
+
+      if (randomProducts.length > 0) {
+        setRelatedProducts(randomProducts.slice(0, 4));
+        return;
+      }
+
+      // If all else fails, just take the first 4 products (excluding current)
+      setRelatedProducts(filteredProducts.slice(0, 4));
+    } catch (err) {
+      console.error('Failed to fetch products:', err);
+      setRelatedProducts([]);
+    }
+  };
   
   useEffect(() => {
     const fetchProduct = async () => {
@@ -27,6 +99,8 @@ function ProductDetailsPage() {
         const response = await axios.get(`${API_BASE_URL}/jewelry/${id}`);
         setProduct(response.data);
         setError('');
+        // Fetch related products after product details are loaded
+        await fetchRelatedProducts(response.data);
       } catch (err) {
         setError('Failed to load product details. Please try again later.');
       } finally {
@@ -63,14 +137,6 @@ function ProductDetailsPage() {
       }
     }
   };
-  
-  // Related products data - will be replaced with actual related products
-  const relatedProducts = [
-    { id: 1, name: 'Heart Earrings', price: 20000.00, rating: 3.7, image: placeholderImage },
-    { id: 2, name: 'Heart Earrings', price: 20000.00, rating: 3.7, image: placeholderImage },
-    { id: 3, name: 'Heart Earrings', price: 20000.00, rating: 3.7, image: placeholderImage },
-    { id: 4, name: 'Heart Earrings', price: 20000.00, rating: 3.7, image: placeholderImage },
-  ];
   
   // Rating data - will be replaced with actual rating data
   const ratingData = [
@@ -418,69 +484,89 @@ function ProductDetailsPage() {
           <div>
             <h2 style={{ marginBottom: '20px' }}>You May Also Like</h2>
             
-            <div style={{ position: 'relative' }}>
-              <button style={{
-                position: 'absolute',
-                left: '-30px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'white',
-                border: '1px solid #e0e0e0',
-                borderRadius: '50%',
-                width: '40px',
-                height: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer'
-              }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m15 18-6-6 6-6" />
-                </svg>
-              </button>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
-                {relatedProducts.map(product => (
-                  <div key={product.id} style={{ border: '1px solid #e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ height: '200px', overflow: 'hidden' }}>
-                      <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                    <div style={{ padding: '15px' }}>
-                      <p style={{ color: '#666', marginBottom: '5px' }}>crg</p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '5px' }}>
-                        <span style={{ color: '#FFD700' }}>★</span>
-                        <span>{product.rating}</span>
+            {relatedProducts.length > 0 ? (
+              <div style={{ position: 'relative' }}>
+                <button style={{
+                  position: 'absolute',
+                  left: '-30px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'white',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '50%',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
+                </button>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+                  {relatedProducts.map(relatedProduct => {
+                    const productImage = relatedProduct.imageUrl 
+                      ? (relatedProduct.imageUrl.startsWith('http') 
+                          ? relatedProduct.imageUrl 
+                          : relatedProduct.imageUrl.startsWith('/uploads') 
+                            ? `${API_BASE_URL}${relatedProduct.imageUrl}`
+                            : placeholderImage)
+                      : placeholderImage;
+                    
+                    return (
+                      <div key={relatedProduct._id} style={{ border: '1px solid #e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ height: '200px', overflow: 'hidden' }}>
+                          <img src={productImage} alt={relatedProduct.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <div style={{ padding: '15px' }}>
+                          <p style={{ color: '#666', marginBottom: '5px' }}>{relatedProduct.categories?.[0] || 'Jewelry'}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '5px' }}>
+                            <span style={{ color: '#FFD700' }}>★</span>
+                            <span>{relatedProduct.rating || '0'}</span>
+                          </div>
+                          <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>₹{relatedProduct.price?.toFixed(2) || '0.00'}</p>
+                          <div style={{ display: 'flex', gap: '10px' }}>
+                            <button 
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '5px'
+                              }}
+                              onClick={() => addToWishlist(relatedProduct)}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                              </svg>
+                            </button>
+                            <button 
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '5px'
+                              }}
+                              onClick={() => addToCart(relatedProduct)}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="8" cy="21" r="1" />
+                                <circle cx="19" cy="21" r="1" />
+                                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>₹{product.price.toFixed(2)}</p>
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <button style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: '5px'
-                        }}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                          </svg>
-                        </button>
-                        <button style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: '5px'
-                        }}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="8" cy="21" r="1" />
-                            <circle cx="19" cy="21" r="1" />
-                            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            ) : (
+              <p style={{ textAlign: 'center', color: '#666' }}>No related products found.</p>
+            )}
           </div>
         </div>
       </div>
