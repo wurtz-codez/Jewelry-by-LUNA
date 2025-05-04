@@ -6,6 +6,7 @@ import { FiEdit, FiUser, FiShoppingBag, FiHeart, FiLogOut, FiX, FiLoader, FiMapP
 import Toast from '../components/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import LoadingScreen from '../components/LoadingScreen';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -53,6 +54,7 @@ const Profile = () => {
   const [requestImage, setRequestImage] = useState(null);
   const [selectedOrderForRequest, setSelectedOrderForRequest] = useState(null);
   const [existingRequests, setExistingRequests] = useState([]);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
     if (currentUser) {
@@ -63,6 +65,7 @@ const Profile = () => {
       });
       fetchOrders();
       fetchUserRequests();
+      setIsInitialLoading(false);
     }
   }, [currentUser]);
 
@@ -189,6 +192,10 @@ const Profile = () => {
       </div>
     );
   };
+
+  if (isInitialLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

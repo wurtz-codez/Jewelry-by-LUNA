@@ -17,6 +17,7 @@ import {
 } from 'chart.js';
 import Toast from '../components/Toast';
 import Navbar from '../components/Navbar';
+import LoadingScreen from '../components/LoadingScreen';
 import axios from 'axios';
 
 // Register ChartJS components
@@ -125,6 +126,9 @@ const AdminDashboard = () => {
     }
   };
 
+  // Add a new state for initial loading
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
   // Fetch dashboard stats when the component mounts or dashboard tab is active
   useEffect(() => {
     if (activeTab === 'dashboard') {
@@ -148,6 +152,8 @@ const AdminDashboard = () => {
       setTimeout(() => {
         navigate('/');
       }, 2000);
+    } else {
+      setIsInitialLoading(false);
     }
   }, [currentUser, navigate]);
 
@@ -795,8 +801,8 @@ const AdminDashboard = () => {
     }
   }, [activeTab]);
 
-  if (!currentUser || currentUser.role !== 'admin') {
-    return null;
+  if (isInitialLoading) {
+    return <LoadingScreen />;
   }
 
   return (
@@ -861,222 +867,226 @@ const AdminDashboard = () => {
 
         {activeTab === 'dashboard' && (
           <div className="space-y-8">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Users</p>
-                    <p className="text-2xl font-semibold text-gray-900">{dashboardStats.totalUsers}</p>
-                    <p className="text-sm text-green-600 mt-1">+12% from last month</p>
+            {loading ? <LoadingScreen fullScreen={false} /> : (
+              <>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Total Users</p>
+                        <p className="text-2xl font-semibold text-gray-900">{dashboardStats.totalUsers}</p>
+                        <p className="text-sm text-green-600 mt-1">+12% from last month</p>
+                      </div>
+                      <div className="p-3 bg-purple-100 rounded-full">
+                        <FiUsers className="text-purple-600" size={24} />
+                      </div>
+                    </div>
                   </div>
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <FiUsers className="text-purple-600" size={24} />
+
+                  <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                        <p className="text-2xl font-semibold text-gray-900">{dashboardStats.totalOrders}</p>
+                        <p className="text-sm text-green-600 mt-1">+8% from last month</p>
+                      </div>
+                      <div className="p-3 bg-green-100 rounded-full">
+                        <FiShoppingBag className="text-green-600" size={24} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+                        <p className="text-2xl font-semibold text-gray-900">${dashboardStats.totalRevenue.toFixed(2)}</p>
+                        <p className="text-sm text-green-600 mt-1">+15% from last month</p>
+                      </div>
+                      <div className="p-3 bg-blue-100 rounded-full">
+                        <FiDollarSign className="text-blue-600" size={24} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Growth</p>
+                        <p className="text-2xl font-semibold text-gray-900">23%</p>
+                        <p className="text-sm text-green-600 mt-1">+5% from last month</p>
+                      </div>
+                      <div className="p-3 bg-yellow-100 rounded-full">
+                        <FiTrendingUp className="text-yellow-600" size={24} />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                    <p className="text-2xl font-semibold text-gray-900">{dashboardStats.totalOrders}</p>
-                    <p className="text-sm text-green-600 mt-1">+8% from last month</p>
+                {/* Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="bg-white rounded-xl shadow-lg p-6">
+                    <Line
+                      data={{
+                        labels: dashboardStats.salesData.map(item => item._id),
+                        datasets: [
+                          {
+                            label: 'Daily Sales',
+                            data: dashboardStats.salesData.map(item => item.total),
+                            borderColor: 'rgb(99, 102, 241)',
+                            backgroundColor: 'rgba(99, 102, 241, 0.5)',
+                            tension: 0.4,
+                          },
+                        ],
+                      }}
+                      options={lineChartOptions}
+                    />
                   </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <FiShoppingBag className="text-green-600" size={24} />
+
+                  <div className="bg-white rounded-xl shadow-lg p-6">
+                    <Bar
+                      data={{
+                        labels: dashboardStats.topProducts.map(item => item._id.name),
+                        datasets: [
+                          {
+                            label: 'Units Sold',
+                            data: dashboardStats.topProducts.map(item => item.totalSold),
+                            backgroundColor: 'rgba(16, 185, 129, 0.5)',
+                            borderColor: 'rgb(16, 185, 129)',
+                            borderWidth: 1,
+                          },
+                        ],
+                      }}
+                      options={barChartOptions}
+                    />
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                    <p className="text-2xl font-semibold text-gray-900">${dashboardStats.totalRevenue.toFixed(2)}</p>
-                    <p className="text-sm text-green-600 mt-1">+15% from last month</p>
+                {/* Recent Orders */}
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <h3 className="text-lg font-medium text-gray-900">Recent Orders</h3>
                   </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <FiDollarSign className="text-blue-600" size={24} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Growth</p>
-                    <p className="text-2xl font-semibold text-gray-900">23%</p>
-                    <p className="text-sm text-green-600 mt-1">+5% from last month</p>
-                  </div>
-                  <div className="p-3 bg-yellow-100 rounded-full">
-                    <FiTrendingUp className="text-yellow-600" size={24} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <Line
-                  data={{
-                    labels: dashboardStats.salesData.map(item => item._id),
-                    datasets: [
-                      {
-                        label: 'Daily Sales',
-                        data: dashboardStats.salesData.map(item => item.total),
-                        borderColor: 'rgb(99, 102, 241)',
-                        backgroundColor: 'rgba(99, 102, 241, 0.5)',
-                        tension: 0.4,
-                      },
-                    ],
-                  }}
-                  options={lineChartOptions}
-                />
-              </div>
-
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <Bar
-                  data={{
-                    labels: dashboardStats.topProducts.map(item => item._id.name),
-                    datasets: [
-                      {
-                        label: 'Units Sold',
-                        data: dashboardStats.topProducts.map(item => item.totalSold),
-                        backgroundColor: 'rgba(16, 185, 129, 0.5)',
-                        borderColor: 'rgb(16, 185, 129)',
-                        borderWidth: 1,
-                      },
-                    ],
-                  }}
-                  options={barChartOptions}
-                />
-              </div>
-            </div>
-
-            {/* Recent Orders */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Recent Orders</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {dashboardStats.recentOrders.map((order) => (
-                      <tr key={order._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {order._id.slice(-6)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {order.user.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          ${order.totalAmount.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {order.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Order Requests</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {loadingOrders ? (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-4 text-center">
-                          <div className="flex justify-center">
-                            <div className="animate-spin text-gray-500 mr-2">
-                              <FiLoader size={20} />
-                            </div>
-                            <p>Loading orders...</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : orderRequests.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                          No order requests found
-                        </td>
-                      </tr>
-                    ) : (
-                      orderRequests.map((order) => (
-                        <tr key={order._id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {order._id.slice(-6)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {order.user.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ₹{order.totalAmount.toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
-                              order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {order.requestStatus}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div className="flex space-x-2">
-                              <button 
-                                className="text-indigo-600 hover:text-indigo-900"
-                                onClick={() => fetchOrderDetails(order._id)}
-                              >
-                                View Details
-                              </button>
-                            </div>
-                          </td>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {dashboardStats.recentOrders.map((order) => (
+                          <tr key={order._id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {order._id.slice(-6)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {order.user.name}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              ${order.totalAmount.toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {order.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <h3 className="text-lg font-medium text-gray-900">Order Requests</h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {loadingOrders ? (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-4 text-center">
+                              <div className="flex justify-center">
+                                <div className="animate-spin text-gray-500 mr-2">
+                                  <FiLoader size={20} />
+                                </div>
+                                <p>Loading orders...</p>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : orderRequests.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                              No order requests found
+                            </td>
+                          </tr>
+                        ) : (
+                          orderRequests.map((order) => (
+                            <tr key={order._id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {order._id.slice(-6)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {order.user.name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ₹{order.totalAmount.toFixed(2)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                  order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                                  order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                                  'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {order.requestStatus}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div className="flex space-x-2">
+                                  <button 
+                                    className="text-indigo-600 hover:text-indigo-900"
+                                    onClick={() => fetchOrderDetails(order._id)}
+                                  >
+                                    View Details
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -1096,109 +1106,113 @@ const AdminDashboard = () => {
               </button>
             </div>
             <div className="p-6">
-              {loading ? (
-                <div className="flex justify-center items-center h-48">
-                  <div className="spinner-border text-purple-500" role="status">
-                    <span className="sr-only">Loading...</span>
-                  </div>
-                </div>
-              ) : !products || products.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">No products found</p>
-                  <button 
-                    className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg"
-                    onClick={() => setActiveTab('add-product')}
-                  >
-                    Add Your First Product
-                  </button>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Product
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Category
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Price
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Stock
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {products.map(product => (
-                        <tr key={product._id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="h-12 w-12 flex-shrink-0">
-                                <img 
-                                  className="h-12 w-12 object-cover rounded-md" 
-                                  src={product.imageUrl} 
-                                  alt={product.name}
-                                  onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = '/src/assets/placeholder.svg';
-                                  }}
-                                />
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900 capitalize">
-                              {product.categories ? product.categories.join(', ') : 'Uncategorized'}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{product.stock}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {product.isAvailable ? (
-                              <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Available
-                              </span>
-                            ) : (
-                              <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                Unavailable
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button 
-                              className="text-indigo-600 hover:text-indigo-900 mr-3"
-                              onClick={() => handleEdit(product)}
-                            >
-                              <FiEdit />
-                            </button>
-                            <button 
-                              className="text-red-600 hover:text-red-900"
-                              onClick={() => handleDelete(product._id)}
-                            >
-                              <FiTrash2 />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              {loading ? <LoadingScreen fullScreen={false} /> : (
+                <>
+                  {loading ? (
+                    <div className="flex justify-center items-center h-48">
+                      <div className="spinner-border text-purple-500" role="status">
+                        <span className="sr-only">Loading...</span>
+                      </div>
+                    </div>
+                  ) : !products || products.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">No products found</p>
+                      <button 
+                        className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg"
+                        onClick={() => setActiveTab('add-product')}
+                      >
+                        Add Your First Product
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Product
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Category
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Price
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Stock
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {products.map(product => (
+                            <tr key={product._id}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="h-12 w-12 flex-shrink-0">
+                                    <img 
+                                      className="h-12 w-12 object-cover rounded-md" 
+                                      src={product.imageUrl} 
+                                      alt={product.name}
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = '/src/assets/placeholder.svg';
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="ml-4">
+                                    <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900 capitalize">
+                                  {product.categories ? product.categories.join(', ') : 'Uncategorized'}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">{product.stock}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                {product.isAvailable ? (
+                                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Available
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    Unavailable
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button 
+                                  className="text-indigo-600 hover:text-indigo-900 mr-3"
+                                  onClick={() => handleEdit(product)}
+                                >
+                                  <FiEdit />
+                                </button>
+                                <button 
+                                  className="text-red-600 hover:text-red-900"
+                                  onClick={() => handleDelete(product._id)}
+                                >
+                                  <FiTrash2 />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -1566,87 +1580,91 @@ const AdminDashboard = () => {
               <h2 className="text-lg font-medium text-gray-900">User Management</h2>
             </div>
             <div className="p-6">
-              {loading ? (
-                <div className="flex justify-center items-center h-48">
-                  <div className="spinner-border text-purple-500" role="status">
-                    <span className="sr-only">Loading...</span>
-                  </div>
-                </div>
-              ) : users.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">No users found</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          User
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Email
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Orders
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {users.map((user) => (
-                        <tr key={user._id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-                                  <FiUser className="text-gray-500" />
+              {loading ? <LoadingScreen fullScreen={false} /> : (
+                <>
+                  {loading ? (
+                    <div className="flex justify-center items-center h-48">
+                      <div className="spinner-border text-purple-500" role="status">
+                        <span className="sr-only">Loading...</span>
+                      </div>
+                    </div>
+                  ) : users.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">No users found</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              User
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Email
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Orders
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {users.map((user) => (
+                            <tr key={user._id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="flex-shrink-0 h-10 w-10">
+                                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                      <FiUser className="text-gray-500" />
+                                    </div>
+                                  </div>
+                                  <div className="ml-4">
+                                    <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {user.email}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              user.status === 'active' ? 'bg-green-100 text-green-800' :
-                              user.status === 'banned' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {user.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {user.orderCount || 0}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button
-                              className="text-indigo-600 hover:text-indigo-900 mr-3"
-                              onClick={() => fetchUserDetails(user._id)}
-                            >
-                              <FiEdit />
-                            </button>
-                            <button
-                              className="text-red-600 hover:text-red-900"
-                              onClick={() => handleUserDelete(user._id)}
-                            >
-                              <FiTrash2 />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {user.email}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                  user.status === 'active' ? 'bg-green-100 text-green-800' :
+                                  user.status === 'banned' ? 'bg-red-100 text-red-800' :
+                                  'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {user.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {user.orderCount || 0}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button
+                                  className="text-indigo-600 hover:text-indigo-900 mr-3"
+                                  onClick={() => fetchUserDetails(user._id)}
+                                >
+                                  <FiEdit />
+                                </button>
+                                <button
+                                  className="text-red-600 hover:text-red-900"
+                                  onClick={() => handleUserDelete(user._id)}
+                                >
+                                  <FiTrash2 />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -1654,159 +1672,163 @@ const AdminDashboard = () => {
 
         {activeTab === 'orders' && (
           <div className="space-y-8">
-            {/* Order Requests Section */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Order Requests</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {loadingOrders ? (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-4 text-center">
-                          <div className="flex justify-center">
-                            <div className="animate-spin text-gray-500 mr-2">
-                              <FiLoader size={20} />
-                            </div>
-                            <p>Loading orders...</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : orderRequests.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                          No order requests found
-                        </td>
-                      </tr>
-                    ) : (
-                      orderRequests.map((order) => (
-                        <tr key={order._id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {order._id.slice(-6)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {order.user.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ₹{order.totalAmount.toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
-                              order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {order.requestStatus}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div className="flex space-x-2">
-                              <button 
-                                className="text-indigo-600 hover:text-indigo-900"
-                                onClick={() => fetchOrderDetails(order._id)}
-                              >
-                                View Details
-                              </button>
-                            </div>
-                          </td>
+            {loading ? <LoadingScreen fullScreen={false} /> : (
+              <>
+                {/* Order Requests Section */}
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <h3 className="text-lg font-medium text-gray-900">Order Requests</h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {loadingOrders ? (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-4 text-center">
+                              <div className="flex justify-center">
+                                <div className="animate-spin text-gray-500 mr-2">
+                                  <FiLoader size={20} />
+                                </div>
+                                <p>Loading orders...</p>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : orderRequests.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                              No order requests found
+                            </td>
+                          </tr>
+                        ) : (
+                          orderRequests.map((order) => (
+                            <tr key={order._id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {order._id.slice(-6)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {order.user.name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ₹{order.totalAmount.toFixed(2)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                  order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                                  order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                                  'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {order.requestStatus}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div className="flex space-x-2">
+                                  <button 
+                                    className="text-indigo-600 hover:text-indigo-900"
+                                    onClick={() => fetchOrderDetails(order._id)}
+                                  >
+                                    View Details
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
 
-            {/* All Orders Section */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">All Orders</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {loading ? (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-4 text-center">
-                          <div className="flex justify-center">
-                            <div className="animate-spin text-gray-500 mr-2">
-                              <FiLoader size={20} />
-                            </div>
-                            <p>Loading orders...</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : orders.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                          No orders found
-                        </td>
-                      </tr>
-                    ) : (
-                      orders.map((order) => (
-                        <tr key={order._id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {order._id.slice(-6)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {order.user.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ₹{order.totalAmount.toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
-                              order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {order.requestStatus}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div className="flex space-x-2">
-                              <button 
-                                className="text-indigo-600 hover:text-indigo-900"
-                                onClick={() => fetchOrderDetails(order._id)}
-                              >
-                                View Details
-                              </button>
-                            </div>
-                          </td>
+                {/* All Orders Section */}
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <h3 className="text-lg font-medium text-gray-900">All Orders</h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {loading ? (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-4 text-center">
+                              <div className="flex justify-center">
+                                <div className="animate-spin text-gray-500 mr-2">
+                                  <FiLoader size={20} />
+                                </div>
+                                <p>Loading orders...</p>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : orders.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                              No orders found
+                            </td>
+                          </tr>
+                        ) : (
+                          orders.map((order) => (
+                            <tr key={order._id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {order._id.slice(-6)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {order.user.name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ₹{order.totalAmount.toFixed(2)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                  order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                                  order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                                  'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {order.requestStatus}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div className="flex space-x-2">
+                                  <button 
+                                    className="text-indigo-600 hover:text-indigo-900"
+                                    onClick={() => fetchOrderDetails(order._id)}
+                                  >
+                                    View Details
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
