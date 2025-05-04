@@ -51,6 +51,18 @@ const orderSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'completed', 'failed', 'refunded'],
     default: 'pending'
+  },
+  whatsappMessage: {
+    type: String,
+    required: false
+  },
+  whatsappPhone: {
+    type: String,
+    required: false
+  },
+  whatsappSent: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

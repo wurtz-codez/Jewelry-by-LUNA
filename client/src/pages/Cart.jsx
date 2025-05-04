@@ -180,7 +180,47 @@ const Cart = () => {
         }
       );
 
-      setToastMessage('Your order request has been sent successfully. Waiting for admin approval.');
+      // Handle WhatsApp redirection with better device detection
+      const whatsappUrl = response.data.whatsappUrl;
+      
+      // Check if user is on mobile
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // For mobile users, try to open WhatsApp app directly
+        window.location.href = whatsappUrl;
+      } else {
+        // For desktop users, try to open in a new tab
+        const newWindow = window.open(whatsappUrl, '_blank');
+        
+        // If the window was blocked or failed to open, show a message with options
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+          const fallbackMessage = (
+            <div className="text-center">
+              <p className="mb-2">Please choose one of these options to open WhatsApp:</p>
+              <div className="space-y-2">
+                <a 
+                  href={whatsappUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+                >
+                  Open WhatsApp
+                </a>
+                <p className="text-sm text-gray-600">
+                  If WhatsApp doesn't open automatically, please scan the QR code in WhatsApp Web or open WhatsApp on your phone.
+                </p>
+              </div>
+            </div>
+          );
+          
+          setToastMessage(fallbackMessage);
+          setToastType('info');
+          setShowToast(true);
+        }
+      }
+
+      setToastMessage('Your order request has been sent successfully. Please complete the order on WhatsApp.');
       setToastType('success');
       setShowToast(true);
       

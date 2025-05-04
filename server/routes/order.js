@@ -6,6 +6,7 @@ const Cart = require('../models/Cart');
 const User = require('../models/User');
 const Jewelry = require('../models/Jewelry');
 const auth = require('../middleware/auth');
+const { generateWhatsAppMessage, generateWhatsAppUrl } = require('../utils/whatsappUtils');
 
 // Middleware to check if user is admin
 const isAdmin = async (req, res, next) => {
@@ -36,8 +37,6 @@ router.post('/request', auth, async (req, res) => {
     // Calculate discount if coupon is provided
     let discount = 0;
     if (couponCode) {
-      // In a real app, you'd validate the coupon from a database
-      // For demo purposes, we'll use a simple validation
       const validCoupons = {
         'WELCOME10': 10,
         'SUMMER25': 25,
@@ -73,11 +72,22 @@ router.post('/request', auth, async (req, res) => {
 
     await order.save();
     
+    // Generate WhatsApp message
+    const user = await User.findById(req.user.id);
+    const whatsappMessage = generateWhatsAppMessage(order, user);
+    
+    // Update order with WhatsApp message
+    order.whatsappMessage = whatsappMessage;
+    await order.save();
+    
     // Clear the cart after creating the order
     cart.items = [];
     await cart.save();
 
-    res.status(201).json(order);
+    res.status(201).json({
+      order,
+      whatsappUrl: generateWhatsAppUrl(whatsappMessage)
+    });
   } catch (error) {
     console.error('Error creating order request:', error);
     res.status(500).json({ message: 'Server error' });

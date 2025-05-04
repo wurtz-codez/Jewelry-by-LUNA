@@ -823,6 +823,31 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleOrderAction = async (orderId, action) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `${API_BASE_URL}/order/${orderId}/status`,
+        { status: action },
+        { headers: { 'x-auth-token': token } }
+      );
+
+      // Update the order in the state
+      setOrders(orders.map(order => 
+        order._id === orderId ? response.data : order
+      ));
+
+      setToastMessage(`Order ${action} successfully`);
+      setToastType('success');
+      setShowToast(true);
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      setToastMessage(error.response?.data?.message || 'Failed to update order status');
+      setToastType('error');
+      setShowToast(true);
+    }
+  };
+
   if (isInitialLoading) {
     return <LoadingScreen />;
   }
@@ -1955,9 +1980,9 @@ const AdminDashboard = () => {
         />
       )}
       {/* Order Details Modal */}
-      {showOrderModal && selectedOrder && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-[100] mt-16">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">Order Details</h3>
               <button
@@ -2006,6 +2031,7 @@ const AdminDashboard = () => {
                           <p><span className="font-medium">Name:</span> {selectedOrder.user.name}</p>
                           <p><span className="font-medium">Email:</span> {selectedOrder.user.email}</p>
                           <p><span className="font-medium">Phone:</span> {selectedOrder.user.phone || 'Not provided'}</p>
+                          <p><span className="font-medium">WhatsApp:</span> {selectedOrder.whatsappPhone || 'Not provided'}</p>
 
                           {selectedOrder.shippingAddress && (
                             <>
@@ -2020,6 +2046,15 @@ const AdminDashboard = () => {
                         <p>User information not available</p>
                       )}
                     </div>
+
+                    {selectedOrder.whatsappMessage && (
+                      <div className="mt-4">
+                        <h4 className="font-medium text-gray-700 mb-2">WhatsApp Message</h4>
+                        <div className="bg-gray-50 rounded-lg p-4 whitespace-pre-wrap">
+                          {selectedOrder.whatsappMessage}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
