@@ -24,16 +24,8 @@ const App = () => {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/shop" element={
-              <ProtectedRoute>
-                <Shop />
-              </ProtectedRoute>
-            } />
-            <Route path="/product/:id" element={
-              <ProtectedRoute>
-                <ProductDetailsPage />
-              </ProtectedRoute>
-            } />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/product/:id" element={<ProductDetailsPage />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/cart" element={
