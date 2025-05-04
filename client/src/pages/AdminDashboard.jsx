@@ -801,6 +801,28 @@ const AdminDashboard = () => {
     }
   }, [activeTab]);
 
+  const handleRequestDelete = async (requestId) => {
+    try {
+      setLoading(true);
+      await axios.delete(`${API_BASE_URL}/request/${requestId}`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token')
+        }
+      });
+      setToastMessage('Request deleted successfully');
+      setToastType('success');
+      setShowToast(true);
+      fetchRequests();
+    } catch (error) {
+      console.error('Error deleting request:', error);
+      setToastMessage('Failed to delete request');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (isInitialLoading) {
     return <LoadingScreen />;
   }
@@ -1869,38 +1891,52 @@ const AdminDashboard = () => {
                     </tr>
                   ) : (
                     requests.map((request) => (
-                      <tr key={request._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <tr 
+                        key={request._id} 
+                        className={`hover:bg-gray-50 ${request.deleted ? 'opacity-50' : ''}`}
+                      >
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${request.deleted ? 'line-through' : ''}`}>
                           {request._id.slice(-6)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${request.deleted ? 'line-through' : ''}`}>
                           {request.user.name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${request.deleted ? 'line-through' : ''}`}>
                           {request.type}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                             request.status === 'approved' ? 'bg-green-100 text-green-800' :
                             request.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            request.status === 'deleted' ? 'bg-gray-100 text-gray-800' :
                             'bg-yellow-100 text-yellow-800'
                           }`}>
                             {request.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${request.deleted ? 'line-through' : ''}`}>
                           {new Date(request.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <button
-                            onClick={() => {
-                              setSelectedRequest(request);
-                              setShowRequestModal(true);
-                            }}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            View Details
-                          </button>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setShowRequestModal(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              View Details
+                            </button>
+                            {!request.deleted && (request.status === 'approved' || request.status === 'rejected') && (
+                              <button
+                                onClick={() => handleRequestDelete(request._id)}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -1920,8 +1956,8 @@ const AdminDashboard = () => {
       )}
       {/* Order Details Modal */}
       {showOrderModal && selectedOrder && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-[100] mt-16">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">Order Details</h3>
               <button

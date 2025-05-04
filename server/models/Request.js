@@ -26,12 +26,16 @@ const requestSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'approved', 'rejected'],
+    enum: ['pending', 'approved', 'rejected', 'deleted'],
     default: 'pending'
   },
   adminResponse: {
     type: String,
     default: ''
+  },
+  deleted: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

@@ -56,6 +56,9 @@ const Profile = () => {
   const [existingRequests, setExistingRequests] = useState([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
+  // Add this new state for showing request status
+  const [showRequestStatusModal, setShowRequestStatusModal] = useState(false);
+
   useEffect(() => {
     if (currentUser) {
       setUser({
@@ -136,38 +139,72 @@ const Profile = () => {
     }
   };
 
-  const handleRequestSubmit = async (e) => {
-    e.preventDefault();
+  const fetchRequests = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      const response = await axios.get(`${API_BASE_URL}/request/user`, {
+        headers: { 'x-auth-token': token }
+      });
+      setExistingRequests(response.data);
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+    }
+  };
 
+  const handleRequestSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
       const formData = new FormData();
-      formData.append('orderId', selectedOrderForRequest._id);
+      formData.append('orderId', selectedOrder._id);
       formData.append('type', requestType);
       formData.append('reason', requestReason);
-      formData.append('image', requestImage);
+      if (requestImage) {
+        formData.append('image', requestImage);
+      }
 
-      await axios.post(`${API_BASE_URL}/request`, formData, {
-        headers: {
-          'x-auth-token': token,
-          'Content-Type': 'multipart/form-data'
+      const response = await axios.post(
+        `${API_BASE_URL}/request`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'x-auth-token': localStorage.getItem('token')
+          }
         }
-      });
+      );
 
-      setToastMessage('Your request has been submitted successfully');
+      setToastMessage('Request submitted successfully');
       setToastType('success');
       setShowToast(true);
       setShowRequestModal(false);
       setRequestType('');
       setRequestReason('');
       setRequestImage(null);
-      setSelectedOrderForRequest(null);
+      await fetchRequests();
     } catch (error) {
       console.error('Error submitting request:', error);
-      setToastMessage('Failed to submit request. Please try again.');
+      const errorMessage = error.response?.data?.message || 'Failed to submit request';
+      setToastMessage(errorMessage);
       setToastType('error');
       setShowToast(true);
+      
+      // If the error is about an existing request, show the request status
+      if (errorMessage.includes('already have an active request')) {
+        const existingRequest = existingRequests.find(req => 
+          req.order._id === selectedOrder._id && !req.deleted
+        );
+        if (existingRequest) {
+          setSelectedOrderForRequest(existingRequest);
+          setRequestType('');
+          setRequestReason('');
+          setRequestImage(null);
+          setShowRequestStatusModal(true);
+        }
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -528,11 +565,9 @@ const Profile = () => {
       )}
       
       {showRequestModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-medium mb-4">
-              {requestType === 'replacement' ? 'Request Replacement' : 'Request Refund'}
-            </h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] mt-16">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+            <h3 className="text-lg font-medium mb-4">Submit Request</h3>
             <form onSubmit={handleRequestSubmit}>
               <div className="mb-4">
                 <label className="block text-gray-700 mb-2">Reason</label>
@@ -554,7 +589,7 @@ const Profile = () => {
                   required
                 />
               </div>
-              <div className="flex justify-end space-x-4">
+              <div className="flex justify-end space-x-4 mt-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -562,7 +597,6 @@ const Profile = () => {
                     setRequestType('');
                     setRequestReason('');
                     setRequestImage(null);
-                    setSelectedOrderForRequest(null);
                   }}
                   className="px-4 py-2 border rounded-lg"
                 >
@@ -570,12 +604,43 @@ const Profile = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  disabled={loading || !requestType || !requestReason}
+                  className={`px-4 py-2 bg-purple-600 text-white rounded-lg ${
+                    loading || !requestType || !requestReason ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700'
+                  }`}
                 >
-                  Submit Request
+                  {loading ? 'Submitting...' : 'Submit Request'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      
+      {showRequestStatusModal && selectedOrderForRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] mt-16">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+            <h3 className="text-lg font-medium mb-4">Request Status</h3>
+            <div className="space-y-4">
+              <div>
+                <p className="font-medium">Type: {selectedOrderForRequest.type}</p>
+                <p>Status: {selectedOrderForRequest.status}</p>
+                {selectedOrderForRequest.adminResponse && (
+                  <p className="mt-2">Admin Response: {selectedOrderForRequest.adminResponse}</p>
+                )}
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowRequestStatusModal(false);
+                    setSelectedOrderForRequest(null);
+                  }}
+                  className="px-4 py-2 border rounded-lg"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
