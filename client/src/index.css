@@ -10,13 +10,27 @@
   }
 
   body {
-    @apply antialiased;
+    @apply antialiased bg-neutral font-body;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+
+  #root {
+    width: 100%;
+    min-height: 100vh;
   }
 }
 
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-md font-medium transition-all duration-200 focus-ring;
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-neutral;
   }
 
   .btn-primary {
@@ -37,6 +51,10 @@
 
   .section-padding {
     @apply py-12 md:py-16 lg:py-20;
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
   }
 }
 
@@ -72,18 +90,5 @@ a {
 }
 a:hover {
   color: #501c2d;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-#root {
-  width: 100%;
-  min-height: 100vh;
 }
 

@@ -49,8 +49,8 @@ const Home = () => {
     <div>
       <Navbar />
       <Hero />
-      <NewArrivals />
       <AboutUs />
+      <NewArrivals />
       <Collections />
       <Footer />
       {showToast && (

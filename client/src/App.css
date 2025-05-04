@@ -8,6 +8,7 @@
   --light-color: #E8E5E0;
   --dark-color: #5B484A;
   --accent-color: #5B484A;
+  background-color: var(--light-color);
 }
 
 * {
