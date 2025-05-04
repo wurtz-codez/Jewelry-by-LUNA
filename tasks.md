@@ -1,6 +1,6 @@
-# Jewelry by LUNA - Development Tasks
+# Jewelry by LUNA - Task List
 
-## Completed Tasks
+## Completed Tasks ✅
 
 ### Authentication & Authorization
 - [x] Set up JWT authentication
@@ -44,6 +44,76 @@
 - [x] Add order management
 - [x] Create user management
 - [x] Add sales analytics
+
+### UI/UX Improvements
+- [x] Fix toast notification positioning
+  - Moved notifications below navbar
+  - Increased z-index for visibility
+- [x] Fix order details modal positioning
+  - Added top margin
+  - Adjusted z-index
+  - Optimized max height
+
+### Request Management System
+- [x] Implement request deletion for admins
+  - Added delete endpoint
+  - Added delete button in admin dashboard
+  - Implemented proper status handling
+- [x] Add request validation
+  - Prevent duplicate requests
+  - Show proper error messages
+  - Add request status modal
+- [x] Improve error handling
+  - Add proper error messages
+  - Implement loading states
+  - Add success notifications
+
+### Bug Fixes
+- [x] Fix request submission error
+  - Add fetchRequests function
+  - Update request list after submission
+  - Handle errors properly
+
+## In Progress 🚧
+
+### Testing
+- [ ] Test request deletion functionality
+- [ ] Verify request validation
+- [ ] Test toast notifications
+- [ ] Test modal positioning
+
+### Documentation
+- [ ] Update API documentation
+- [ ] Document request management features
+- [ ] Add user guides
+
+## Pending Tasks 📝
+
+### User Experience
+- [ ] Add request history view
+- [ ] Implement request tracking
+- [ ] Add email notifications
+
+### Admin Features
+- [ ] Add bulk request processing
+- [ ] Implement request analytics
+- [ ] Add request templates
+
+### Performance
+- [ ] Optimize database queries
+- [ ] Implement caching
+- [ ] Optimize image handling
+
+### Mobile Optimization
+- [ ] Improve mobile responsiveness
+- [ ] Optimize touch interactions
+- [ ] Enhance mobile notifications
+
+## Technical Debt
+- [ ] Review and optimize database queries
+- [ ] Implement error boundaries
+- [ ] Add comprehensive logging
+- [ ] Improve test coverage
 
 ## In Progress
 - [ ] Implement WhatsApp order notifications to admin
