@@ -96,9 +96,31 @@ router.get('/stats', auth, isAdmin, async (req, res) => {
 // Get all users
 router.get('/users', auth, isAdmin, async (req, res) => {
   try {
-    const users = await User.find({ role: 'user' })
-      .select('-password')
-      .sort({ createdAt: -1 });
+    const users = await User.aggregate([
+      { $match: { role: 'user' } },
+      {
+        $lookup: {
+          from: 'orders',
+          localField: '_id',
+          foreignField: 'user',
+          as: 'orders'
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          email: 1,
+          status: 1,
+          banReason: 1,
+          banExpiry: 1,
+          createdAt: 1,
+          orderCount: { $size: '$orders' }
+        }
+      },
+      { $sort: { createdAt: -1 } }
+    ]);
+    
     res.json(users);
   } catch (error) {
     console.error('Error fetching users:', error);

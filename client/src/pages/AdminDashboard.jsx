@@ -1626,7 +1626,7 @@ const AdminDashboard = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {userOrders.filter(order => order.user === user._id).length}
+                            {user.orderCount || 0}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button
@@ -2145,6 +2145,125 @@ const AdminDashboard = () => {
                   setShowRequestModal(false);
                   setSelectedRequest(null);
                   setAdminResponse('');
+                }}
+                className="px-4 py-2 border rounded-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* User Management Modal */}
+      {showUserModal && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+            <h3 className="text-lg font-medium mb-4">User Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">User Information</h4>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p><span className="font-medium">Name:</span> {selectedUser.name}</p>
+                  <p><span className="font-medium">Email:</span> {selectedUser.email}</p>
+                  <p><span className="font-medium">Status:</span> 
+                    <span className={`ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      selectedUser.status === 'active' ? 'bg-green-100 text-green-800' :
+                      selectedUser.status === 'banned' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {selectedUser.status}
+                    </span>
+                  </p>
+                  {selectedUser.status !== 'active' && (
+                    <>
+                      <p><span className="font-medium">Ban Reason:</span> {selectedUser.banReason}</p>
+                      {selectedUser.banExpiry && (
+                        <p><span className="font-medium">Ban Expiry:</span> {new Date(selectedUser.banExpiry).toLocaleString()}</p>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Order History</h4>
+                <div className="bg-gray-50 rounded-lg p-4 max-h-48 overflow-y-auto">
+                  {userOrders.length === 0 ? (
+                    <p className="text-gray-500">No orders found</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {userOrders.map(order => (
+                        <li key={order._id} className="border-b pb-2">
+                          <p className="font-medium">Order #{order._id.slice(-6)}</p>
+                          <p className="text-sm text-gray-600">Amount: ₹{order.totalAmount.toFixed(2)}</p>
+                          <p className="text-sm text-gray-600">Status: {order.requestStatus}</p>
+                          <p className="text-sm text-gray-600">Date: {new Date(order.createdAt).toLocaleDateString()}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
+            {selectedUser.status === 'active' ? (
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">Ban Reason</label>
+                <input
+                  type="text"
+                  value={banReason}
+                  onChange={(e) => setBanReason(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="Enter ban reason"
+                />
+                <label className="block text-gray-700 mb-2 mt-4">Ban Expiry (Optional)</label>
+                <input
+                  type="datetime-local"
+                  value={banExpiry}
+                  onChange={(e) => setBanExpiry(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+            ) : null}
+            <div className="flex space-x-4 justify-end">
+              {selectedUser.status === 'active' ? (
+                <>
+                  <button
+                    onClick={() => {
+                      setUserAction('suspended');
+                      handleUserStatusUpdate();
+                    }}
+                    className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+                  >
+                    Suspend User
+                  </button>
+                  <button
+                    onClick={() => {
+                      setUserAction('banned');
+                      handleUserStatusUpdate();
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  >
+                    Ban User
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    setUserAction('active');
+                    handleUserStatusUpdate();
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Activate User
+                </button>
+              )}
+            </div>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => {
+                  setShowUserModal(false);
+                  setSelectedUser(null);
+                  setBanReason('');
+                  setBanExpiry('');
                 }}
                 className="px-4 py-2 border rounded-lg"
               >
