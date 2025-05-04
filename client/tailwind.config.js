@@ -13,7 +13,7 @@ export default {
         'cinzel-decorative': ['"Cinzel Decorative"', 'serif'],
       },
       colors: {
-        'base': '#E8E5E0',
+        'neutral': '#E8E5E0',
         'primary': {
           DEFAULT: '#A5616C',
           'washed': '#C8959A',

@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import lunaLogo from '../assets/luna-logo.png'
-import { FiSearch, FiHeart, FiShoppingBag, FiUser, FiLogIn, FiLogOut, FiBarChart2, FiX } from 'react-icons/fi'
+import { FiSearch, FiUser, FiLogOut, FiPackage } from 'react-icons/fi'
+import { FaBagShopping, FaRegHeart, FaRegUser } from 'react-icons/fa6'
 import { useAuth } from '../contexts/AuthContext'
-import axios from 'axios'
-
-const API_BASE_URL = 'http://localhost:5001/api';
+import Logo from './Logo'
+import Search from './Search'
 
 const Navbar = () => {
   const location = useLocation();
@@ -13,11 +12,6 @@ const Navbar = () => {
   const [activeLink, setActiveLink] = useState('');
   const { currentUser, logout } = useAuth();
   const [showSearch, setShowSearch] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const searchRef = useRef(null);
-  const searchTimeoutRef = useRef(null);
 
   // Update active link based on current location
   useEffect(() => {
@@ -36,270 +30,182 @@ const Navbar = () => {
     }
   }, [location]);
 
-  // Handle click outside of search overlay
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setShowSearch(false);
-      }
-    };
+  const handleUserClick = () => {
+    if (currentUser) {
+      navigate('/profile');
+    }
+  };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const handleLogout = () => {
+  const handleLogout = (e) => {
+    e.stopPropagation();
     logout();
     navigate('/');
   };
 
-  const handleSearchIconClick = () => {
-    setShowSearch(true);
-    setSearchTerm('');
-    setSearchResults([]);
-  };
-
-  // Real-time search as user types
-  const handleSearchInputChange = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-
-    // Clear any existing timeout
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    if (value.trim().length === 0) {
-      setSearchResults([]);
-      return;
-    }
-
-    // Add a small delay to avoid making too many requests
-    searchTimeoutRef.current = setTimeout(() => {
-      performSearch(value);
-    }, 300);
-  };
-
-  const performSearch = async (term) => {
-    if (!term.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    
-    setIsSearching(true);
-    
-    try {
-      const response = await axios.get(`${API_BASE_URL}/jewelry`);
-      if (response.data && Array.isArray(response.data)) {
-        // Filter products based on search term
-        const filteredResults = response.data.filter(product => 
-          product.name.toLowerCase().includes(term.toLowerCase()) || 
-          product.description.toLowerCase().includes(term.toLowerCase())
-        );
-        setSearchResults(filteredResults);
-      }
-    } catch (error) {
-      console.error('Error searching products:', error);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const navigateToShopWithSearch = () => {
-    navigate(`/shop?search=${encodeURIComponent(searchTerm)}`);
-    setShowSearch(false);
-  };
-
-  const handleProductClick = (productId) => {
-    navigate(`/shop?product=${productId}`);
-    setShowSearch(false);
-  };
-
   return (
-    <nav className="navbar">
-      <div className="nav-links">
-        <Link 
-          to="/" 
-          className={activeLink === 'Home' ? 'active' : ''}
-          style={{ color: '#8B4513' }}
-        >
-          Home
-        </Link>
-        <Link 
-          to="/shop" 
-          className={activeLink === 'Shop' ? 'active' : ''}
-          style={{ color: '#8B4513' }}
-        >
-          Shop
-        </Link>
-        {currentUser?.role !== 'admin' && (
-          <>
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-neutral shadow-sm font-body">
+      <div className="max-w-8xl mx-32 px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
+          {/* Left Section - Navigation Links */}
+          <div className="flex items-center space-x-7 w-1/3 justify-start  text-xl">
             <Link 
-              to="/about" 
-              className={activeLink === 'About' ? 'active' : ''}
-              style={{ color: '#8B4513' }}
+              to="/" 
+              className={`text-black hover:text-primary transition-colors duration-200 ${
+                activeLink === 'Home' ? 'font-medium' : ''
+              }`}
             >
-              About
+              Home
             </Link>
             <Link 
-              to="/contact" 
-              className={activeLink === 'Contact' ? 'active' : ''}
-              style={{ color: '#8B4513' }}
+              to="/shop" 
+              className={`text-black hover:text-primary transition-colors duration-200 ${
+                activeLink === 'Shop' ? 'font-medium' : ''
+              }`}
             >
-              Contact
+              Shop
             </Link>
-          </>
-        )}
-        {currentUser?.role === 'admin' && (
-          <Link 
-            to="/admin" 
-            className={activeLink === 'Dashboard' ? 'active' : ''}
-            style={{ color: '#8B4513' }}
-          >
-            Dashboard
-          </Link>
-        )}
-      </div>
-
-      <Link to="/" className="logo">
-        <img src={lunaLogo || "/placeholder.svg"} alt="Jewelry by Luna" />
-        <span style={{ color: '#8B4513' }}>JEWELRY BY LUNA</span>
-      </Link>
-
-      <div className="nav-icons">
-        <button 
-          aria-label="Search" 
-          style={{ color: '#8B4513' }}
-          onClick={handleSearchIconClick}
-        >
-          <FiSearch />
-        </button>
-        
-        {currentUser ? (
-          <>
-            {currentUser.role !== 'admin' && (
+            {currentUser?.role !== 'admin' && (
               <>
-                <Link to="/wishlist" aria-label="Wishlist" style={{ color: '#8B4513' }}>
-                  <FiHeart />
+                <Link 
+                  to="/about" 
+                  className={`text-black hover:text-primary transition-colors duration-200 ${
+                    activeLink === 'About' ? 'font-medium' : ''
+                  }`}
+                >
+                  About
                 </Link>
-                <Link to="/cart" aria-label="Shopping Bag" style={{ color: '#8B4513' }}>
-                  <FiShoppingBag />
+                <Link 
+                  to="/contact" 
+                  className={`text-black hover:text-primary transition-colors duration-200 ${
+                    activeLink === 'Contact' ? 'font-medium' : ''
+                  }`}
+                >
+                  Contact
                 </Link>
               </>
             )}
-            <Link to="/profile" aria-label="Account" style={{ color: '#8B4513' }}>
-              <FiUser />
-            </Link>
-            <button 
-              onClick={handleLogout} 
-              aria-label="Logout" 
-              style={{ color: '#8B4513' }}
-              className="ml-2"
-            >
-              <FiLogOut />
-            </button>
-          </>
-        ) : (
-          <Link to="/login" aria-label="Login" style={{ color: '#8B4513' }}>
-            <FiLogIn />
-          </Link>
-        )}
-      </div>
-
-      {/* Search Overlay */}
-      {showSearch && (
-        <div className="search-overlay">
-          <div ref={searchRef} className="search-container">
-            <div className="search-header">
-              <h3>Search Products</h3>
-              <button 
-                onClick={() => setShowSearch(false)}
-                className="close-search"
-                aria-label="Close search"
+            {currentUser?.role === 'admin' && (
+              <Link 
+                to="/admin" 
+                className={`text-black hover:text-primary transition-colors duration-200 ${
+                  activeLink === 'Dashboard' ? 'font-medium' : ''
+                }`}
               >
-                <FiX />
-              </button>
-            </div>
+                Dashboard
+              </Link>
+            )}
+          </div>
+
+          {/* Center Section - Logo */}
+          <div className="w-1/3 flex justify-center">
+            <Logo size="default" />
+          </div>
+
+          {/* Right Section - Icons */}
+          <div className="flex items-center space-x-16 w-1/3 justify-end">
+            <button 
+              aria-label="Search" 
+              className="text-black hover:text-primary transition-colors duration-200"
+              onClick={() => setShowSearch(true)}
+            >
+              <FiSearch className="w-5 h-5" />
+            </button>
+
+            <Link 
+              to="/wishlist" 
+              aria-label="Wishlist" 
+              className="text-black hover:text-primary transition-colors duration-200"
+              onClick={(e) => {
+                if (!currentUser) {
+                  e.preventDefault();
+                  navigate('/login');
+                }
+              }}
+            >
+              <FaRegHeart className="w-5 h-5" />
+            </Link>
             
-            <div className="search-form">
-              <div className="search-input-container">
-                <FiSearch className="search-icon" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={handleSearchInputChange}
-                  placeholder="Search for jewelry..."
-                  autoFocus
-                />
-                {searchTerm && (
-                  <button 
-                    type="button"
-                    onClick={() => {
-                      setSearchTerm('');
-                      setSearchResults([]);
-                    }}
-                    className="clear-search"
-                    aria-label="Clear search"
-                  >
-                    <FiX />
-                  </button>
+            <Link 
+              to="/cart" 
+              aria-label="Shopping Bag" 
+              className="text-black hover:text-primary transition-colors duration-200"
+              onClick={(e) => {
+                if (!currentUser) {
+                  e.preventDefault();
+                  navigate('/login');
+                }
+              }}
+            >
+              <FaBagShopping className="w-5 h-5" />
+            </Link>
+            
+            <div className="relative group">
+              <button 
+                onClick={handleUserClick}
+                aria-label={currentUser ? "Profile" : "Login"}
+                className="text-black hover:text-primary transition-colors duration-200"
+              >
+                <FaRegUser className="w-5 h-5" />
+              </button>
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 delay-100 hover:opacity-100 hover:visible border border-neutral/20">
+                {currentUser ? (
+                  <>
+                    <div className="px-4 py-3 border-b border-neutral/20">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 rounded-full bg-primary-washed/20 flex items-center justify-center ring-2 ring-primary-washed/30">
+                          {currentUser.photoURL ? (
+                            <img src={currentUser.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                          ) : (
+                            <FiUser className="w-6 h-6 text-primary" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-accent text-lg">{currentUser.displayName || 'User'}</p>
+                          <p className="text-sm text-gray-500">{currentUser.email}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="py-1">
+                      <Link
+                        to="/profile"
+                        className="flex items-center px-4 py-2.5 text-base text-black hover:bg-neutral/50 transition-colors duration-200"
+                      >
+                        <FiUser className="w-5 h-5 mr-3 text-primary/70" />
+                        Profile
+                      </Link>
+                      <Link
+                        to="/orders"
+                        className="flex items-center px-4 py-2.5 text-base text-black hover:bg-neutral/50 transition-colors duration-200"
+                      >
+                        <FiPackage className="w-5 h-5 mr-3 text-primary/70" />
+                        Your Orders
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center w-full px-4 py-2.5 text-base text-black hover:bg-neutral/50 transition-colors duration-200"
+                      >
+                        <FiLogOut className="w-5 h-5 mr-3 text-primary/70" />
+                        Logout
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="px-4 py-3">
+                    <Link
+                      to="/login"
+                      className="block w-full text-center px-4 py-2.5 text-lg text-white bg-primary hover:bg-primary-washed rounded-full transition-colors duration-200"
+                    >
+                      Login / Signup
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>
-            
-            <div className="search-results">
-              {isSearching ? (
-                <p className="searching-message">Searching...</p>
-              ) : searchResults.length > 0 ? (
-                <>
-                  <div className="results-list">
-                    {searchResults.slice(0, 5).map(product => (
-                      <div 
-                        key={product._id} 
-                        className="search-result-item" 
-                        onClick={() => handleProductClick(product._id)}
-                      >
-                        <div className="product-image">
-                          <img 
-                            src={
-                              product.imageUrl.startsWith('http') 
-                                ? product.imageUrl 
-                                : product.imageUrl.startsWith('/uploads') 
-                                  ? `http://localhost:5001${product.imageUrl}` 
-                                  : `/src/assets/${product.imageUrl}`
-                            } 
-                            alt={product.name} 
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = '/src/assets/placeholder.svg';
-                            }}
-                          />
-                        </div>
-                        <div className="product-details">
-                          <h4>{product.name}</h4>
-                          <p className="product-price">₹{product.price.toFixed(2)}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {searchResults.length > 5 && (
-                    <button 
-                      className="view-all-results"
-                      onClick={navigateToShopWithSearch}
-                    >
-                      View all {searchResults.length} results
-                    </button>
-                  )}
-                </>
-              ) : searchTerm && !isSearching ? (
-                <p className="no-results">No products found. Try a different search term.</p>
-              ) : null}
-            </div>
           </div>
         </div>
-      )}
+      </div>
+
+      <Search isOpen={showSearch} onClose={() => setShowSearch(false)} />
     </nav>
   )
 }
