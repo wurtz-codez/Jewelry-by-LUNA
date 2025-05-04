@@ -15,6 +15,7 @@ const Navbar = () => {
   const { currentUser, logout } = useAuth();
   const [showSearch, setShowSearch] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   // Update active link based on current location
   useEffect(() => {
@@ -34,10 +35,22 @@ const Navbar = () => {
   }, [location]);
 
   const handleUserClick = () => {
-    if (currentUser) {
-      navigate('/profile');
-    }
+    setShowProfileDropdown(!showProfileDropdown);
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showProfileDropdown && !event.target.closest('.profile-dropdown')) {
+        setShowProfileDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showProfileDropdown]);
 
   const handleLogout = (e) => {
     e.stopPropagation();
@@ -211,10 +224,7 @@ const Navbar = () => {
 
             {/* Desktop Profile Dropdown */}
             <motion.div 
-              className="hidden md:block relative group"
-              variants={iconVariants}
-              whileHover="hover"
-              whileTap="tap"
+              className="hidden md:block relative profile-dropdown"
             >
               <button 
                 onClick={handleUserClick}
@@ -224,9 +234,9 @@ const Navbar = () => {
                 <FaRegUser className="w-5 h-5" />
               </button>
               <AnimatePresence>
-                {showMobileMenu && (
+                {showProfileDropdown && (
                   <motion.div 
-                    className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 delay-100 hover:opacity-100 hover:visible border border-neutral/20"
+                    className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 border border-neutral/20"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -253,6 +263,7 @@ const Navbar = () => {
                           <Link
                             to="/profile"
                             className="flex items-center px-4 py-2.5 text-base text-black hover:bg-neutral/50 transition-colors duration-200"
+                            onClick={() => setShowProfileDropdown(false)}
                           >
                             <FiUser className="w-5 h-5 mr-3 text-primary/70" />
                             Profile
@@ -260,12 +271,16 @@ const Navbar = () => {
                           <Link
                             to="/orders"
                             className="flex items-center px-4 py-2.5 text-base text-black hover:bg-neutral/50 transition-colors duration-200"
+                            onClick={() => setShowProfileDropdown(false)}
                           >
                             <FiPackage className="w-5 h-5 mr-3 text-primary/70" />
                             Your Orders
                           </Link>
                           <button
-                            onClick={handleLogout}
+                            onClick={(e) => {
+                              handleLogout(e);
+                              setShowProfileDropdown(false);
+                            }}
                             className="flex items-center w-full px-4 py-2.5 text-base text-black hover:bg-neutral/50 transition-colors duration-200"
                           >
                             <FiLogOut className="w-5 h-5 mr-3 text-primary/70" />
@@ -278,6 +293,7 @@ const Navbar = () => {
                         <Link
                           to="/login"
                           className="block w-full text-center px-4 py-2.5 text-lg text-white bg-primary hover:bg-primary-washed rounded-full transition-colors duration-200"
+                          onClick={() => setShowProfileDropdown(false)}
                         >
                           Login / Signup
                         </Link>
