@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files from the uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static('uploads'));
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -21,6 +21,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const cartRoutes = require('./routes/cart');
 const wishlistRoutes = require('./routes/wishlist');
 const orderRoutes = require('./routes/order');
+const requestRoutes = require('./routes/request');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/jewelry', jewelryRoutes);
@@ -29,6 +30,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/order', orderRoutes);
+app.use('/api/request', requestRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)

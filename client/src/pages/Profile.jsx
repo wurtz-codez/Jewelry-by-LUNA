@@ -47,6 +47,13 @@ const Profile = () => {
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [loadingOrderDetails, setLoadingOrderDetails] = useState(false);
 
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [requestType, setRequestType] = useState('');
+  const [requestReason, setRequestReason] = useState('');
+  const [requestImage, setRequestImage] = useState(null);
+  const [selectedOrderForRequest, setSelectedOrderForRequest] = useState(null);
+  const [existingRequests, setExistingRequests] = useState([]);
+
   useEffect(() => {
     if (currentUser) {
       setUser({
@@ -55,6 +62,7 @@ const Profile = () => {
         email: currentUser.email
       });
       fetchOrders();
+      fetchUserRequests();
     }
   }, [currentUser]);
 
@@ -70,6 +78,20 @@ const Profile = () => {
     } catch (error) {
       console.error('Error fetching orders:', error);
       setError('Failed to fetch orders');
+    }
+  };
+  
+  const fetchUserRequests = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await axios.get(`${API_BASE_URL}/request/user`, {
+        headers: { 'x-auth-token': token }
+      });
+      setExistingRequests(response.data);
+    } catch (error) {
+      console.error('Error fetching user requests:', error);
     }
   };
   
@@ -109,6 +131,63 @@ const Profile = () => {
       default:
         return 'bg-yellow-100 text-yellow-800';
     }
+  };
+
+  const handleRequestSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const formData = new FormData();
+      formData.append('orderId', selectedOrderForRequest._id);
+      formData.append('type', requestType);
+      formData.append('reason', requestReason);
+      formData.append('image', requestImage);
+
+      await axios.post(`${API_BASE_URL}/request`, formData, {
+        headers: {
+          'x-auth-token': token,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      setToastMessage('Your request has been submitted successfully');
+      setToastType('success');
+      setShowToast(true);
+      setShowRequestModal(false);
+      setRequestType('');
+      setRequestReason('');
+      setRequestImage(null);
+      setSelectedOrderForRequest(null);
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      setToastMessage('Failed to submit request. Please try again.');
+      setToastType('error');
+      setShowToast(true);
+    }
+  };
+
+  const renderRequestStatus = (orderId) => {
+    const request = existingRequests.find(req => req.order._id === orderId);
+    if (!request) return null;
+
+    return (
+      <div className="mt-4">
+        <h4 className="font-medium text-gray-700 mb-2">Request Status</h4>
+        <div className={`px-3 py-2 rounded-lg ${
+          request.status === 'approved' ? 'bg-green-100 text-green-800' :
+          request.status === 'rejected' ? 'bg-red-100 text-red-800' :
+          'bg-yellow-100 text-yellow-800'
+        }`}>
+          <p className="font-medium">Type: {request.type}</p>
+          <p>Status: {request.status}</p>
+          {request.adminResponse && (
+            <p className="mt-2">Admin Response: {request.adminResponse}</p>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -403,8 +482,93 @@ const Profile = () => {
                     </tfoot>
                   </table>
                 </div>
+
+                {selectedOrder && selectedOrder.requestStatus === 'approved' && (
+                  <div className="mt-6">
+                    {renderRequestStatus(selectedOrder._id) || (
+                      <>
+                        <h4 className="font-medium text-gray-700 mb-2">Request Replacement/Refund</h4>
+                        <div className="flex space-x-4">
+                          <button
+                            onClick={() => {
+                              setSelectedOrderForRequest(selectedOrder);
+                              setRequestType('replacement');
+                              setShowRequestModal(true);
+                            }}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                          >
+                            Request Replacement
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedOrderForRequest(selectedOrder);
+                              setRequestType('refund');
+                              setShowRequestModal(true);
+                            }}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                          >
+                            Request Refund
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
               </>
             )}
+          </div>
+        </div>
+      )}
+      
+      {showRequestModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium mb-4">
+              {requestType === 'replacement' ? 'Request Replacement' : 'Request Refund'}
+            </h3>
+            <form onSubmit={handleRequestSubmit}>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">Reason</label>
+                <textarea
+                  value={requestReason}
+                  onChange={(e) => setRequestReason(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  rows="4"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">Upload Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setRequestImage(e.target.files[0])}
+                  className="w-full"
+                  required
+                />
+              </div>
+              <div className="flex justify-end space-x-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRequestModal(false);
+                    setRequestType('');
+                    setRequestReason('');
+                    setRequestImage(null);
+                    setSelectedOrderForRequest(null);
+                  }}
+                  className="px-4 py-2 border rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Submit Request
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

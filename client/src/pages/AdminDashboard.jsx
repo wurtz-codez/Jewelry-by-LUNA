@@ -582,7 +582,7 @@ const AdminDashboard = () => {
           'x-auth-token': localStorage.getItem('token')
         }
       });
-      setOrderRequests(response.data);
+      setOrderRequests(response.data.orderRequests);
     } catch (error) {
       console.error('Error fetching order requests:', error);
       setToastMessage('Failed to fetch order requests');
@@ -650,7 +650,8 @@ const AdminDashboard = () => {
           'x-auth-token': localStorage.getItem('token')
         }
       });
-      setOrders(response.data);
+      setOrderRequests(response.data.orderRequests);
+      setOrders(response.data.allOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
       setToastMessage('Failed to fetch orders');
@@ -736,6 +737,64 @@ const AdminDashboard = () => {
     }));
   };
 
+  const [requests, setRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [adminResponse, setAdminResponse] = useState('');
+
+  const fetchRequests = async () => {
+    try {
+      setLoadingRequests(true);
+      const response = await axios.get(`${API_BASE_URL}/request/admin`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token')
+        }
+      });
+      setRequests(response.data);
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+      setToastMessage('Failed to fetch requests');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  const handleRequestStatusUpdate = async (requestId, status) => {
+    try {
+      await axios.put(
+        `${API_BASE_URL}/request/${requestId}/status`,
+        { status, adminResponse },
+        {
+          headers: {
+            'x-auth-token': localStorage.getItem('token')
+          }
+        }
+      );
+
+      setToastMessage(`Request ${status} successfully`);
+      setToastType('success');
+      setShowToast(true);
+      setShowRequestModal(false);
+      setAdminResponse('');
+      fetchRequests();
+    } catch (error) {
+      console.error('Error updating request status:', error);
+      setToastMessage('Failed to update request status');
+      setToastType('error');
+      setShowToast(true);
+    }
+  };
+
+  // Add this useEffect to fetch requests when the requests tab is active
+  useEffect(() => {
+    if (activeTab === 'requests') {
+      fetchRequests();
+    }
+  }, [activeTab]);
+
   if (!currentUser || currentUser.role !== 'admin') {
     return null;
   }
@@ -786,6 +845,16 @@ const AdminDashboard = () => {
               onClick={() => setActiveTab('users')}
             >
               Users
+            </button>
+            <button
+              className={`px-4 py-2 rounded-lg ${
+                activeTab === 'requests'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+              onClick={() => setActiveTab('requests')}
+            >
+              Requests
             </button>
           </div>
         </div>
@@ -992,22 +1061,14 @@ const AdminDashboard = () => {
                             {new Date(order.createdAt).toLocaleDateString()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {order.requestStatus === 'pending' && (
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => handleOrderStatusUpdate(order._id, 'approved')}
-                                  className="text-green-600 hover:text-green-800"
-                                >
-                                  <FiCheck size={20} />
-                                </button>
-                                <button
-                                  onClick={() => handleOrderStatusUpdate(order._id, 'rejected')}
-                                  className="text-red-600 hover:text-red-800"
-                                >
-                                  <FiX size={20} />
-                                </button>
-                              </div>
-                            )}
+                            <div className="flex space-x-2">
+                              <button 
+                                className="text-indigo-600 hover:text-indigo-900"
+                                onClick={() => fetchOrderDetails(order._id)}
+                              >
+                                View Details
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -1591,189 +1652,54 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* User Details Modal */}
-        {showUserModal && selectedUser && (
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-6 max-w-2xl w-full">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">User Details</h3>
-                <button
-                  className="text-gray-400 hover:text-gray-500"
-                  onClick={() => setShowUserModal(false)}
-                >
-                  <FiX />
-                </button>
-              </div>
-
-              <div className="mb-6">
-                <div className="flex items-center mb-4">
-                  <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center">
-                    <FiUser className="text-gray-500" size={24} />
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="text-lg font-medium text-gray-900">{selectedUser.name}</h4>
-                    <p className="text-sm text-gray-500">{selectedUser.email}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <p className="text-sm text-gray-500">Status</p>
-                    <p className="font-medium">{selectedUser.status}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Total Orders</p>
-                    <p className="font-medium">{userOrders.length}</p>
-                  </div>
-                </div>
-
-                {selectedUser.status !== 'active' && (
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-500">Ban Reason</p>
-                    <p className="font-medium">{selectedUser.banReason}</p>
-                    {selectedUser.banExpiry && (
-                      <p className="text-sm text-gray-500">
-                        Expires: {new Date(selectedUser.banExpiry).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="mb-6">
-                <h4 className="text-lg font-medium text-gray-900 mb-4">Order History</h4>
-                {userOrders.length === 0 ? (
-                  <p className="text-gray-500">No orders found</p>
-                ) : (
-                  <div className="space-y-4">
-                    {userOrders.map((order) => (
-                      <div key={order._id} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-center mb-2">
-                          <p className="font-medium">Order #{order._id.slice(-6)}</p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <p className="text-sm text-gray-500">
-                            {order.items.length} items
-                          </p>
-                          <p className="font-medium">${order.totalAmount.toFixed(2)}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div className="flex space-x-4">
-                  <button
-                    className={`px-4 py-2 rounded-lg ${
-                      userAction === 'banned' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'
-                    }`}
-                    onClick={() => {
-                      setUserAction('banned');
-                      setBanReason('');
-                      setBanExpiry('');
-                    }}
-                  >
-                    <FiUserX className="inline mr-2" />
-                    Ban User
-                  </button>
-                  <button
-                    className={`px-4 py-2 rounded-lg ${
-                      userAction === 'active' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'
-                    }`}
-                    onClick={() => setUserAction('active')}
-                  >
-                    <FiUserCheck className="inline mr-2" />
-                    Activate User
-                  </button>
-                </div>
-                <button
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg"
-                  onClick={handleUserStatusUpdate}
-                >
-                  Update Status
-                </button>
-              </div>
-
-              {userAction === 'banned' && (
-                <div className="mt-4">
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Ban Reason
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      value={banReason}
-                      onChange={(e) => setBanReason(e.target.value)}
-                      placeholder="Enter ban reason"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Ban Expiry Date
-                    </label>
-                    <input
-                      type="date"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      value={banExpiry}
-                      onChange={(e) => setBanExpiry(e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {activeTab === 'orders' && (
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">Order Management</h2>
-            </div>
-            <div className="p-6">
-              {loading ? (
-                <div className="flex justify-center items-center h-48">
-                  <div className="animate-spin text-purple-500">
-                    <FiLoader size={24} />
-                  </div>
-                </div>
-              ) : orders.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">No orders found</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+          <div className="space-y-8">
+            {/* Order Requests Section */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">Order Requests</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {loadingOrders ? (
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <td colSpan="6" className="px-6 py-4 text-center">
+                          <div className="flex justify-center">
+                            <div className="animate-spin text-gray-500 mr-2">
+                              <FiLoader size={20} />
+                            </div>
+                            <p>Loading orders...</p>
+                          </div>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {orders.map((order) => (
+                    ) : orderRequests.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                          No order requests found
+                        </td>
+                      </tr>
+                    ) : (
+                      orderRequests.map((order) => (
                         <tr key={order._id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {order._id.slice(-6)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {order.user && typeof order.user === 'object' ? order.user.name : 'Unknown'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {order.items ? order.items.length : 0} items
+                            {order.user.name}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ${order.totalAmount.toFixed(2)}
+                            ₹{order.totalAmount.toFixed(2)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -1798,11 +1724,167 @@ const AdminDashboard = () => {
                             </div>
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* All Orders Section */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">All Orders</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {loading ? (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-4 text-center">
+                          <div className="flex justify-center">
+                            <div className="animate-spin text-gray-500 mr-2">
+                              <FiLoader size={20} />
+                            </div>
+                            <p>Loading orders...</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : orders.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                          No orders found
+                        </td>
+                      </tr>
+                    ) : (
+                      orders.map((order) => (
+                        <tr key={order._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {order._id.slice(-6)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {order.user.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ₹{order.totalAmount.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                              order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {order.requestStatus}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <div className="flex space-x-2">
+                              <button 
+                                className="text-indigo-600 hover:text-indigo-900"
+                                onClick={() => fetchOrderDetails(order._id)}
+                              >
+                                View Details
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'requests' && (
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Replacement/Refund Requests</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {loadingRequests ? (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-4 text-center">
+                        <div className="flex justify-center">
+                          <div className="animate-spin text-gray-500 mr-2">
+                            <FiLoader size={20} />
+                          </div>
+                          <p>Loading requests...</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : requests.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                        No requests found
+                      </td>
+                    </tr>
+                  ) : (
+                    requests.map((request) => (
+                      <tr key={request._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {request._id.slice(-6)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {request.user.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {request.type}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                            request.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {request.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <button
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setShowRequestModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
@@ -1971,6 +2053,104 @@ const AdminDashboard = () => {
                 )}
               </>
             )}
+          </div>
+        </div>
+      )}
+      {/* Request Details Modal */}
+      {showRequestModal && selectedRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+            <h3 className="text-lg font-medium mb-4">Request Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Request Information</h4>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p><span className="font-medium">Request ID:</span> {selectedRequest._id}</p>
+                  <p><span className="font-medium">Type:</span> {selectedRequest.type}</p>
+                  <p><span className="font-medium">Status:</span> 
+                    <span className={`ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      selectedRequest.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      selectedRequest.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {selectedRequest.status}
+                    </span>
+                  </p>
+                  <p><span className="font-medium">Date:</span> {new Date(selectedRequest.createdAt).toLocaleString()}</p>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Customer Information</h4>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p><span className="font-medium">Name:</span> {selectedRequest.user.name}</p>
+                  <p><span className="font-medium">Email:</span> {selectedRequest.user.email}</p>
+                </div>
+              </div>
+            </div>
+            <div className="mb-6">
+              <h4 className="font-medium text-gray-700 mb-2">Reason</h4>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p>{selectedRequest.reason}</p>
+              </div>
+            </div>
+            <div className="mb-6">
+              <h4 className="font-medium text-gray-700 mb-2">Image</h4>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <img src={selectedRequest.imageUrl} alt="Request" className="max-w-full h-auto" />
+              </div>
+            </div>
+            {selectedRequest.status === 'pending' && (
+              <>
+                <div className="mb-4">
+                  <label className="block text-gray-700 mb-2">Admin Response</label>
+                  <textarea
+                    value={adminResponse}
+                    onChange={(e) => setAdminResponse(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    rows="4"
+                    placeholder="Enter your response here..."
+                  />
+                </div>
+                <div className="flex space-x-4 justify-end">
+                  <button
+                    onClick={() => {
+                      handleRequestStatusUpdate(selectedRequest._id, 'rejected');
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  >
+                    Reject Request
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleRequestStatusUpdate(selectedRequest._id, 'approved');
+                    }}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    Approve Request
+                  </button>
+                </div>
+              </>
+            )}
+            {selectedRequest.status !== 'pending' && (
+              <div className="mb-6">
+                <h4 className="font-medium text-gray-700 mb-2">Admin Response</h4>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p>{selectedRequest.adminResponse}</p>
+                </div>
+              </div>
+            )}
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => {
+                  setShowRequestModal(false);
+                  setSelectedRequest(null);
+                  setAdminResponse('');
+                }}
+                className="px-4 py-2 border rounded-lg"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

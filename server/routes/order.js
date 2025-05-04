@@ -101,12 +101,20 @@ router.get('/user', auth, async (req, res) => {
 // Get all order requests (Admin only)
 router.get('/admin', auth, isAdmin, async (req, res) => {
   try {
+    // Get all orders with populated user and jewelry details
     const orders = await Order.find()
       .populate('user', 'name email')
       .populate('items.jewelry', 'name imageUrl price')
       .sort({ createdAt: -1 });
     
-    res.json(orders);
+    // Separate orders into requests and regular orders
+    const orderRequests = orders.filter(order => order.requestStatus === 'pending');
+    const allOrders = orders.filter(order => order.requestStatus !== 'pending');
+    
+    res.json({
+      orderRequests,
+      allOrders
+    });
   } catch (error) {
     console.error('Error fetching all orders:', error);
     res.status(500).json({ message: 'Server error' });
