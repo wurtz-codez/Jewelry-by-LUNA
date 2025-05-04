@@ -20,7 +20,7 @@ export default {
         },
         'secondary': {
           DEFAULT: '#9B7D7D',
-          'washed': '#C8959A',
+          'washed': '#E5CEC0',
         },
         'accent': '#5B484A',
       },
