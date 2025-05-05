@@ -11,6 +11,7 @@ export default {
         'body': ['"Cormorant Garamond"', 'serif'],
         'cinzel': ['"Cinzel"', 'serif'],
         'cinzel-decorative': ['"Cinzel Decorative"', 'serif'],
+        'montserrat-alt': ['"Montserrat Alternates"', 'sans-serif'],
       },
       colors: {
         'neutral': '#E8E5E0',
@@ -56,4 +57,4 @@ export default {
   plugins: [
     require('@tailwindcss/typography'),
   ],
-} 
+}
