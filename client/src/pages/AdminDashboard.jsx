@@ -63,6 +63,8 @@ const AdminDashboard = () => {
     name: '',
     description: '',
     price: '',
+    discount: 0,
+    sellingPrice: '',
     categories: ['necklace'],
     tags: ['new arrival'],
     imageUrl: '',
@@ -197,10 +199,25 @@ const AdminDashboard = () => {
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
-    });
+    let newValue = type === 'checkbox' ? checked : value;
+    
+    // Calculate selling price when price or discount changes
+    if (name === 'price' || name === 'discount') {
+      const price = name === 'price' ? parseFloat(value) || 0 : parseFloat(formData.price) || 0;
+      const discount = name === 'discount' ? parseFloat(value) || 0 : parseFloat(formData.discount) || 0;
+      const sellingPrice = price - discount;
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: newValue,
+        sellingPrice: sellingPrice.toFixed(2)
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: newValue
+      }));
+    }
     
     // Clear error for this field when user changes it
     if (formErrors[name]) {
@@ -286,19 +303,13 @@ const AdminDashboard = () => {
   // Validate form data
   const validateForm = () => {
     const errors = {};
-    
     if (!formData.name.trim()) errors.name = 'Name is required';
     if (!formData.description.trim()) errors.description = 'Description is required';
-    if (!formData.price || isNaN(formData.price) || parseFloat(formData.price) <= 0) 
-      errors.price = 'Price must be a positive number';
-    if (!formData.stock || isNaN(formData.stock) || parseInt(formData.stock) < 0) 
-      errors.stock = 'Stock must be a non-negative number';
-    if (!formData.imageUrl.trim()) errors.imageUrl = 'Image URL is required';
-    if (!formData.detailedDescription.trim()) errors.detailedDescription = 'Detailed description is required';
-    if (!formData.tags.length) errors.tags = 'At least one tag is required';
-    
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    if (!formData.price || formData.price <= 0) errors.price = 'Price must be greater than 0';
+    if (formData.discount < 0 || formData.discount >= formData.price) errors.discount = 'Discount must be less than price';
+    if (!formData.imageUrl) errors.imageUrl = 'Image is required';
+    if (formData.stock < 0) errors.stock = 'Stock cannot be negative';
+    return errors;
   };
 
   // Submit form to add or update a product
@@ -1173,82 +1184,43 @@ const AdminDashboard = () => {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                      <table className="products-table">
+                        <thead>
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Product
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Category
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Price
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Stock
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Status
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Actions
-                            </th>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Discount</th>
+                            <th>Selling Price</th>
+                            <th>Stock</th>
+                            <th>Actions</th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody>
                           {products.map(product => (
                             <tr key={product._id}>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center">
-                                  <div className="h-12 w-12 flex-shrink-0">
-                                    <img 
-                                      className="h-12 w-12 object-cover rounded-md" 
-                                      src={product.imageUrl} 
-                                      alt={product.name}
-                                      onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = '/src/assets/placeholder.svg';
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="ml-4">
-                                    <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                                  </div>
-                                </div>
+                              <td>
+                                <img 
+                                  src={product.imageUrl} 
+                                  alt={product.name} 
+                                  className="product-thumbnail"
+                                />
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900 capitalize">
-                                  {product.categories ? product.categories.join(', ') : 'Uncategorized'}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">{product.stock}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                {product.isAvailable ? (
-                                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Available
-                                  </span>
-                                ) : (
-                                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                    Unavailable
-                                  </span>
-                                )}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <td>{product.name}</td>
+                              <td>₹{product.price.toFixed(2)}</td>
+                              <td>₹{product.discount.toFixed(2)}</td>
+                              <td>₹{product.sellingPrice.toFixed(2)}</td>
+                              <td>{product.stock}</td>
+                              <td>
                                 <button 
-                                  className="text-indigo-600 hover:text-indigo-900 mr-3"
                                   onClick={() => handleEdit(product)}
+                                  className="edit-btn"
                                 >
                                   <FiEdit />
                                 </button>
                                 <button 
-                                  className="text-red-600 hover:text-red-900"
                                   onClick={() => handleDelete(product._id)}
+                                  className="delete-btn"
                                 >
                                   <FiTrash2 />
                                 </button>

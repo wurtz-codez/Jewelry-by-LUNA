@@ -157,7 +157,15 @@ const Search = ({ isOpen, onClose }) => {
                     </div>
                     <div className="product-details">
                       <h4>{product.name}</h4>
-                      <p className="product-price">₹{product.price.toFixed(2)}</p>
+                      <div className="product-price">
+                        <span className="selling-price">₹{product.sellingPrice.toFixed(2)}</span>
+                        {product.discount > 0 && (
+                          <>
+                            <span className="original-price">₹{product.price.toFixed(2)}</span>
+                            <span className="discount-badge">Save ₹{product.discount.toFixed(2)}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

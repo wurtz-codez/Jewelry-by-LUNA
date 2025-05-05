@@ -45,14 +45,14 @@ router.post('/request', auth, async (req, res) => {
       
       if (validCoupons[couponCode]) {
         const discountPercentage = validCoupons[couponCode];
-        const subtotal = cart.items.reduce((total, item) => total + (item.jewelry.price * item.quantity), 0);
+        const subtotal = cart.items.reduce((total, item) => total + (item.jewelry.sellingPrice * item.quantity), 0);
         discount = subtotal * (discountPercentage / 100);
       }
     }
     
     // Calculate total amount with shipping and discount
     const shipping = 15.00; // Fixed shipping cost
-    const subtotal = cart.items.reduce((total, item) => total + (item.jewelry.price * item.quantity), 0);
+    const subtotal = cart.items.reduce((total, item) => total + (item.jewelry.sellingPrice * item.quantity), 0);
     const totalAmount = subtotal + shipping - discount;
 
     const order = new Order({
@@ -60,7 +60,7 @@ router.post('/request', auth, async (req, res) => {
       items: cart.items.map(item => ({
         jewelry: item.jewelry._id,
         quantity: item.quantity,
-        price: item.jewelry.price
+        price: item.jewelry.sellingPrice
       })),
       totalAmount,
       status: 'pending',
@@ -98,7 +98,7 @@ router.post('/request', auth, async (req, res) => {
 router.get('/user', auth, async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user.id })
-      .populate('items.jewelry', 'name imageUrl price')
+      .populate('items.jewelry', 'name imageUrl sellingPrice')
       .sort({ createdAt: -1 });
     
     res.json(orders);
@@ -114,7 +114,7 @@ router.get('/admin', auth, isAdmin, async (req, res) => {
     // Get all orders with populated user and jewelry details
     const orders = await Order.find()
       .populate('user', 'name email')
-      .populate('items.jewelry', 'name imageUrl price')
+      .populate('items.jewelry', 'name imageUrl sellingPrice')
       .sort({ createdAt: -1 });
     
     // Separate orders into requests and regular orders
@@ -136,7 +136,7 @@ router.get('/:orderId', auth, async (req, res) => {
   try {
     const order = await Order.findById(req.params.orderId)
       .populate('user', 'name email phone')
-      .populate('items.jewelry', 'name imageUrl price');
+      .populate('items.jewelry', 'name imageUrl sellingPrice');
     
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });

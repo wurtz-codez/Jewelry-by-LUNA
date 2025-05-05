@@ -8,7 +8,7 @@ const auth = require('../middleware/auth');
 router.get('/', auth, async (req, res) => {
   try {
     const cart = await Cart.findOne({ user: req.user.id })
-      .populate('items.jewelry', 'name price imageUrl');
+      .populate('items.jewelry', 'name sellingPrice imageUrl');
     
     if (!cart) {
       return res.json({ items: [] });
@@ -44,7 +44,7 @@ router.post('/items', auth, async (req, res) => {
     await cart.save();
     
     // Populate jewelry details before sending response
-    await cart.populate('items.jewelry', 'name price imageUrl');
+    await cart.populate('items.jewelry', 'name sellingPrice imageUrl');
     
     res.json(cart);
   } catch (error) {
@@ -72,7 +72,7 @@ router.put('/items/:jewelryId', auth, async (req, res) => {
     item.quantity = quantity;
     await cart.save();
     
-    await cart.populate('items.jewelry', 'name price imageUrl');
+    await cart.populate('items.jewelry', 'name sellingPrice imageUrl');
     res.json(cart);
   } catch (error) {
     console.error('Error updating cart:', error);
@@ -93,7 +93,7 @@ router.delete('/items/:jewelryId', auth, async (req, res) => {
     cart.items = cart.items.filter(item => item.jewelry.toString() !== jewelryId);
     await cart.save();
     
-    await cart.populate('items.jewelry', 'name price imageUrl');
+    await cart.populate('items.jewelry', 'name sellingPrice imageUrl');
     res.json(cart);
   } catch (error) {
     console.error('Error removing from cart:', error);

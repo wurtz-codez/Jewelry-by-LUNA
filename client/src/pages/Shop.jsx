@@ -95,8 +95,8 @@ const Shop = () => {
     }
     
     if (priceRange[0] > 0 || priceRange[1] < Infinity) {
-      filtered = filtered.filter(product => 
-        product.price >= priceRange[0] && product.price <= priceRange[1]
+      filtered = filtered.filter(
+        product => product.sellingPrice >= priceRange[0] && product.sellingPrice <= priceRange[1]
       );
     }
     
@@ -125,7 +125,7 @@ const Shop = () => {
   // Check if price range is appropriate for products
   useEffect(() => {
     if (products.length > 0) {
-      const maxProductPrice = Math.max(...products.map(p => p.price));
+      const maxProductPrice = Math.max(...products.map(p => p.sellingPrice));
       
       // If our price range maximum is less than the highest priced product
       if (maxProductPrice > priceRange[1]) {

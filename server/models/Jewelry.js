@@ -15,6 +15,17 @@ const jewelrySchema = new mongoose.Schema({
     required: true,
     min: 0
   },
+  discount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  sellingPrice: {
+    type: Number,
+    default: function() {
+      return this.price - (this.discount || 0);
+    }
+  },
   categories: [{
     type: String,
     required: true,
@@ -59,9 +70,10 @@ const jewelrySchema = new mongoose.Schema({
   }
 });
 
-// Update the updatedAt timestamp before saving
+// Update the updatedAt timestamp and sellingPrice before saving
 jewelrySchema.pre('save', function(next) {
   this.updatedAt = Date.now();
+  this.sellingPrice = this.price - (this.discount || 0);
   next();
 });
 

@@ -507,13 +507,13 @@ const Profile = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            ₹{item.price ? item.price.toFixed(2) : '0.00'}
+                            ₹{item.sellingPrice ? item.sellingPrice.toFixed(2) : '0.00'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {item.quantity}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            ₹{(item.price * item.quantity).toFixed(2)}
+                            ₹{(item.sellingPrice * item.quantity).toFixed(2)}
                           </td>
                         </tr>
                       ))}
