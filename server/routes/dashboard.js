@@ -38,7 +38,7 @@ router.get('/stats', auth, isAdmin, async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(5)
       .populate('user', 'name email')
-      .populate('items.jewelry', 'name imageUrl');
+      .populate('items.jewelry', 'name imageUrl sellingPrice');
     
     // Get sales data for chart (last 30 days)
     const thirtyDaysAgo = new Date();
@@ -76,7 +76,7 @@ router.get('/stats', auth, isAdmin, async (req, res) => {
     // Populate product details
     const topProductsWithDetails = await Jewelry.populate(topProducts, {
       path: '_id',
-      select: 'name imageUrl price'
+      select: 'name imageUrl sellingPrice'
     });
     
     res.json({
@@ -138,7 +138,7 @@ router.get('/users/:userId', auth, isAdmin, async (req, res) => {
 
     const orders = await Order.find({ user: req.params.userId })
       .sort({ createdAt: -1 })
-      .populate('items.jewelry', 'name imageUrl price');
+      .populate('items.jewelry', 'name imageUrl sellingPrice');
 
     res.json({
       user,

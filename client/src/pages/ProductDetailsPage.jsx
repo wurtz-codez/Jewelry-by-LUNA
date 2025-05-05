@@ -276,15 +276,11 @@ function ProductDetailsPage() {
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                <span style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{product?.price?.toFixed(2) || '0.00'}</span>
-                {product?.originalPrice && (
-                  <>
-                    <span style={{ textDecoration: 'line-through', color: '#999' }}>₹{product.originalPrice.toFixed(2)}</span>
-                    <span style={{ color: '#4CAF50', fontWeight: 'bold' }}>
-                      {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                    </span>
-                  </>
+                <span style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{product?.sellingPrice?.toFixed(2) || '0.00'}</span>
+                {product?.price && (
+                  <span style={{ textDecoration: 'line-through', color: '#999' }}>₹{product.price.toFixed(2)}</span>
                 )}
+                {Math.round(((product.price - product.sellingPrice) / product.price) * 100)}% OFF
               </div>
               
               <p style={{ color: '#666', marginBottom: '10px', fontSize: '14px' }}>inclusive of all the taxes</p>
@@ -527,7 +523,7 @@ function ProductDetailsPage() {
                             <span style={{ color: '#FFD700' }}>★</span>
                             <span>{relatedProduct.rating || '0'}</span>
                           </div>
-                          <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>₹{relatedProduct.price?.toFixed(2) || '0.00'}</p>
+                          <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>₹{relatedProduct.sellingPrice?.toFixed(2) || '0.00'}</p>
                           <div style={{ display: 'flex', gap: '10px' }}>
                             <button 
                               style={{
