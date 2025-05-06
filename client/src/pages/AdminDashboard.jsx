@@ -281,10 +281,10 @@ const AdminDashboard = () => {
         }
       );
       
-      // Update form data with the image URL from the server
+      // Update form data with the Cloudinary URL
       setFormData(prev => ({
         ...prev,
-        imageUrl: `http://localhost:5001${response.data.filePath}`
+        imageUrl: response.data.filePath // This is now the Cloudinary URL
       }));
       
       setToastMessage('Image uploaded successfully');
