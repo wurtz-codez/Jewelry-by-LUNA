@@ -56,6 +56,7 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
         whileHover={cardAnimation.whileHover}
         className={`group flex flex-col h-full border rounded-b-[20px] rounded-t-[32px] w-full bg-white ${isOutOfStock ? 'opacity-75' : ''}`}
       >
+
         {/* Product Image - Responsive height with top border radius of 32px */}
         <motion.div 
           whileHover={imageAnimation.whileHover}

@@ -16,9 +16,11 @@ const NewArrivals = () => {
     const fetchNewArrivals = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/jewelry`);
-        const newArrivals = response.data
+        console.log('API Response:', response.data);
+        const newArrivals = response.data.products
           .filter(product => product.tags?.includes('new arrival'))
           .slice(0, 4);
+        console.log('Filtered New Arrivals:', newArrivals);
         setProducts(newArrivals);
       } catch (err) {
         console.error('Failed to fetch new arrivals:', err);
