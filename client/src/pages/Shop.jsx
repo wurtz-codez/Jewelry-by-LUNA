@@ -7,6 +7,7 @@ import bannerImage from '../assets/Shop-page-banner.png';
 import axios from 'axios';
 import { useShop } from '../contexts/ShopContext';
 import { useLocation } from 'react-router-dom';
+import ProductCard from '../assets/cards/ProductCard';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -146,7 +147,7 @@ const Shop = () => {
   };
   
   return (
-    <div className="shop-page">
+    <div className="shop-page bg-white">
       <Navbar />
       
       {/* Shop Banner */}
@@ -242,16 +243,16 @@ const Shop = () => {
       </div>
       
       {/* Products Display */}
-      <div className="products-container">
+      <div className="products-container grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-10 px-4 sm:px-6 lg:px-32 py-8 auto-rows-fr">
         {loading ? (
-          <div className="flex justify-center items-center w-full py-20">
+          <div className="col-span-full flex justify-center items-center w-full py-20">
             <div className="animate-spin text-gray-500 mr-2">
               <FiLoader size={30} />
             </div>
             <p>Loading products...</p>
           </div>
         ) : error ? (
-          <div className="text-center py-12 bg-red-50 rounded-lg shadow-md w-full">
+          <div className="col-span-full text-center py-12 bg-red-50 rounded-lg shadow-md w-full">
             <p className="text-red-500">{error}</p>
             <button 
               onClick={fetchProducts}
@@ -261,64 +262,32 @@ const Shop = () => {
             </button>
           </div>
         ) : filteredProducts.length > 0 ? (
-          filteredProducts.map(product => (
-            <div 
-              key={product._id} 
-              className="product-card"
-              onClick={() => handleProductClick(product._id)}
-              style={{ cursor: 'pointer' }}
-            >
-              <div className="product-image">
-                <img 
-                  src={
-                    product.imageUrl.startsWith('http') 
-                      ? product.imageUrl 
-                      : product.imageUrl.startsWith('/uploads') 
-                      ? `${API_BASE_URL}${product.imageUrl}`
-                      : '/placeholder.svg'
-                  }
-                  alt={product.name}
+          filteredProducts.map(product => {
+            // Format the product data to match ProductCard expectations
+            const formattedProduct = {
+              ...product,
+              images: [{
+                url: product.imageUrl.startsWith('http') 
+                  ? product.imageUrl 
+                  : product.imageUrl.startsWith('/uploads') 
+                  ? `${API_BASE_URL}${product.imageUrl}`
+                  : '/placeholder.svg'
+              }]
+            };
+
+            return (
+              <div key={product._id} className="w-full h-full">
+                <ProductCard
+                  product={formattedProduct}
+                  onAddToCart={handleAddToCart}
+                  onWishlistToggle={handleAddToWishlist}
+                  isInWishlist={wishlist.some(item => item._id === product._id)}
                 />
-                {product.tags && product.tags.map((tag, index) => (
-                  <div key={index} className={`product-tag ${tag.replace(/\s+/g, '-')}`}>
-                    {tag}
-                  </div>
-                ))}
               </div>
-              <div className="product-info">
-                <h3 className="product-name">{product.name}</h3>
-                <p className="product-price">₹{product.price.toFixed(2)}</p>
-                <div className="product-rating">
-                  <FiStar className="star-icon" />
-                  <span>{product.rating || '4.5'}</span>
-                </div>
-                <div className="product-actions">
-                  <button 
-                    className="wishlist-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAddToWishlist(product);
-                    }}
-                  >
-                    <FiHeart 
-                      className={wishlist.some(item => item._id === product._id) ? 'active' : ''} 
-                    />
-                  </button>
-                  <button 
-                    className="add-to-cart-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAddToCart(product);
-                    }}
-                  >
-                    <FiShoppingCart />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
+            );
+          })
         ) : (
-          <div className="text-center py-12">
+          <div className="col-span-full text-center py-12">
             <p>No products found matching your criteria.</p>
           </div>
         )}

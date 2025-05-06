@@ -2,7 +2,7 @@ import { FiInstagram, FiFacebook, FiTwitter, FiMail } from 'react-icons/fi'
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-50 py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20">
+    <footer className="bg-neutral py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 border-t border-secondary-washed">
       <div className="mx-4 sm:mx-6 md:mx-8 lg:mx-16 xl:mx-24 2xl:mx-32">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-10 lg:gap-12 xl:gap-16">
           {/* Brand Section */}
