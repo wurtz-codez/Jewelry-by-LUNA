@@ -184,7 +184,8 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/jewelry`);
-      setProducts(response.data || []);
+      // The API returns an object with a products array
+      setProducts(Array.isArray(response.data.products) ? response.data.products : []);
     } catch (error) {
       console.error('Error fetching products:', error);
       setToastMessage('Failed to fetch products');
@@ -1184,46 +1185,63 @@ const AdminDashboard = () => {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="products-table">
-                        <thead>
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
                           <tr>
-                            <th>Image</th>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Discount</th>
-                            <th>Selling Price</th>
-                            <th>Stock</th>
-                            <th>Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selling Price</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="bg-white divide-y divide-gray-200">
                           {products.map(product => (
-                            <tr key={product._id}>
-                              <td>
+                            <tr key={product._id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
                                 <img 
                                   src={product.imageUrl} 
                                   alt={product.name} 
-                                  className="product-thumbnail"
+                                  className="h-16 w-16 object-cover rounded-md"
                                 />
                               </td>
-                              <td>{product.name}</td>
-                              <td>₹{product.price.toFixed(2)}</td>
-                              <td>₹{product.discount.toFixed(2)}</td>
-                              <td>₹{product.sellingPrice.toFixed(2)}</td>
-                              <td>{product.stock}</td>
-                              <td>
-                                <button 
-                                  onClick={() => handleEdit(product)}
-                                  className="edit-btn"
-                                >
-                                  <FiEdit />
-                                </button>
-                                <button 
-                                  onClick={() => handleDelete(product._id)}
-                                  className="delete-btn"
-                                >
-                                  <FiTrash2 />
-                                </button>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                                <div className="text-sm text-gray-500">{product.description}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ₹{product.price.toFixed(2)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ₹{product.discount.toFixed(2)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ₹{product.sellingPrice.toFixed(2)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                  product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {product.stock}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div className="flex space-x-3">
+                                  <button 
+                                    onClick={() => handleEdit(product)}
+                                    className="text-indigo-600 hover:text-indigo-900"
+                                  >
+                                    <FiEdit size={18} />
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDelete(product._id)}
+                                    className="text-red-600 hover:text-red-900"
+                                  >
+                                    <FiTrash2 size={18} />
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}

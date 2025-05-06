@@ -14,10 +14,7 @@ import {
 } from '../../animations/productCard';
 
 const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) => {
-  // Temporary values for design purposes
-  const tempSellingPrice = 12999;
-  const tempOriginalPrice = 15999;
-  const tempDiscount = 18; // percentage
+  const isOutOfStock = product?.stock === 0;
 
   return (
     <motion.div 
@@ -25,13 +22,13 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
       animate={cardAnimation.animate}
       transition={cardAnimation.transition}
       whileHover={cardAnimation.whileHover}
-      className="group flex flex-col h-full border rounded-b-[20px] rounded-t-[32px] w-full bg-white"
+      className={`group flex flex-col h-full border rounded-b-[20px] rounded-t-[32px] w-full bg-white ${isOutOfStock ? 'opacity-75' : ''}`}
     >
       {/* Product Image - Responsive height with top border radius of 32px */}
       <motion.div 
         whileHover={imageAnimation.whileHover}
         transition={imageAnimation.transition}
-        className="w-full aspect-square overflow-hidden bg-gray-200 rounded-[32px]"
+        className="w-full aspect-square overflow-hidden bg-gray-200 rounded-[32px] relative"
       >
         <Link to={`/product/${product?._id || '#'}`}>
           <img
@@ -43,6 +40,13 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
             }}
           />
         </Link>
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span className="text-white text-xl font-bold bg-red-600 px-4 py-2 rounded-full">
+              OUT OF STOCK
+            </span>
+          </div>
+        )}
       </motion.div>
 
       {/* Product Details - in a container with bottom border radius of 20px */}
@@ -91,15 +95,22 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
       {/* Action Buttons at the bottom */}
       <div className="mt-auto pt-2 sm:pt-3 flex gap-2 sm:gap-2 items-center">
         <motion.button
-          whileHover={addToCartButtonAnimation.whileHover}
-          whileTap={addToCartButtonAnimation.whileTap}
+          whileHover={!isOutOfStock ? addToCartButtonAnimation.whileHover : {}}
+          whileTap={!isOutOfStock ? addToCartButtonAnimation.whileTap : {}}
           onClick={(e) => {
             e.preventDefault();
-            onAddToCart && onAddToCart(product);
+            if (!isOutOfStock && onAddToCart) {
+              onAddToCart(product);
+            }
           }}
-          className="flex-1 bg-primary text-white text-sm sm:text-base md:text-xl py-2 sm:py-2 rounded-full hover:bg-white/0 hover:text-primary border hover:border-primary transition-colors"
+          disabled={isOutOfStock}
+          className={`flex-1 text-sm sm:text-base md:text-xl py-2 sm:py-2 rounded-full transition-colors ${
+            isOutOfStock 
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+              : 'bg-primary text-white hover:bg-white/0 hover:text-primary border hover:border-primary'
+          }`}
         >
-          Add to Cart
+          {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
         </motion.button>
 
         <motion.button
