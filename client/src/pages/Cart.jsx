@@ -52,7 +52,10 @@ const Cart = () => {
   const [errors, setErrors] = useState({});
 
   // Calculate subtotal
-  const subtotal = cart.reduce((total, item) => total + (item.jewelry.sellingPrice * item.quantity), 0);
+  const subtotal = cart.reduce((total, item) => {
+    if (!item?.jewelry?.sellingPrice) return total;
+    return total + (item.jewelry.sellingPrice * item.quantity);
+  }, 0);
   
   // Shipping cost (could be calculated based on location, weight, etc.)
   const shipping = 15.00;
@@ -304,8 +307,8 @@ const Cart = () => {
                             </button>
                           </div>
                         </td>
-                        <td className="py-4 text-right">₹{item.jewelry.sellingPrice.toFixed(2)}</td>
-                        <td className="py-4 text-right">₹{(item.jewelry.sellingPrice * item.quantity).toFixed(2)}</td>
+                        <td className="py-4 text-right">₹{item.jewelry.sellingPrice?.toFixed(2) || '0.00'}</td>
+                        <td className="py-4 text-right">₹{((item.jewelry.sellingPrice || 0) * item.quantity).toFixed(2)}</td>
                         <td className="py-4 text-right">
                           <button 
                             onClick={() => handleRemoveItem(item.jewelry._id)}
