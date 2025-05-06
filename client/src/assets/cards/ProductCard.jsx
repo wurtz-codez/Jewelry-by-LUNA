@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import placeholderImage from '../necklace-image.png';
+import placeholderImage from '../placeholder.png';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import {
@@ -25,7 +25,7 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
       animate={cardAnimation.animate}
       transition={cardAnimation.transition}
       whileHover={cardAnimation.whileHover}
-      className="group flex flex-col border rounded-b-[20px] rounded-t-[32px] w-full"
+      className="group flex flex-col border rounded-b-[20px] rounded-t-[32px] w-full bg-white"
     >
       {/* Product Image - Responsive height with top border radius of 32px */}
       <motion.div 
