@@ -14,6 +14,8 @@ import {
   heartIconAnimation
 } from '../../animations/productCard';
 
+const API_BASE_URL = 'http://localhost:5001/api';
+
 const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) => {
   const isOutOfStock = product?.stock === 0;
   const [showToast, setShowToast] = useState(false);
@@ -47,6 +49,20 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
     }
   };
 
+  const getImageUrl = (product) => {
+    if (!product?.imageUrl) return placeholderImage;
+    
+    if (product.imageUrl.startsWith('http')) {
+      return product.imageUrl;
+    }
+    
+    if (product.imageUrl.startsWith('/uploads')) {
+      return `${API_BASE_URL}${product.imageUrl}`;
+    }
+    
+    return placeholderImage;
+  };
+
   return (
     <>
       <motion.div 
@@ -56,7 +72,6 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
         whileHover={cardAnimation.whileHover}
         className={`group flex flex-col h-full border rounded-b-[20px] rounded-t-[32px] w-full bg-white ${isOutOfStock ? 'opacity-75' : ''}`}
       >
-
         {/* Product Image - Responsive height with top border radius of 32px */}
         <motion.div 
           whileHover={imageAnimation.whileHover}
@@ -65,10 +80,11 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
         >
           <Link to={`/product/${product?._id || '#'}`}>
             <img
-              src={product?.images?.[0]?.url || placeholderImage}
+              src={getImageUrl(product)}
               alt={product?.name || "Jewelry Product"}
               className="h-full w-full object-cover object-center group-hover:opacity-75"
               onError={(e) => {
+                e.target.onerror = null;
                 e.target.src = placeholderImage;
               }}
             />
@@ -88,38 +104,32 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
             {/* Heading */}
             <motion.h3 
               whileHover={titleAnimation.whileHover}
-              className="text-sm sm:text-lg font-bold text-gray-900 line-clamp-1"
+              className="text-sm sm:text-base md:text-lg font-montserrat-alt font-medium text-gray-900 line-clamp-2"
             >
-              {product?.name}
+              {product?.name || "Product Name"}
             </motion.h3>
 
-            {/* Category */}
-            <p className="mt-0.5 sm:mt-1 text-xs font-cinzel text-secondary">
-              {product?.categories?.[0] || 'Jewelry'}
-            </p>
-
-            {/* Price - showing both original price (striked through) and selling price */}
-            <div className="mt-1 sm:mt-2 flex justify-between space-x-1 sm:space-x-2">
-              {product.sellingPrice && product.sellingPrice < product.price ? (
+            {/* Price and Discount */}
+            <div className="mt-1 sm:mt-2 flex items-center gap-2">
+              {product?.discount > 0 ? (
                 <>
-                  <div className="flex items-center space-x-1 sm:space-x-2">
-                    <p className="text-sm sm:text-lg font-montserrat-alt font-medium text-gray-900">₹{product.sellingPrice.toLocaleString('en-IN')}</p>
-                    <p className="text-xs sm:text-base font-montserrat-alt text-secondary-washed line-through">₹{product.price.toLocaleString('en-IN')}</p>
-                  </div>
-                  {product.price > 0 && product.sellingPrice > 0 && (
-                    <motion.div 
-                      initial={discountBadgeAnimation.initial}
-                      animate={discountBadgeAnimation.animate}
-                      className="bg-green-100 rounded-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-center text-xs font-semibold text-green-800"
-                    >
-                      <span className="text-xs font-montserrat-alt text-green-600">
-                        {Math.round((1 - product.sellingPrice / product.price) * 100)}% off
-                      </span>
-                    </motion.div>
-                  )}
+                  <motion.div 
+                    whileHover={discountBadgeAnimation.whileHover}
+                    className="flex items-center gap-2"
+                  >
+                    <span className="text-sm sm:text-base md:text-lg font-montserrat-alt font-medium text-gray-900">
+                      ₹{product?.sellingPrice?.toLocaleString('en-IN') || '0'}
+                    </span>
+                    <span className="text-xs sm:text-sm text-gray-500 line-through">
+                      ₹{product?.price?.toLocaleString('en-IN') || '0'}
+                    </span>
+                    <span className="text-xs sm:text-sm font-medium text-green-600">
+                      {Math.round(((product.price - product.sellingPrice) / product.price) * 100)}% OFF
+                    </span>
+                  </motion.div>
                 </>
               ) : (
-                <p className="text-sm sm:text-lg font-montserrat-alt font-medium text-gray-900">₹{product.price.toLocaleString('en-IN')}</p>
+                <p className="text-sm sm:text-lg font-montserrat-alt font-medium text-gray-900">₹{product?.price?.toLocaleString('en-IN') || '0'}</p>
               )}
             </div>
           </Link>
@@ -153,16 +163,16 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
               aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
             >
               <motion.div
-                initial={heartIconAnimation.initial}
-                animate={heartIconAnimation.animate(isInWishlist)}
-                transition={heartIconAnimation.transition}
+                whileHover={heartIconAnimation.whileHover}
+                whileTap={heartIconAnimation.whileTap}
               >
-                {isInWishlist ? <FaHeart className="text-white" /> : <FaRegHeart />}
+                {isInWishlist ? <FaHeart /> : <FaRegHeart />}
               </motion.div>
             </motion.button>
           </div>
         </div>
       </motion.div>
+
       {showToast && (
         <Toast
           message={toastMessage}
