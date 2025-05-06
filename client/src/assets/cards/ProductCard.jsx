@@ -32,7 +32,7 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
       >
         <Link to={`/product/${product?._id || '#'}`}>
           <img
-            src={product?.images?.[0]?.url || placeholderImage}
+            src={product?.imageUrl || placeholderImage}
             alt={product?.name || "Jewelry Product"}
             className="h-full w-full object-cover object-center group-hover:opacity-75"
             onError={(e) => {
