@@ -2,6 +2,11 @@ import { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Toast from '../components/Toast';
 import { useAuth } from '../contexts/AuthContext';
+import { motion } from 'framer-motion';
+import { FiMail, FiLock } from 'react-icons/fi';
+import Logo from '../components/Logo';
+import loginBg from '../assets/login-bg2.png';
+import { backgroundAnimation, overlayAnimation, errorAnimation, banModalAnimation } from '../animations/loginAnimation';
 
 const Login = () => {
   const { login, error: authError } = useAuth();
@@ -57,67 +62,102 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        {/* Logo/Brand Section */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-purple-600 mb-2">LUNA</h1>
-          <p className="text-gray-500 text-sm mb-8">Exquisite Jewelry Collection</p>
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">
-            Welcome Back
-          </h2>
-          <p className="text-gray-600 mb-8">
-            Please sign in to your account to continue
-          </p>
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      {/* Background Image with Animation */}
+      <motion.div 
+        className="absolute inset-0"
+        {...backgroundAnimation}
+        style={{
+          backgroundImage: `url(${loginBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+
+      {/* Overlay */}
+      <motion.div 
+        className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
+        {...overlayAnimation}
+      />
+
+      <div className="w-full max-w-[480px] px-8 py-12 relative z-10">
+        {/* Logo Section */}
+        <div className="text-center mb-12">
+          <div className="flex justify-center mb-4">
+            <Logo size="large" />
+          </div>
         </div>
 
         {/* Form Section */}
-        <div className="bg-white p-8 rounded-2xl shadow-xl space-y-6">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
+        <div className="bg-white/90 backdrop-blur-sm p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/20">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-cinzel text-[#2C1810] mb-3 tracking-wide">
+              Welcome Back
+            </h2>
+            <p className="text-[#8B7355] font-cormorant text-lg">
+              Please sign in to your account
+            </p>
+          </div>
+
+          <form className="space-y-8" onSubmit={handleSubmit}>
+            <div className="space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-[#8B7355] mb-2 font-cormorant">
                   Email address
                 </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-150 ease-in-out"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <FiMail className="h-5 w-5 text-[#8B7355] group-focus-within:text-[#2C1810] transition-colors duration-200" />
+                  </div>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    className="w-full pl-12 pr-4 py-4 bg-white/80 border border-[#F5E6D3] rounded-xl placeholder-[#8B7355]/60 text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:border-[#2C1810] transition-all duration-200 font-cormorant text-lg"
+                    placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-[#8B7355] mb-2 font-cormorant">
                   Password
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-150 ease-in-out"
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <FiLock className="h-5 w-5 text-[#8B7355] group-focus-within:text-[#2C1810] transition-colors duration-200" />
+                  </div>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    className="w-full pl-12 pr-4 py-4 bg-white/80 border border-[#F5E6D3] rounded-xl placeholder-[#8B7355]/60 text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:border-[#2C1810] transition-all duration-200 font-cormorant text-lg"
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
             </div>
 
             {error && (
-              <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">
+              <motion.div 
+                className="text-[#8B7355] text-sm text-center bg-[#F5E6D3]/30 p-4 rounded-xl font-cormorant"
+                {...errorAnimation}
+              >
                 {error}
-              </div>
+              </motion.div>
             )}
 
             <div>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-150 ease-in-out transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-4 px-6 border border-transparent rounded-xl text-lg font-medium text-white bg-primary hover:bg-[#2C1810]/90 focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed font-cormorant tracking-wide"
               >
                 {isLoading ? (
                   <span className="flex items-center">
@@ -133,17 +173,19 @@ const Login = () => {
               </button>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="text-sm">
-                <Link to="/forgot-password" className="font-medium text-purple-600 hover:text-purple-500 transition duration-150 ease-in-out">
-                  Forgot your password?
-                </Link>
-              </div>
-              <div className="text-sm">
-                <Link to="/register" className="font-medium text-purple-600 hover:text-purple-500 transition duration-150 ease-in-out">
-                  Create an account
-                </Link>
-              </div>
+            <div className="flex items-center justify-between pt-4">
+              <Link 
+                to="/forgot-password" 
+                className="text-[#8B7355] hover:text-[#2C1810] transition-colors duration-200 font-cormorant"
+              >
+                Forgot password?
+              </Link>
+              <Link 
+                to="/register" 
+                className="text-[#8B7355] hover:text-[#2C1810] transition-colors duration-200 font-cormorant"
+              >
+                Create account
+              </Link>
             </div>
           </form>
         </div>
@@ -160,31 +202,34 @@ const Login = () => {
 
       {/* Ban Modal */}
       {showBanModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full m-4 transform transition-all">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <motion.div 
+            className="bg-white/90 backdrop-blur-sm rounded-3xl p-10 max-w-md w-full mx-8 border border-white/20"
+            {...banModalAnimation}
+          >
             <div className="flex flex-col items-center">
-              <div className="mb-4 p-2 rounded-full bg-red-100">
-                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mb-6 p-3 rounded-full bg-[#F5E6D3]">
+                <svg className="w-8 h-8 text-[#8B7355]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              <h3 className="text-2xl font-cinzel font-semibold text-[#2C1810] mb-6">
                 Account Banned
               </h3>
-              <div className="space-y-4 text-center">
-                <p className="text-gray-600">
+              <div className="space-y-6 text-center">
+                <p className="text-[#8B7355] font-cormorant text-lg">
                   Your account has been banned from accessing the platform.
                 </p>
                 {banDetails?.reason && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-gray-500 mb-1">Reason:</p>
-                    <p className="text-gray-700">{banDetails.reason}</p>
+                  <div className="bg-[#F5E6D3]/30 p-6 rounded-xl">
+                    <p className="text-sm font-medium text-[#8B7355] mb-2">Reason:</p>
+                    <p className="text-[#2C1810] font-cormorant text-lg">{banDetails.reason}</p>
                   </div>
                 )}
                 {banDetails?.expiry && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-gray-500 mb-1">Ban Expires:</p>
-                    <p className="text-gray-700">
+                  <div className="bg-[#F5E6D3]/30 p-6 rounded-xl">
+                    <p className="text-sm font-medium text-[#8B7355] mb-2">Ban Expires:</p>
+                    <p className="text-[#2C1810] font-cormorant text-lg">
                       {new Date(banDetails.expiry).toLocaleDateString()}
                     </p>
                   </div>
@@ -192,13 +237,13 @@ const Login = () => {
               </div>
               <button
                 type="button"
-                className="mt-6 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-150 ease-in-out"
+                className="mt-8 px-8 py-3 bg-[#2C1810] text-white rounded-xl hover:bg-[#2C1810]/90 transition-all duration-200 font-cormorant text-lg"
                 onClick={() => setShowBanModal(false)}
               >
                 Close
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>
