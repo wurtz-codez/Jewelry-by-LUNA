@@ -1,21 +1,25 @@
 import { useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
-import Toast from '../components/Toast';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { motion } from 'framer-motion';
+import { FiMail, FiLock, FiUser } from 'react-icons/fi';
+import Logo from '../components/Logo';
+import registerBg from '../assets/login-bg3.png';
+import { backgroundAnimation, overlayAnimation, errorAnimation, successModalAnimation } from '../animations/registerAnimation';
 
 const Register = () => {
   const { register, error: authError } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
   
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
-  const [showToast, setShowToast] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -26,109 +30,223 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
     
     try {
-      const success = await register(formData.name, formData.email, formData.password);
+      const result = await register(formData.email, formData.password, formData.name);
       
-      if (success) {
-        setShowToast(true);
+      if (result.success) {
+        setShowSuccessModal(true);
         setTimeout(() => {
-          navigate(from);
-        }, 1000);
+          navigate('/');
+        }, 2000);
       } else {
-        setError(authError || 'Registration failed');
+        setError(result.error || 'Registration failed');
       }
     } catch (err) {
       setError('An error occurred during registration');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-100 to-rose-100 py-12 px-4 sm:px-6 lg:px-8 relative">
-      <div className="absolute inset-0 bg-white/30 backdrop-blur-sm"></div>
-      {showToast && (
-        <Toast
-          message="Successfully registered!"
-          type="success"
-          onClose={() => setShowToast(false)}
-        />
-      )}
-      <div className="max-w-md w-full space-y-8 relative">
-        <div className="bg-white/40 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-white/50">
-          <div>
-            <h2 className="text-center text-4xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      {/* Background Image with Animation */}
+      <motion.div 
+        className="absolute inset-0"
+        {...backgroundAnimation}
+        style={{
+          backgroundImage: `url(${registerBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+
+      {/* Overlay */}
+      <motion.div 
+        className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
+        {...overlayAnimation}
+      />
+
+      <div className="w-full max-w-[480px] px-8 py-12 relative z-10">
+        {/* Logo Section */}
+        <div className="text-center mb-12">
+          <div className="flex justify-center mb-4">
+            <Logo size="large" />
+          </div>
+        </div>
+
+        {/* Form Section */}
+        <div className="bg-white/90 backdrop-blur-sm p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/20">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-cinzel text-[#2C1810] mb-3 tracking-wide">
               Create Account
             </h2>
-            <p className="text-center text-gray-600">Join our jewelry community</p>
+            <p className="text-[#8B7355] font-cormorant text-lg">
+              Join our exclusive jewelry collection
+            </p>
           </div>
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="bg-red-100/80 backdrop-blur-sm border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
-                <span className="block sm:inline">{error}</span>
-              </div>
-            )}
-            <div className="space-y-4">
+
+          <form className="space-y-8" onSubmit={handleSubmit}>
+            <div className="space-y-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  className="appearance-none relative block w-full px-4 py-3 border border-gray-300/50 placeholder-gray-500 text-gray-900 rounded-lg bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out"
-                  placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={handleChange}
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="appearance-none relative block w-full px-4 py-3 border border-gray-300/50 placeholder-gray-500 text-gray-900 rounded-lg bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
+                <label htmlFor="name" className="block text-sm font-medium text-[#8B7355] mb-2 font-cormorant">
+                  Full Name
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <FiUser className="h-5 w-5 text-[#8B7355] group-focus-within:text-[#2C1810] transition-colors duration-200" />
+                  </div>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    className="w-full pl-12 pr-4 py-4 bg-white/80 border border-[#F5E6D3] rounded-xl placeholder-[#8B7355]/60 text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:border-[#2C1810] transition-all duration-200 font-cormorant text-lg"
+                    placeholder="Enter your full name"
+                    value={formData.name}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className="appearance-none relative block w-full px-4 py-3 border border-gray-300/50 placeholder-gray-500 text-gray-900 rounded-lg bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 ease-in-out"
-                  placeholder="Create a password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
+                <label htmlFor="email" className="block text-sm font-medium text-[#8B7355] mb-2 font-cormorant">
+                  Email address
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <FiMail className="h-5 w-5 text-[#8B7355] group-focus-within:text-[#2C1810] transition-colors duration-200" />
+                  </div>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    className="w-full pl-12 pr-4 py-4 bg-white/80 border border-[#F5E6D3] rounded-xl placeholder-[#8B7355]/60 text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:border-[#2C1810] transition-all duration-200 font-cormorant text-lg"
+                    placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-[#8B7355] mb-2 font-cormorant">
+                  Password
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <FiLock className="h-5 w-5 text-[#8B7355] group-focus-within:text-[#2C1810] transition-colors duration-200" />
+                  </div>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    className="w-full pl-12 pr-4 py-4 bg-white/80 border border-[#F5E6D3] rounded-xl placeholder-[#8B7355]/60 text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:border-[#2C1810] transition-all duration-200 font-cormorant text-lg"
+                    placeholder="Create a password"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#8B7355] mb-2 font-cormorant">
+                  Confirm Password
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <FiLock className="h-5 w-5 text-[#8B7355] group-focus-within:text-[#2C1810] transition-colors duration-200" />
+                  </div>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    className="w-full pl-12 pr-4 py-4 bg-white/80 border border-[#F5E6D3] rounded-xl placeholder-[#8B7355]/60 text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:border-[#2C1810] transition-all duration-200 font-cormorant text-lg"
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
             </div>
+
+            {error && (
+              <motion.div 
+                className="text-[#8B7355] text-sm text-center bg-[#F5E6D3]/30 p-4 rounded-xl font-cormorant"
+                {...errorAnimation}
+              >
+                {error}
+              </motion.div>
+            )}
 
             <div>
               <button
                 type="submit"
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-200 ease-in-out transform hover:-translate-y-1"
+                disabled={isLoading}
+                className="w-full flex justify-center py-4 px-6 border border-transparent rounded-xl text-lg font-medium text-white bg-primary hover:bg-[#2C1810]/90 focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed font-cormorant tracking-wide"
               >
-                Create Account
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Creating account...
+                  </span>
+                ) : (
+                  'Create Account'
+                )}
               </button>
             </div>
 
-            <div className="text-center mt-4">
-              <p className="text-sm text-gray-600">
+            <div className="text-center pt-4">
+              <p className="text-[#8B7355] font-cormorant">
                 Already have an account?{' '}
-                <Link to="/login" className="font-medium text-purple-600 hover:text-purple-500 transition duration-150 ease-in-out">
-                  Sign in here
+                <Link 
+                  to="/login" 
+                  className="text-[#2C1810] hover:text-[#2C1810]/80 transition-colors duration-200"
+                >
+                  Sign in
                 </Link>
               </p>
             </div>
           </form>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <motion.div 
+            className="bg-white/90 backdrop-blur-sm rounded-3xl p-10 max-w-md w-full mx-8 border border-white/20"
+            {...successModalAnimation}
+          >
+            <div className="flex flex-col items-center">
+              <div className="mb-6 p-3 rounded-full bg-[#F5E6D3]">
+                <svg className="w-8 h-8 text-[#8B7355]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-cinzel font-semibold text-[#2C1810] mb-6">
+                Registration Successful!
+              </h3>
+              <p className="text-[#8B7355] font-cormorant text-lg text-center">
+                Welcome to Jewelry by Luna. Your account has been created successfully.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };
