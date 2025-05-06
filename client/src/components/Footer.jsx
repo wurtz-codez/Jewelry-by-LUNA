@@ -2,40 +2,76 @@ import { FiInstagram, FiFacebook, FiTwitter, FiMail } from 'react-icons/fi'
 
 const Footer = () => {
   return (
-    <footer className="footer">
-      <div className="footer-content">
-        <div className="footer-section">
-          <h3>JEWELRY BY LUNA</h3>
-          <p>Elegant jewelry for every occasion.</p>
-          <div className="social-icons">
-            <a href="#" aria-label="Instagram"><FiInstagram /></a>
-            <a href="#" aria-label="Facebook"><FiFacebook /></a>
-            <a href="#" aria-label="Twitter"><FiTwitter /></a>
-            <a href="#" aria-label="Email"><FiMail /></a>
+    <footer className="bg-gray-50 py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20">
+      <div className="mx-4 sm:mx-6 md:mx-8 lg:mx-16 xl:mx-24 2xl:mx-32">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-10 lg:gap-12 xl:gap-16">
+          {/* Brand Section */}
+          <div className="space-y-3 sm:space-y-4 md:space-y-5">
+            <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-cinzel text-primary">JEWELRY BY LUNA</h3>
+            <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant italic">
+              Elegant jewelry for every occasion.
+            </p>
+            <div className="flex space-x-3 sm:space-x-4">
+              <a href="#" className="text-gray-600 hover:text-primary transition-colors" aria-label="Instagram">
+                <FiInstagram className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+              </a>
+              <a href="#" className="text-gray-600 hover:text-primary transition-colors" aria-label="Facebook">
+                <FiFacebook className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+              </a>
+              <a href="#" className="text-gray-600 hover:text-primary transition-colors" aria-label="Twitter">
+                <FiTwitter className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+              </a>
+              <a href="#" className="text-gray-600 hover:text-primary transition-colors" aria-label="Email">
+                <FiMail className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+              </a>
+            </div>
+          </div>
+          
+          {/* Quick Links */}
+          <div className="space-y-3 sm:space-y-4 md:space-y-5">
+            <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-cinzel text-primary">QUICK LINKS</h3>
+            <ul className="space-y-2 sm:space-y-3">
+              <li>
+                <a href="#" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
+                  Home
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
+                  Shop
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
+                  About
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
+                  Contact
+                </a>
+              </li>
+            </ul>
+          </div>
+          
+          {/* Contact Info */}
+          <div className="space-y-3 sm:space-y-4 md:space-y-5">
+            <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-cinzel text-primary">CONTACT US</h3>
+            <div className="space-y-2 sm:space-y-3">
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">123 Jewelry Lane</p>
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">New York, NY 10001</p>
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">info@jewelrybyluna.com</p>
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">(123) 456-7890</p>
+            </div>
           </div>
         </div>
         
-        <div className="footer-section">
-          <h3>QUICK LINKS</h3>
-          <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Shop</a></li>
-            <li><a href="#">About</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
+        {/* Bottom Bar */}
+        <div className="mt-8 sm:mt-10 md:mt-12 lg:mt-16 pt-6 sm:pt-8 border-t border-gray-200">
+          <p className="text-center text-xs sm:text-sm md:text-base text-gray-600 font-cormorant">
+            &copy; {new Date().getFullYear()} Jewelry by Luna. All rights reserved.
+          </p>
         </div>
-        
-        <div className="footer-section">
-          <h3>CONTACT US</h3>
-          <p>123 Jewelry Lane</p>
-          <p>New York, NY 10001</p>
-          <p>info@jewelrybyluna.com</p>
-          <p>(123) 456-7890</p>
-        </div>
-      </div>
-      
-      <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} Jewelry by Luna. All rights reserved.</p>
       </div>
     </footer>
   )

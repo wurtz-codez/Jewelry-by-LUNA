@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import placeholderImage from '../assets/necklace-image.png';
+import placeholderImage from '../assets/placeholder.png';
 import { useShop } from '../contexts/ShopContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
