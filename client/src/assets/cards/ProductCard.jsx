@@ -25,7 +25,7 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
       animate={cardAnimation.animate}
       transition={cardAnimation.transition}
       whileHover={cardAnimation.whileHover}
-      className="group flex flex-col border rounded-b-[20px] rounded-t-[32px] w-full bg-white"
+      className="group flex flex-col h-full border rounded-b-[20px] rounded-t-[32px] w-full bg-white"
     >
       {/* Product Image - Responsive height with top border radius of 32px */}
       <motion.div 
@@ -57,7 +57,9 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
           </motion.h3>
 
           {/* Category */}
-          <p className="mt-0.5 sm:mt-1 text-xs font-cinzel text-secondary">{product?.categories?.[0]}</p>
+          <p className="mt-0.5 sm:mt-1 text-xs font-cinzel text-secondary">
+            {product?.categories?.[0] || 'Jewelry'}
+          </p>
 
           {/* Price - showing both original price (striked through) and selling price */}
           <div className="mt-1 sm:mt-2 flex justify-between space-x-1 sm:space-x-2">
@@ -87,7 +89,7 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
       </div>
 
       {/* Action Buttons at the bottom */}
-      <div className="pt-2 sm:pt-3 flex gap-2 sm:gap-2 items-center">
+      <div className="mt-auto pt-2 sm:pt-3 flex gap-2 sm:gap-2 items-center">
         <motion.button
           whileHover={addToCartButtonAnimation.whileHover}
           whileTap={addToCartButtonAnimation.whileTap}
