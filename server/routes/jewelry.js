@@ -28,11 +28,78 @@ router.post('/', auth, isAdmin, async (req, res) => {
   }
 });
 
-// Get all jewelry items
+// Get all jewelry items with search, pagination, sorting, and filtering
 router.get('/', async (req, res) => {
   try {
-    const jewelry = await Jewelry.find();
-    res.json(jewelry);
+    const {
+      search,
+      page = 1,
+      limit = 20,
+      sort = 'createdAt',
+      order = 'desc',
+      category,
+      minPrice,
+      maxPrice,
+      tag
+    } = req.query;
+
+    // Build query
+    const query = {};
+
+    // Search in name and description
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Filter by category
+    if (category && category !== 'all') {
+      query.categories = category;
+    }
+
+    // Filter by tag
+    if (tag && tag !== 'all') {
+      query.tags = tag;
+    }
+
+    // Filter by price range
+    if (minPrice || maxPrice) {
+      query.sellingPrice = {};
+      if (minPrice) query.sellingPrice.$gte = Number(minPrice);
+      if (maxPrice) query.sellingPrice.$lte = Number(maxPrice);
+    }
+
+    // Calculate pagination
+    const skip = (Number(page) - 1) * Number(limit);
+
+    // Get total count for pagination
+    const total = await Jewelry.countDocuments(query);
+
+    // Get products with sorting
+    const jewelry = await Jewelry.find(query)
+      .sort({ [sort]: order === 'desc' ? -1 : 1 })
+      .skip(skip)
+      .limit(Number(limit));
+
+    // Get all unique categories and tags for filters
+    const categories = await Jewelry.distinct('categories');
+    const tags = await Jewelry.distinct('tags');
+
+    res.json({
+      products: jewelry,
+      pagination: {
+        total,
+        page: Number(page),
+        pages: Math.ceil(total / Number(limit)),
+        limit: Number(limit)
+      },
+      filters: {
+        categories,
+        tags
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

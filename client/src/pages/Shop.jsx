@@ -1,73 +1,81 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { FiSearch, FiShoppingCart, FiStar, FiLoader, FiRefreshCw, FiHeart } from 'react-icons/fi';
+import { FiSearch, FiShoppingCart, FiStar, FiLoader, FiRefreshCw, FiHeart, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import bannerImage from '../assets/Shop-page-banner.png';
 import axios from 'axios';
 import { useShop } from '../contexts/ShopContext';
-import { useLocation } from 'react-router-dom';
 import ProductCard from '../assets/cards/ProductCard';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
 const Shop = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [priceRange, setPriceRange] = useState([0, 30000]); // Set higher default maximum
+  const [selectedTag, setSelectedTag] = useState('all');
+  const [priceRange, setPriceRange] = useState([0, Infinity]);
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { addToCart, addToWishlist, wishlist } = useShop();
-  const location = useLocation();
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [selectedTag, setSelectedTag] = useState('all');
+  
+  // Pagination and sorting state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [categories, setCategories] = useState([]);
+  const [tags, setTags] = useState([]);
+  
+  // Clear filters on mount
+  useEffect(() => {
+    clearFilters();
+  }, []);
   
   // Parse URL search parameters
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const searchParam = queryParams.get('search');
     const productParam = queryParams.get('product');
+    const pageParam = queryParams.get('page');
+    const categoryParam = queryParams.get('category');
+    const tagParam = queryParams.get('tag');
     
-    if (searchParam) {
-      setSearchTerm(searchParam);
-    }
-    
-    if (productParam) {
-      setSelectedProduct(productParam);
-    }
+    if (searchParam) setSearchTerm(searchParam);
+    if (productParam) setSelectedProduct(productParam);
+    if (pageParam) setCurrentPage(Number(pageParam));
+    if (categoryParam) setSelectedCategory(categoryParam);
+    if (tagParam) setSelectedTag(tagParam);
   }, [location]);
   
-  // Fetch products from the backend API
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-  
-  // Refresh products function
+  // Fetch products with filters
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/jewelry`);
+      const queryParams = new URLSearchParams({
+        page: currentPage,
+        limit: 20,
+        sort: sortBy,
+        order: sortOrder,
+        ...(searchTerm && { search: searchTerm }),
+        ...(selectedCategory !== 'all' && { category: selectedCategory }),
+        ...(selectedTag !== 'all' && { tag: selectedTag }),
+        ...(priceRange[0] > 0 && { minPrice: priceRange[0] }),
+        ...(priceRange[1] < Infinity && { maxPrice: priceRange[1] })
+      });
+
+      const response = await axios.get(`${API_BASE_URL}/jewelry?${queryParams}`);
       
-      if (response.data && Array.isArray(response.data)) {
-        setProducts(response.data);
-        setFilteredProducts(response.data);
-        
-        // If there's a selected product, scroll to it
-        if (selectedProduct) {
-          const productDetails = response.data.find(p => p._id === selectedProduct);
-          if (productDetails) {
-            // You could implement a modal or scroll behavior here
-            // For now, we'll filter to just show this product
-            setFilteredProducts([productDetails]);
-          }
-        }
-        
+      if (response.data) {
+        setProducts(response.data.products);
+        setTotalPages(response.data.pagination.pages);
+        setCategories(response.data.filters.categories);
+        setTags(response.data.filters.tags);
         setError('');
-      } else {
-        setError('Received invalid data format from server');
       }
     } catch (err) {
       setError('Failed to load products. Please try again later.');
@@ -75,39 +83,25 @@ const Shop = () => {
       setLoading(false);
     }
   };
-  
-  // Filter products based on search, category, and price
-  useEffect(() => {
-    let filtered = products;
-    
-    if (searchTerm) {
-      filtered = filtered.filter(product => 
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(product => product.categories.includes(selectedCategory));
-    }
 
-    if (selectedTag !== 'all') {
-      filtered = filtered.filter(product => product.tags.includes(selectedTag));
-    }
+  // Update URL with current filters
+  const updateURL = () => {
+    const queryParams = new URLSearchParams();
+    if (searchTerm) queryParams.set('search', searchTerm);
+    if (currentPage > 1) queryParams.set('page', currentPage);
+    if (selectedCategory !== 'all') queryParams.set('category', selectedCategory);
+    if (selectedTag !== 'all') queryParams.set('tag', selectedTag);
+    if (selectedProduct) queryParams.set('product', selectedProduct);
     
-    if (priceRange[0] > 0 || priceRange[1] < Infinity) {
-      filtered = filtered.filter(
-        product => product.sellingPrice >= priceRange[0] && product.sellingPrice <= priceRange[1]
-      );
-    }
-    
-    setFilteredProducts(filtered);
-  }, [products, searchTerm, selectedCategory, selectedTag, priceRange]);
-  
-  // Get all unique categories and tags from products
-  const allCategories = [...new Set(products.flatMap(product => product.categories))];
-  const allTags = [...new Set(products.flatMap(product => product.tags))];
-  
+    navigate(`/shop?${queryParams.toString()}`);
+  };
+
+  // Effect to fetch products when filters change
+  useEffect(() => {
+    fetchProducts();
+    updateURL();
+  }, [currentPage, searchTerm, selectedCategory, selectedTag, priceRange, sortBy, sortOrder]);
+
   // Handle adding to cart
   const handleAddToCart = (product) => {
     addToCart(product);
@@ -123,29 +117,19 @@ const Shop = () => {
     navigate(`/product/${productId}`);
   };
   
-  // Check if price range is appropriate for products
-  useEffect(() => {
-    if (products.length > 0) {
-      const maxProductPrice = Math.max(...products.map(p => p.sellingPrice));
-      
-      // If our price range maximum is less than the highest priced product
-      if (maxProductPrice > priceRange[1]) {
-        setPriceRange([priceRange[0], maxProductPrice + 1000]); // Add some buffer
-      }
-    }
-  }, [products]);
-  
-  // Clear filters and selected product
+  // Clear filters
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('all');
     setSelectedTag('all');
     setPriceRange([0, Infinity]);
     setSelectedProduct(null);
-    // Update URL to remove query parameters
-    window.history.pushState({}, '', '/shop');
+    setCurrentPage(1);
+    setSortBy('createdAt');
+    setSortOrder('desc');
+    navigate('/shop');
   };
-  
+
   return (
     <div className="shop-page bg-white">
       <Navbar />
@@ -185,7 +169,7 @@ const Shop = () => {
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
               <option value="all">All Categories</option>
-              {allCategories.map(category => (
+              {categories.map(category => (
                 <option key={category} value={category}>
                   {category.charAt(0).toUpperCase() + category.slice(1)}
                 </option>
@@ -201,11 +185,31 @@ const Shop = () => {
               onChange={(e) => setSelectedTag(e.target.value)}
             >
               <option value="all">All Tags</option>
-              {allTags.map(tag => (
+              {tags.map(tag => (
                 <option key={tag} value={tag}>
                   {tag.charAt(0).toUpperCase() + tag.slice(1)}
                 </option>
               ))}
+            </select>
+          </div>
+          
+          <div className="filter-group">
+            <label htmlFor="sort">Sort By:</label>
+            <select
+              id="sort"
+              value={`${sortBy}-${sortOrder}`}
+              onChange={(e) => {
+                const [newSortBy, newSortOrder] = e.target.value.split('-');
+                setSortBy(newSortBy);
+                setSortOrder(newSortOrder);
+              }}
+            >
+              <option value="createdAt-desc">Newest First</option>
+              <option value="createdAt-asc">Oldest First</option>
+              <option value="sellingPrice-asc">Price: Low to High</option>
+              <option value="sellingPrice-desc">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+              <option value="name-desc">Name: Z to A</option>
             </select>
           </div>
           
@@ -231,7 +235,7 @@ const Shop = () => {
             </div>
           </div>
           
-          {(searchTerm || selectedCategory !== 'all' || selectedProduct) && (
+          {(searchTerm || selectedCategory !== 'all' || selectedTag !== 'all' || priceRange[0] > 0 || priceRange[1] < Infinity) && (
             <button 
               onClick={clearFilters}
               className="clear-filters-btn"
@@ -249,49 +253,54 @@ const Shop = () => {
             <div className="animate-spin text-gray-500 mr-2">
               <FiLoader size={30} />
             </div>
-            <p>Loading products...</p>
+            <span>Loading products...</span>
           </div>
         ) : error ? (
-          <div className="col-span-full text-center py-12 bg-red-50 rounded-lg shadow-md w-full">
-            <p className="text-red-500">{error}</p>
-            <button 
-              onClick={fetchProducts}
-              className="mt-4 bg-gray-800 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition"
-            >
-              Try Again
-            </button>
+          <div className="col-span-full text-center text-red-500 py-20">
+            {error}
           </div>
-        ) : filteredProducts.length > 0 ? (
-          filteredProducts.map(product => {
-            // Format the product data to match ProductCard expectations
-            const formattedProduct = {
-              ...product,
-              images: [{
-                url: product.imageUrl.startsWith('http') 
-                  ? product.imageUrl 
-                  : product.imageUrl.startsWith('/uploads') 
-                  ? `${API_BASE_URL}${product.imageUrl}`
-                  : '/placeholder.svg'
-              }]
-            };
-
-            return (
-              <div key={product._id} className="w-full h-full">
-                <ProductCard
-                  product={formattedProduct}
-                  onAddToCart={handleAddToCart}
-                  onWishlistToggle={handleAddToWishlist}
-                  isInWishlist={wishlist.some(item => item._id === product._id)}
-                />
-              </div>
-            );
-          })
+        ) : products.length === 0 ? (
+          <div className="col-span-full text-center text-gray-500 py-20">
+            No products found matching your criteria
+          </div>
         ) : (
-          <div className="col-span-full text-center py-12">
-            <p>No products found matching your criteria.</p>
-          </div>
+          products.map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+              onAddToCart={() => handleAddToCart(product)}
+              onAddToWishlist={() => handleAddToWishlist(product)}
+              onClick={() => handleProductClick(product._id)}
+              isInWishlist={wishlist.some(item => item._id === product._id)}
+            />
+          ))
         )}
       </div>
+
+      {/* Pagination */}
+      {!loading && products.length > 0 && (
+        <div className="pagination flex justify-center items-center gap-4 py-8">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="pagination-btn"
+          >
+            <FiChevronLeft />
+          </button>
+          
+          <span className="text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="pagination-btn"
+          >
+            <FiChevronRight />
+          </button>
+        </div>
+      )}
       
       <Footer />
     </div>
