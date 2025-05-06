@@ -16,6 +16,13 @@ import {
 const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) => {
   const isOutOfStock = product?.stock === 0;
 
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    if (!isOutOfStock && onAddToCart) {
+      onAddToCart(product);
+    }
+  };
+
   return (
     <motion.div 
       initial={cardAnimation.initial}
@@ -93,44 +100,41 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
       </div>
 
       {/* Action Buttons at the bottom */}
-      <div className="mt-auto pt-2 sm:pt-3 flex gap-2 sm:gap-2 items-center">
-        <motion.button
-          whileHover={!isOutOfStock ? addToCartButtonAnimation.whileHover : {}}
-          whileTap={!isOutOfStock ? addToCartButtonAnimation.whileTap : {}}
-          onClick={(e) => {
-            e.preventDefault();
-            if (!isOutOfStock && onAddToCart) {
-              onAddToCart(product);
-            }
-          }}
-          disabled={isOutOfStock}
-          className={`flex-1 text-sm sm:text-base md:text-xl py-2 sm:py-2 rounded-full transition-colors ${
-            isOutOfStock 
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-              : 'bg-primary text-white hover:bg-white/0 hover:text-primary border hover:border-primary'
-          }`}
-        >
-          {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-        </motion.button>
-
-        <motion.button
-          whileHover={wishlistButtonAnimation.whileHover}
-          whileTap={wishlistButtonAnimation.whileTap}
-          onClick={(e) => {
-            e.preventDefault();
-            onWishlistToggle && onWishlistToggle(product);
-          }}
-          className="text-white hover:text-primary transition-colors text-base bg-primary hover:bg-primary/0 border hover:border-primary aspect-square w-[36px] sm:w-[42px] rounded-full flex-shrink-0 flex items-center justify-center"
-          aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <motion.div
-            initial={heartIconAnimation.initial}
-            animate={heartIconAnimation.animate(isInWishlist)}
-            transition={heartIconAnimation.transition}
+      <div className="mt-auto pt-2 sm:pt-3 flex flex-col gap-2">
+        <div className="flex gap-2 sm:gap-2 items-center">
+          <motion.button
+            whileHover={!isOutOfStock ? addToCartButtonAnimation.whileHover : {}}
+            whileTap={!isOutOfStock ? addToCartButtonAnimation.whileTap : {}}
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+            className={`flex-1 text-sm sm:text-base md:text-xl py-2 sm:py-2 rounded-full transition-colors ${
+              isOutOfStock 
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                : 'bg-primary text-white hover:bg-white/0 hover:text-primary border hover:border-primary'
+            }`}
           >
-            {isInWishlist ? <FaHeart className="text-white" /> : <FaRegHeart />}
-          </motion.div>
-        </motion.button>
+            {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+          </motion.button>
+
+          <motion.button
+            whileHover={wishlistButtonAnimation.whileHover}
+            whileTap={wishlistButtonAnimation.whileTap}
+            onClick={(e) => {
+              e.preventDefault();
+              onWishlistToggle && onWishlistToggle(product);
+            }}
+            className="text-white hover:text-primary transition-colors text-base bg-primary hover:bg-primary/0 border hover:border-primary aspect-square w-[36px] sm:w-[42px] rounded-full flex-shrink-0 flex items-center justify-center"
+            aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <motion.div
+              initial={heartIconAnimation.initial}
+              animate={heartIconAnimation.animate(isInWishlist)}
+              transition={heartIconAnimation.transition}
+            >
+              {isInWishlist ? <FaHeart className="text-white" /> : <FaRegHeart />}
+            </motion.div>
+          </motion.button>
+        </div>
       </div>
     </motion.div>
   );

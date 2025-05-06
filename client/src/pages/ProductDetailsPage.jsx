@@ -16,6 +16,7 @@ function ProductDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [quantity, setQuantity] = useState(1);
   const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
   
   // Check if product is in wishlist
@@ -123,7 +124,14 @@ function ProductDetailsPage() {
   // Handle adding to cart
   const handleAddToCart = () => {
     if (product && product.stock > 0 && product.isAvailable) {
-      addToCart(product);
+      addToCart(product, quantity);
+    }
+  };
+
+  const handleQuantityChange = (e) => {
+    const value = parseInt(e.target.value);
+    if (value > 0 && value <= (product?.stock || 1)) {
+      setQuantity(value);
     }
   };
 
@@ -289,6 +297,60 @@ function ProductDetailsPage() {
               <div style={{ marginBottom: '20px' }}>
                 {renderStockStatus()}
               </div>
+
+              {/* Quantity Selector */}
+              {product?.stock > 0 && product?.isAvailable && (
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Quantity:</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                      onClick={() => quantity > 1 && setQuantity(quantity - 1)}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        border: '1px solid #ddd',
+                        borderRadius: '4px 0 0 4px',
+                        background: 'white',
+                        cursor: quantity > 1 ? 'pointer' : 'not-allowed',
+                        opacity: quantity > 1 ? 1 : 0.5
+                      }}
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      max={product.stock}
+                      value={quantity}
+                      onChange={handleQuantityChange}
+                      style={{
+                        width: '60px',
+                        height: '36px',
+                        border: '1px solid #ddd',
+                        borderLeft: 'none',
+                        borderRight: 'none',
+                        textAlign: 'center',
+                        backgroundColor: 'white',
+                        color: '#333'
+                      }}
+                    />
+                    <button
+                      onClick={() => quantity < product.stock && setQuantity(quantity + 1)}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        border: '1px solid #ddd',
+                        borderRadius: '0 4px 4px 0',
+                        background: 'white',
+                        cursor: quantity < product.stock ? 'pointer' : 'not-allowed',
+                        opacity: quantity < product.stock ? 1 : 0.5
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              )}
               
               {/* Categories */}
               <div style={{ marginBottom: '20px' }}>

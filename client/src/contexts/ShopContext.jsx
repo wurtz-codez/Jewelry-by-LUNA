@@ -51,14 +51,14 @@ const ShopProvider = ({ children }) => {
     }
   };
 
-  const addToCart = async (product) => {
+  const addToCart = async (product, quantity = 1) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
 
       await axios.post(
         `${API_BASE_URL}/cart/items`,
-        { jewelryId: product._id, quantity: 1 },
+        { jewelryId: product._id, quantity },
         { headers: { 'x-auth-token': token } }
       );
       await fetchCart();
