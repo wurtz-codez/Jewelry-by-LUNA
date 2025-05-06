@@ -18,6 +18,9 @@ function ProductDetailsPage() {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('');
+  const [showToast, setShowToast] = useState(false);
   
   // Check if product is in wishlist
   const isInWishlist = wishlist.some(item => item._id === product?._id);
@@ -122,9 +125,29 @@ function ProductDetailsPage() {
     : placeholderImage;
   
   // Handle adding to cart
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (product && product.stock > 0 && product.isAvailable) {
-      addToCart(product, quantity);
+      try {
+        const success = await addToCart(product, quantity);
+        if (success) {
+          setToastMessage(`${product.name} added to cart successfully!`);
+          setToastType('success');
+          setShowToast(true);
+          // Auto-hide toast after 3 seconds
+          setTimeout(() => {
+            setShowToast(false);
+          }, 3000);
+        }
+      } catch (error) {
+        console.error('Error in handleAddToCart:', error);
+        setToastMessage('An error occurred. Please try again.');
+        setToastType('error');
+        setShowToast(true);
+        // Auto-hide toast after 3 seconds
+        setTimeout(() => {
+          setShowToast(false);
+        }, 3000);
+      }
     }
   };
 

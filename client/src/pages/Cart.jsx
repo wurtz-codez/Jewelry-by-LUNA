@@ -81,9 +81,22 @@ const Cart = () => {
   };
 
   // Update item quantity
-  const handleUpdateQuantity = (id, newQuantity) => {
+  const handleUpdateQuantity = async (id, newQuantity) => {
     if (newQuantity < 1) return;
-    updateCartItemQuantity(id, newQuantity);
+    
+    try {
+      await updateCartItemQuantity(id, newQuantity);
+    } catch (error) {
+      if (error.response?.status === 400) {
+        setToastMessage(error.response.data.message);
+        setToastType('error');
+        setShowToast(true);
+      } else {
+        setToastMessage('Error updating quantity. Please try again.');
+        setToastType('error');
+        setShowToast(true);
+      }
+    }
   };
   
   // Handle shipping address change
@@ -292,7 +305,8 @@ const Cart = () => {
                           <div className="flex items-center justify-center">
                             <button 
                               onClick={() => handleUpdateQuantity(item.jewelry._id, item.quantity - 1)}
-                              className="w-8 h-8 border rounded-l-md flex items-center justify-center"
+                              className="w-8 h-8 border rounded-l-md flex items-center justify-center hover:bg-gray-100"
+                              disabled={item.quantity <= 1}
                             >
                               -
                             </button>
@@ -301,7 +315,8 @@ const Cart = () => {
                             </span>
                             <button 
                               onClick={() => handleUpdateQuantity(item.jewelry._id, item.quantity + 1)}
-                              className="w-8 h-8 border rounded-r-md flex items-center justify-center"
+                              className="w-8 h-8 border rounded-r-md flex items-center justify-center hover:bg-gray-100"
+                              disabled={item.quantity >= (item.jewelry.stock || 0)}
                             >
                               +
                             </button>

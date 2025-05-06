@@ -65,6 +65,17 @@ router.put('/items/:jewelryId', auth, async (req, res) => {
     const { jewelryId } = req.params;
     const { quantity } = req.body;
     
+    // Find the jewelry item to check stock
+    const jewelry = await Jewelry.findById(jewelryId);
+    if (!jewelry) {
+      return res.status(404).json({ message: 'Jewelry item not found' });
+    }
+
+    // Validate quantity against stock
+    if (quantity > jewelry.stock) {
+      return res.status(400).json({ message: `Only ${jewelry.stock} items available in stock` });
+    }
+    
     const cart = await Cart.findOne({ user: req.user.id });
     if (!cart) {
       return res.status(404).json({ message: 'Cart not found' });
@@ -80,7 +91,7 @@ router.put('/items/:jewelryId', auth, async (req, res) => {
     
     await cart.populate({
       path: 'items.jewelry',
-      select: 'name sellingPrice price imageUrl description'
+      select: 'name sellingPrice price imageUrl description stock'
     });
     res.json(cart);
   } catch (error) {
