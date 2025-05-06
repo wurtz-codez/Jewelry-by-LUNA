@@ -45,7 +45,7 @@ const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [imagePreview, setImagePreview] = useState('');
+  const [imagePreview, setImagePreview] = useState([]);
   const fileInputRef = useRef(null);
 
   // Dashboard stats state
@@ -67,7 +67,7 @@ const AdminDashboard = () => {
     sellingPrice: '',
     categories: ['necklace'],
     tags: ['new arrival'],
-    imageUrl: '',
+    imageUrls: [], // Changed from imageUrl to imageUrls array
     stock: 1,
     detailedDescription: '',
     rating: 0,
@@ -231,34 +231,37 @@ const AdminDashboard = () => {
 
   // Handle file input change for image upload
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
-    // Create a preview of the selected image
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.readAsDataURL(file);
+    // Create previews of the selected images
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(prev => [...prev, reader.result]);
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  // Upload image to server
+  // Upload images to server
   const handleImageUpload = async (e) => {
     e.preventDefault();
     const fileInput = fileInputRef.current;
     
     if (!fileInput.files || fileInput.files.length === 0) {
-      setToastMessage('Please select an image to upload');
+      setToastMessage('Please select images to upload');
       setToastType('error');
       setShowToast(true);
       return;
     }
     
-    const file = fileInput.files[0];
+    const files = Array.from(fileInput.files);
     
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setToastMessage('Please select a valid image file');
+    // Validate file types
+    const invalidFiles = files.filter(file => !file.type.startsWith('image/'));
+    if (invalidFiles.length > 0) {
+      setToastMessage('Please select valid image files');
       setToastType('error');
       setShowToast(true);
       return;
@@ -268,7 +271,9 @@ const AdminDashboard = () => {
       setUploadingImage(true);
       
       const formData = new FormData();
-      formData.append('image', file);
+      files.forEach(file => {
+        formData.append('images', file);
+      });
       
       const response = await axios.post(
         `${API_BASE_URL}/upload`,
@@ -281,24 +286,36 @@ const AdminDashboard = () => {
         }
       );
       
-      // Update form data with the Cloudinary URL
+      // Update form data with the Cloudinary URLs
       setFormData(prev => ({
         ...prev,
-        imageUrl: response.data.filePath // This is now the Cloudinary URL
+        imageUrls: [...prev.imageUrls, ...response.data.filePaths]
       }));
       
-      setToastMessage('Image uploaded successfully');
+      setToastMessage('Images uploaded successfully');
       setToastType('success');
       setShowToast(true);
       
+      // Clear the file input and preview
+      fileInput.value = '';
+      setImagePreview([]);
+      
     } catch (error) {
-      console.error('Error uploading image:', error);
-      setToastMessage(error.response?.data?.message || 'Failed to upload image');
+      console.error('Error uploading images:', error);
+      setToastMessage(error.response?.data?.message || 'Failed to upload images');
       setToastType('error');
       setShowToast(true);
     } finally {
       setUploadingImage(false);
     }
+  };
+
+  // Remove an image
+  const handleRemoveImage = (indexToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      imageUrls: prev.imageUrls.filter((_, index) => index !== indexToRemove)
+    }));
   };
 
   // Validate form data
@@ -308,7 +325,7 @@ const AdminDashboard = () => {
     if (!formData.description.trim()) errors.description = 'Description is required';
     if (!formData.price || formData.price <= 0) errors.price = 'Price must be greater than 0';
     if (formData.discount < 0 || formData.discount >= formData.price) errors.discount = 'Discount must be less than price';
-    if (!formData.imageUrl) errors.imageUrl = 'Image is required';
+    if (formData.imageUrls.length === 0) errors.imageUrls = 'At least one image is required';
     if (formData.stock < 0) errors.stock = 'Stock cannot be negative';
     return errors;
   };
@@ -413,7 +430,7 @@ const AdminDashboard = () => {
       price: product.price.toString(),
       categories: product.categories || ['necklace'],
       tags: product.tags || ['new arrival'],
-      imageUrl: product.imageUrl,
+      imageUrls: product.imageUrls || [],
       stock: product.stock,
       detailedDescription: product.detailedDescription || '',
       rating: product.rating || 0,
@@ -460,7 +477,7 @@ const AdminDashboard = () => {
       price: '',
       categories: ['necklace'],
       tags: ['new arrival'],
-      imageUrl: '',
+      imageUrls: [],
       stock: 1,
       detailedDescription: '',
       rating: 0,
@@ -1006,11 +1023,11 @@ const AdminDashboard = () => {
                   <div className="bg-white rounded-xl shadow-lg p-6">
                     <Bar
                       data={{
-                        labels: dashboardStats.topProducts.map(item => item._id.name),
+                        labels: dashboardStats.topProducts.map(item => item?._id?.name || 'Unknown Product'),
                         datasets: [
                           {
                             label: 'Units Sold',
-                            data: dashboardStats.topProducts.map(item => item.totalSold),
+                            data: dashboardStats.topProducts.map(item => item?.totalSold || 0),
                             backgroundColor: 'rgba(16, 185, 129, 0.5)',
                             borderColor: 'rgb(16, 185, 129)',
                             borderWidth: 1,
@@ -1202,7 +1219,7 @@ const AdminDashboard = () => {
                             <tr key={product._id} className="hover:bg-gray-50">
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <img 
-                                  src={product.imageUrl} 
+                                  src={product.imageUrls[0]} 
                                   alt={product.name} 
                                   className="h-16 w-16 object-cover rounded-md"
                                 />
@@ -1212,13 +1229,13 @@ const AdminDashboard = () => {
                                 <div className="text-sm text-gray-500">{product.description}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ₹{product.price.toFixed(2)}
+                                ₹{(product.price || 0).toFixed(2)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ₹{product.discount.toFixed(2)}
+                                ₹{(product.discount || 0).toFixed(2)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ₹{product.sellingPrice.toFixed(2)}
+                                ₹{(product.sellingPrice || 0).toFixed(2)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -1457,19 +1474,37 @@ const AdminDashboard = () => {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Product Image*
+                      Product Images*
                     </label>
-                    <div className={`border rounded-md p-3 ${formErrors.imageUrl ? 'border-red-500' : 'border-gray-300'}`}>
-                      {/* Image preview */}
-                      {(imagePreview || formData.imageUrl) && (
-                        <div className="mb-3">
-                          <img 
-                            src={imagePreview || formData.imageUrl} 
-                            alt="Product preview" 
-                            className="h-40 object-contain mx-auto"
-                          />
-                        </div>
-                      )}
+                    <div className={`border rounded-md p-3 ${formErrors.imageUrls ? 'border-red-500' : 'border-gray-300'}`}>
+                      {/* Image previews */}
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                        {formData.imageUrls.map((url, index) => (
+                          <div key={index} className="relative group">
+                            <img 
+                              src={url} 
+                              alt={`Product preview ${index + 1}`} 
+                              className="h-40 w-full object-cover rounded-md"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(index)}
+                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <FiX size={16} />
+                            </button>
+                          </div>
+                        ))}
+                        {imagePreview.map((preview, index) => (
+                          <div key={`preview-${index}`} className="relative">
+                            <img 
+                              src={preview} 
+                              alt={`Preview ${index + 1}`} 
+                              className="h-40 w-full object-cover rounded-md"
+                            />
+                          </div>
+                        ))}
+                      </div>
                       
                       {/* File input */}
                       <div className="flex items-center justify-center">
@@ -1478,18 +1513,19 @@ const AdminDashboard = () => {
                           ref={fileInputRef}
                           accept="image/*"
                           onChange={handleFileChange}
+                          multiple
                           className="hidden"
-                          id="product-image"
+                          id="product-images"
                         />
                         <label 
-                          htmlFor="product-image" 
+                          htmlFor="product-images" 
                           className="cursor-pointer flex items-center justify-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
                         >
                           <FiImage className="mr-2" />
-                          {imagePreview ? 'Change Image' : 'Select Image'}
+                          Select Images
                         </label>
                         
-                        {imagePreview && !formData.imageUrl && (
+                        {imagePreview.length > 0 && (
                           <button
                             onClick={handleImageUpload}
                             disabled={uploadingImage}
@@ -1501,21 +1537,14 @@ const AdminDashboard = () => {
                         )}
                       </div>
                       
-                      {/* Hidden field for imageUrl */}
-                      <input
-                        type="hidden"
-                        name="imageUrl"
-                        value={formData.imageUrl}
-                      />
-                      
-                      {formData.imageUrl && (
+                      {formData.imageUrls.length > 0 && (
                         <p className="mt-2 text-sm text-green-600">
-                          Image uploaded successfully
+                          {formData.imageUrls.length} image(s) uploaded successfully
                         </p>
                       )}
                     </div>
-                    {formErrors.imageUrl && (
-                      <p className="mt-1 text-sm text-red-500">{formErrors.imageUrl}</p>
+                    {formErrors.imageUrls && (
+                      <p className="mt-1 text-sm text-red-500">{formErrors.imageUrls}</p>
                     )}
                   </div>
                   

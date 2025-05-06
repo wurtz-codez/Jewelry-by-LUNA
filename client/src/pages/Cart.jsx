@@ -6,6 +6,9 @@ import { useShop } from '../contexts/ShopContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Toast from '../components/Toast';
+import placeholderImage from '../assets/placeholder.png';
+import React, { useCallback } from 'react';
+import { debounce } from 'lodash';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -29,6 +32,7 @@ const Cart = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
+  const [isUpdating, setIsUpdating] = useState({});
   
   // State for checkout modal
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
@@ -75,28 +79,47 @@ const Cart = () => {
   // Total cost
   const total = subtotal + shipping - discount;
 
+  // Debounced quantity update
+  const debouncedUpdate = useCallback(
+    debounce(async (productId, newQuantity) => {
+      try {
+        await updateCartItemQuantity(productId, newQuantity);
+      } catch (error) {
+        console.error('Error updating quantity:', error);
+        setToastMessage('Failed to update quantity. Please try again.');
+        setToastType('error');
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 3000);
+        // Revert to the last known good quantity
+        await fetchCart();
+      } finally {
+        setIsUpdating(prev => ({ ...prev, [productId]: false }));
+      }
+    }, 500),
+    [updateCartItemQuantity, fetchCart]
+  );
+
+  // Handle quantity update with optimistic updates
+  const handleUpdateQuantity = (productId, newQuantity) => {
+    const cartItem = cart?.items?.find(item => item.jewelry._id === productId);
+    if (!cartItem) return;
+
+    if (newQuantity > 0 && newQuantity <= cartItem.jewelry.stock && !isUpdating[productId]) {
+      setIsUpdating(prev => ({ ...prev, [productId]: true }));
+      // Optimistically update the UI
+      const updatedItems = cart.items.map(item => 
+        item.jewelry._id === productId ? { ...item, quantity: newQuantity } : item
+      );
+      // Debounce the actual API call
+      debouncedUpdate(productId, newQuantity);
+    }
+  };
+
   // Remove item from cart
   const handleRemoveItem = (id) => {
     removeFromCart(id);
-  };
-
-  // Update item quantity
-  const handleUpdateQuantity = async (id, newQuantity) => {
-    if (newQuantity < 1) return;
-    
-    try {
-      await updateCartItemQuantity(id, newQuantity);
-    } catch (error) {
-      if (error.response?.status === 400) {
-        setToastMessage(error.response.data.message);
-        setToastType('error');
-        setShowToast(true);
-      } else {
-        setToastMessage('Error updating quantity. Please try again.');
-        setToastType('error');
-        setShowToast(true);
-      }
-    }
   };
   
   // Handle shipping address change
@@ -285,41 +308,31 @@ const Cart = () => {
                           <div className="flex items-center">
                             <img 
                               src={
-                                item.jewelry.imageUrl.startsWith('http') 
-                                  ? item.jewelry.imageUrl 
-                                  : item.jewelry.imageUrl.startsWith('/uploads') 
-                                    ? `http://localhost:5001${item.jewelry.imageUrl}` 
-                                    : `/src/assets/${item.jewelry.imageUrl}`
+                                item.jewelry.imageUrls && item.jewelry.imageUrls.length > 0
+                                  ? item.jewelry.imageUrls[0]
+                                  : placeholderImage
                               } 
                               alt={item.jewelry.name} 
-                              className="w-16 h-16 object-cover rounded mr-4"
+                              className="w-16 h-16 object-cover rounded mr-4 cursor-pointer"
+                              onClick={() => navigate(`/product/${item.jewelry._id}`)}
                               onError={(e) => {
                                 e.target.onerror = null;
-                                e.target.src = '/src/assets/placeholder.svg';
+                                e.target.src = placeholderImage;
                               }}
                             />
-                            <span className="font-medium">{item.jewelry.name}</span>
+                            <span 
+                              className="font-medium cursor-pointer hover:text-purple-600"
+                              onClick={() => navigate(`/product/${item.jewelry._id}`)}
+                            >
+                              {item.jewelry.name}
+                            </span>
                           </div>
                         </td>
                         <td className="py-4">
                           <div className="flex items-center justify-center">
-                            <button 
-                              onClick={() => handleUpdateQuantity(item.jewelry._id, item.quantity - 1)}
-                              className="w-8 h-8 border rounded-l-md flex items-center justify-center hover:bg-gray-100"
-                              disabled={item.quantity <= 1}
-                            >
-                              -
-                            </button>
-                            <span className="w-10 h-8 border-t border-b flex items-center justify-center">
+                            <span className="text-lg font-medium px-4 py-2 border rounded-md bg-gray-50">
                               {item.quantity}
                             </span>
-                            <button 
-                              onClick={() => handleUpdateQuantity(item.jewelry._id, item.quantity + 1)}
-                              className="w-8 h-8 border rounded-r-md flex items-center justify-center hover:bg-gray-100"
-                              disabled={item.quantity >= (item.jewelry.stock || 0)}
-                            >
-                              +
-                            </button>
                           </div>
                         </td>
                         <td className="py-4 text-right">₹{(item.jewelry.sellingPrice || item.jewelry.price || 0).toFixed(2)}</td>
@@ -524,17 +537,15 @@ const Cart = () => {
                       <div className="flex items-center">
                         <img 
                           src={
-                            item.jewelry.imageUrl.startsWith('http') 
-                              ? item.jewelry.imageUrl 
-                              : item.jewelry.imageUrl.startsWith('/uploads') 
-                                ? `http://localhost:5001${item.jewelry.imageUrl}` 
-                                : `/src/assets/${item.jewelry.imageUrl}`
+                            item.jewelry.imageUrls && item.jewelry.imageUrls.length > 0
+                              ? item.jewelry.imageUrls[0]
+                              : placeholderImage
                           }
                           alt={item.jewelry.name} 
                           className="w-12 h-12 object-cover rounded mr-3"
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = '/src/assets/placeholder.svg';
+                            e.target.src = placeholderImage;
                           }}
                         />
                         <div>

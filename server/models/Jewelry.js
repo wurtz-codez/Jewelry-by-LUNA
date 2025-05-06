@@ -10,6 +10,10 @@ const jewelrySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  detailedDescription: {
+    type: String,
+    required: true
+  },
   price: {
     type: Number,
     required: true,
@@ -22,29 +26,26 @@ const jewelrySchema = new mongoose.Schema({
   },
   sellingPrice: {
     type: Number,
-    default: function() {
-      return this.price - (this.discount || 0);
-    }
+    required: true,
+    min: 0
   },
   categories: [{
     type: String,
-    required: true,
-    trim: true
+    required: true
   }],
   tags: [{
     type: String,
-    required: true,
-    trim: true
+    required: true
   }],
-  imageUrl: {
+  imageUrls: [{
     type: String,
     required: true
-  },
+  }],
   stock: {
     type: Number,
     required: true,
-    default: 0,
-    min: 0
+    min: 0,
+    default: 0
   },
   rating: {
     type: Number,
@@ -56,10 +57,6 @@ const jewelrySchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  detailedDescription: {
-    type: String,
-    required: true
-  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -68,6 +65,8 @@ const jewelrySchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+}, {
+  timestamps: true
 });
 
 // Update the updatedAt timestamp and sellingPrice before saving

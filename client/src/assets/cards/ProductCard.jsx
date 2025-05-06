@@ -50,14 +50,15 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
   };
 
   const getImageUrl = (product) => {
-    if (!product?.imageUrl) return placeholderImage;
+    if (!product?.imageUrls || product.imageUrls.length === 0) return placeholderImage;
     
-    if (product.imageUrl.startsWith('http')) {
-      return product.imageUrl;
+    const mainImage = product.imageUrls[0];
+    if (mainImage.startsWith('http')) {
+      return mainImage;
     }
     
-    if (product.imageUrl.startsWith('/uploads')) {
-      return `${API_BASE_URL}${product.imageUrl}`;
+    if (mainImage.startsWith('/uploads')) {
+      return `${API_BASE_URL}${mainImage}`;
     }
     
     return placeholderImage;

@@ -3,17 +3,19 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const { upload } = require('../config/cloudinary');
 
-// Route to upload image
-router.post('/', auth, upload.single('image'), (req, res) => {
+// Route to upload multiple images
+router.post('/', auth, upload.array('images', 5), (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: 'No files uploaded' });
     }
 
-    // Return the Cloudinary URL of the uploaded file
+    // Return the Cloudinary URLs of the uploaded files
+    const filePaths = req.files.map(file => file.path);
+    
     return res.status(200).json({ 
-      message: 'File uploaded successfully',
-      filePath: req.file.path // This will be the Cloudinary URL
+      message: 'Files uploaded successfully',
+      filePaths
     });
   } catch (error) {
     console.error('Upload error:', error);

@@ -5,6 +5,7 @@ import placeholderImage from '../assets/placeholder.png';
 import { useShop } from '../contexts/ShopContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { debounce } from 'lodash';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -17,13 +18,41 @@ function ProductDetailsPage() {
   const [error, setError] = useState('');
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
-  const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
+  const { addToCart, addToWishlist, removeFromWishlist, wishlist, cart, updateCartItemQuantity } = useShop();
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   
   // Check if product is in wishlist
   const isInWishlist = wishlist.some(item => item._id === product?._id);
+
+  // Get cart quantity for this product
+  const cartQuantity = cart?.items?.find(item => item.jewelry._id === product?._id)?.quantity || 0;
+
+  // Update quantity when product is loaded or cart changes
+  useEffect(() => {
+    if (product) {
+      const cartItem = cart?.items?.find(item => item.jewelry._id === product._id);
+      if (cartItem) {
+        setQuantity(cartItem.quantity);
+      } else {
+        setQuantity(1);
+      }
+    }
+  }, [product, cart]);
+  
+  // Get the product's images
+  const getProductImages = () => {
+    if (!product?.imageUrls || product.imageUrls.length === 0) {
+      return [placeholderImage];
+    }
+    return product.imageUrls.map(url => 
+      url.startsWith('http') ? url : url.startsWith('/uploads') ? `${API_BASE_URL}${url}` : placeholderImage
+    );
+  };
+
+  const productImages = getProductImages();
   
   // Function to fetch related products
   const fetchRelatedProducts = async (product) => {
@@ -115,15 +144,31 @@ function ProductDetailsPage() {
     fetchProduct();
   }, [id]);
   
-  // Get the product's main image URL
-  const mainImage = product?.imageUrl 
-    ? (product.imageUrl.startsWith('http') 
-        ? product.imageUrl 
-        : product.imageUrl.startsWith('/uploads') 
-          ? `${API_BASE_URL}${product.imageUrl}`
-          : placeholderImage)
-    : placeholderImage;
-  
+  // Handle quantity update with optimistic updates
+  const handleQuantityUpdate = async (newQuantity) => {
+    if (newQuantity > 0 && newQuantity <= (product?.stock || 1)) {
+      try {
+        setIsUpdating(true);
+        // Update the cart first
+        await updateCartItemQuantity(product._id, newQuantity);
+        // Then update local state
+        setQuantity(newQuantity);
+      } catch (error) {
+        console.error('Error updating quantity:', error);
+        setToastMessage('Failed to update quantity. Please try again.');
+        setToastType('error');
+        setShowToast(true);
+        // Revert to the last known good quantity
+        const cartItem = cart?.items?.find(item => item.jewelry._id === product._id);
+        if (cartItem) {
+          setQuantity(cartItem.quantity);
+        }
+      } finally {
+        setIsUpdating(false);
+      }
+    }
+  };
+
   // Handle adding to cart
   const handleAddToCart = async () => {
     if (product && product.stock > 0 && product.isAvailable) {
@@ -258,40 +303,86 @@ function ProductDetailsPage() {
         <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
           <div style={{ display: 'flex', gap: '40px', marginBottom: '40px' }}>
             <div style={{ display: 'flex', gap: '20px', flex: 1 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div 
-                  style={{
-                    width: '80px',
-                    height: '80px',
-                    border: `1px solid #000`,
-                    cursor: 'pointer',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <img src={mainImage} alt="Product thumbnail" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-                <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center' }}>
-                  <button style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    border: '1px solid #e0e0e0',
-                    background: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer'
-                  }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 17V3" />
-                      <path d="m6 11 6 6 6-6" />
-                      <path d="M19 21H5" />
-                    </svg>
-                  </button>
-                </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '400px', overflowY: 'auto' }}>
+                {productImages.map((image, index) => (
+                  <div 
+                    key={index}
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      border: `1px solid ${selectedImage === index ? '#8B4513' : '#e0e0e0'}`,
+                      cursor: 'pointer',
+                      overflow: 'hidden',
+                      borderRadius: '4px'
+                    }}
+                    onClick={() => setSelectedImage(index)}
+                  >
+                    <img 
+                      src={image} 
+                      alt={`Product thumbnail ${index + 1}`} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  </div>
+                ))}
               </div>
-              <div style={{ flex: 1, maxWidth: '400px' }}>
-                <img src={mainImage} alt="Main product" style={{ width: '100%', height: 'auto', objectFit: 'cover' }} />
+              <div style={{ flex: 1, maxWidth: '400px', position: 'relative' }}>
+                <img 
+                  src={productImages[selectedImage]} 
+                  alt="Main product" 
+                  style={{ width: '100%', height: 'auto', objectFit: 'cover', borderRadius: '8px' }} 
+                />
+                {productImages.length > 1 && (
+                  <>
+                    <button 
+                      style={{
+                        position: 'absolute',
+                        left: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'rgba(255, 255, 255, 0.8)',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '40px',
+                        height: '40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        opacity: selectedImage === 0 ? 0.5 : 1
+                      }}
+                      onClick={() => setSelectedImage(prev => Math.max(0, prev - 1))}
+                      disabled={selectedImage === 0}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M15 18l-6-6 6-6" />
+                      </svg>
+                    </button>
+                    <button 
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'rgba(255, 255, 255, 0.8)',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '40px',
+                        height: '40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        opacity: selectedImage === productImages.length - 1 ? 0.5 : 1
+                      }}
+                      onClick={() => setSelectedImage(prev => Math.min(productImages.length - 1, prev + 1))}
+                      disabled={selectedImage === productImages.length - 1}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
             
@@ -327,7 +418,7 @@ function ProductDetailsPage() {
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Quantity:</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <button
-                      onClick={() => quantity > 1 && setQuantity(quantity - 1)}
+                      onClick={() => handleQuantityUpdate(quantity - 1)}
                       style={{
                         width: '36px',
                         height: '36px',
@@ -345,7 +436,7 @@ function ProductDetailsPage() {
                       min="1"
                       max={product.stock}
                       value={quantity}
-                      onChange={handleQuantityChange}
+                      onChange={(e) => handleQuantityUpdate(parseInt(e.target.value))}
                       style={{
                         width: '60px',
                         height: '36px',
@@ -358,7 +449,7 @@ function ProductDetailsPage() {
                       }}
                     />
                     <button
-                      onClick={() => quantity < product.stock && setQuantity(quantity + 1)}
+                      onClick={() => handleQuantityUpdate(quantity + 1)}
                       style={{
                         width: '36px',
                         height: '36px',
@@ -589,11 +680,11 @@ function ProductDetailsPage() {
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
                   {relatedProducts.map(relatedProduct => {
-                    const productImage = relatedProduct.imageUrl 
-                      ? (relatedProduct.imageUrl.startsWith('http') 
-                          ? relatedProduct.imageUrl 
-                          : relatedProduct.imageUrl.startsWith('/uploads') 
-                            ? `${API_BASE_URL}${relatedProduct.imageUrl}`
+                    const productImage = relatedProduct.imageUrls && relatedProduct.imageUrls.length > 0
+                      ? (relatedProduct.imageUrls[0].startsWith('http') 
+                          ? relatedProduct.imageUrls[0] 
+                          : relatedProduct.imageUrls[0].startsWith('/uploads') 
+                            ? `${API_BASE_URL}${relatedProduct.imageUrls[0]}`
                             : placeholderImage)
                       : placeholderImage;
                     
