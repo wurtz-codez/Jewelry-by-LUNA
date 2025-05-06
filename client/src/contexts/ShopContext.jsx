@@ -30,9 +30,10 @@ const ShopProvider = ({ children }) => {
       const response = await axios.get(`${API_BASE_URL}/cart`, {
         headers: { 'x-auth-token': token }
       });
-      setCart(response.data.items || []);
+      setCart(response.data || { items: [] });
     } catch (error) {
       console.error('Error fetching cart:', error);
+      setCart({ items: [] });
     }
   };
 
