@@ -10,7 +10,7 @@ router.get('/', auth, async (req, res) => {
     const cart = await Cart.findOne({ user: req.user.id })
       .populate({
         path: 'items.jewelry',
-        select: 'name sellingPrice price imageUrl description'
+        select: 'name sellingPrice price imageUrl imageUrls description stock categories'
       });
     
     if (!cart) {
@@ -49,7 +49,7 @@ router.post('/items', auth, async (req, res) => {
     // Populate jewelry details before sending response
     await cart.populate({
       path: 'items.jewelry',
-      select: 'name sellingPrice price imageUrl description'
+      select: 'name sellingPrice price imageUrl imageUrls description stock categories'
     });
     
     res.json(cart);
@@ -91,7 +91,7 @@ router.put('/items/:jewelryId', auth, async (req, res) => {
     
     await cart.populate({
       path: 'items.jewelry',
-      select: 'name sellingPrice price imageUrl description stock'
+      select: 'name sellingPrice price imageUrl imageUrls description stock categories'
     });
     res.json(cart);
   } catch (error) {
@@ -115,7 +115,7 @@ router.delete('/items/:jewelryId', auth, async (req, res) => {
     
     await cart.populate({
       path: 'items.jewelry',
-      select: 'name sellingPrice price imageUrl description'
+      select: 'name sellingPrice price imageUrl imageUrls description categories'
     });
     res.json(cart);
   } catch (error) {

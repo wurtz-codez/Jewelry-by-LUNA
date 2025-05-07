@@ -17,7 +17,9 @@ import {
 const API_BASE_URL = 'http://localhost:5001/api';
 
 const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) => {
-  const isOutOfStock = product?.stock === 0;
+  // Get the actual product data, handling both direct and nested cases
+  const productData = product?.jewelry || product;
+  const isOutOfStock = productData?.stock === 0;
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
@@ -26,9 +28,9 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
     e.preventDefault();
     if (!isOutOfStock && onAddToCart) {
       try {
-        const success = await onAddToCart(product);
+        const success = await onAddToCart(productData);
         if (success) {
-          setToastMessage(`${product.name} added to cart successfully!`);
+          setToastMessage(`${productData.name} added to cart successfully!`);
           setToastType('success');
           setShowToast(true);
           // Auto-hide toast after 3 seconds
@@ -79,10 +81,10 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
           transition={imageAnimation.transition}
           className="w-full aspect-square overflow-hidden bg-gray-200 rounded-[32px] relative"
         >
-          <Link to={`/product/${product?._id || '#'}`}>
+          <Link to={`/product/${productData?._id || '#'}`}>
             <img
-              src={getImageUrl(product)}
-              alt={product?.name || "Jewelry Product"}
+              src={getImageUrl(productData)}
+              alt={productData?.name || "Jewelry Product"}
               className="h-full w-full object-cover object-center group-hover:opacity-75"
               onError={(e) => {
                 e.target.onerror = null;
@@ -101,36 +103,50 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
 
         {/* Product Details - in a container with bottom border radius of 20px */}
         <div className="mt-2 sm:mt-4 flex flex-col flex-grow rounded-b-[20px] bg-white px-2 sm:px-3 pb-2 sm:pb-3">
-          <Link to={`/product/${product?._id || '#'}`} className="flex-grow">
+          <Link to={`/product/${productData?._id || '#'}`} className="flex-grow">
             {/* Heading */}
             <motion.h3 
               whileHover={titleAnimation.whileHover}
               className="text-sm sm:text-base md:text-lg font-montserrat-alt font-medium text-gray-900 line-clamp-2"
             >
-              {product?.name || "Product Name"}
+              {productData?.name || "Product Name"}
             </motion.h3>
+
+            {/* Category */}
+            {productData?.categories && productData.categories.length > 0 && (
+              <div className="mt-1 flex flex-wrap gap-1">
+                {productData.categories.map((category, index) => (
+                  <span 
+                    key={index}
+                    className="px-2 py-0.5 text-xs bg-neutral/10 text-gray-700 rounded-full font-cinzel capitalize"
+                  >
+                    {category}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {/* Price and Discount */}
             <div className="mt-1 sm:mt-2 flex items-center gap-2">
-              {product?.discount > 0 ? (
+              {productData?.discount > 0 ? (
                 <>
                   <motion.div 
                     whileHover={discountBadgeAnimation.whileHover}
                     className="flex items-center gap-2"
                   >
                     <span className="text-sm sm:text-base md:text-lg font-montserrat-alt font-medium text-gray-900">
-                      ₹{product?.sellingPrice?.toLocaleString('en-IN') || '0'}
+                      ₹{productData?.sellingPrice?.toLocaleString('en-IN') || '0'}
                     </span>
                     <span className="text-xs sm:text-sm text-gray-500 line-through">
-                      ₹{product?.price?.toLocaleString('en-IN') || '0'}
+                      ₹{productData?.price?.toLocaleString('en-IN') || '0'}
                     </span>
                     <span className="text-xs sm:text-sm font-medium text-green-600">
-                      {Math.round(((product.price - product.sellingPrice) / product.price) * 100)}% OFF
+                      {Math.round(((productData.price - productData.sellingPrice) / productData.price) * 100)}% OFF
                     </span>
                   </motion.div>
                 </>
               ) : (
-                <p className="text-sm sm:text-lg font-montserrat-alt font-medium text-gray-900">₹{product?.price?.toLocaleString('en-IN') || '0'}</p>
+                <p className="text-sm sm:text-lg font-montserrat-alt font-medium text-gray-900">₹{productData?.price?.toLocaleString('en-IN') || '0'}</p>
               )}
             </div>
           </Link>
@@ -158,7 +174,7 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
               whileTap={wishlistButtonAnimation.whileTap}
               onClick={(e) => {
                 e.preventDefault();
-                onWishlistToggle && onWishlistToggle(product);
+                onWishlistToggle && onWishlistToggle(productData);
               }}
               className="text-white hover:text-primary transition-colors text-base bg-primary hover:bg-primary/0 border hover:border-primary aspect-square w-[36px] sm:w-[42px] rounded-full flex-shrink-0 flex items-center justify-center"
               aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}

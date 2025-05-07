@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { FiSearch, FiUser, FiLogOut, FiPackage } from 'react-icons/fi'
 import { FaBagShopping, FaRegHeart, FaRegUser } from 'react-icons/fa6'
 import { useAuth } from '../contexts/AuthContext'
+import { useShop } from '../contexts/ShopContext'
 import Logo from './Logo'
 import Search from './Search'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -13,9 +14,13 @@ const Navbar = ({ variant }) => {
   const navigate = useNavigate();
   const [activeLink, setActiveLink] = useState('');
   const { currentUser, logout } = useAuth();
+  const { cart } = useShop();
   const [showSearch, setShowSearch] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
+  // Calculate total items in cart
+  const cartItemCount = cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
 
   // Update active link based on current location
   useEffect(() => {
@@ -197,7 +202,7 @@ const Navbar = ({ variant }) => {
               <Link 
                 to="/cart" 
                 aria-label="Shopping Bag" 
-                className="text-black hover:text-primary transition-colors duration-200"
+                className="text-black hover:text-primary transition-colors duration-200 relative"
                 onClick={(e) => {
                   if (!currentUser) {
                     e.preventDefault();
@@ -206,6 +211,16 @@ const Navbar = ({ variant }) => {
                 }}
               >
                 <FaBagShopping className="w-5 h-5" />
+                {cartItemCount > 0 && (
+                  <motion.span 
+                    className="absolute -top-2 -right-2 bg-primary text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  >
+                    {cartItemCount}
+                  </motion.span>
+                )}
               </Link>
             </motion.div>
 
@@ -213,7 +228,6 @@ const Navbar = ({ variant }) => {
             <motion.button 
               className="md:hidden text-black hover:text-primary transition-colors duration-200"
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              variants={iconVariants}
               whileHover="hover"
               whileTap="tap"
             >
