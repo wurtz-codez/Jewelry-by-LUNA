@@ -110,6 +110,7 @@ const Search = ({ isOpen, onClose }) => {
               onChange={handleSearchInputChange}
               placeholder="Search for jewelry..."
               autoFocus
+              className="rounded-[6px]"
             />
             {searchTerm && (
               <button 
@@ -118,7 +119,7 @@ const Search = ({ isOpen, onClose }) => {
                   setSearchTerm('');
                   setSearchResults([]);
                 }}
-                className="clear-search"
+                className="clear-search rounded-[6px]"
                 aria-label="Clear search"
               >
                 <FiX />
@@ -136,10 +137,10 @@ const Search = ({ isOpen, onClose }) => {
                 {searchResults.slice(0, 5).map(product => (
                   <div 
                     key={product._id} 
-                    className="search-result-item" 
+                    className="search-result-item rounded-[6px]" 
                     onClick={() => handleProductClick(product._id)}
                   >
-                    <div className="product-image">
+                    <div className="product-image rounded-[6px]">
                       <img 
                         src={
                           product.imageUrl.startsWith('http') 
@@ -149,6 +150,7 @@ const Search = ({ isOpen, onClose }) => {
                               : `/src/assets/${product.imageUrl}`
                         } 
                         alt={product.name} 
+                        className="rounded-[6px]"
                         onError={(e) => {
                           e.target.onerror = null;
                           e.target.src = '/src/assets/placeholder.svg';
@@ -162,7 +164,7 @@ const Search = ({ isOpen, onClose }) => {
                         {product.discount > 0 && (
                           <>
                             <span className="original-price">₹{product.price.toFixed(2)}</span>
-                            <span className="discount-badge">Save ₹{product.discount.toFixed(2)}</span>
+                            <span className="discount-badge rounded-[4px]">Save ₹{product.discount.toFixed(2)}</span>
                           </>
                         )}
                       </div>
@@ -172,7 +174,7 @@ const Search = ({ isOpen, onClose }) => {
               </div>
               {searchResults.length > 5 && (
                 <button 
-                  className="view-all-results"
+                  className="view-all-results rounded-[6px]"
                   onClick={navigateToShopWithSearch}
                 >
                   View all {searchResults.length} results
@@ -188,4 +190,4 @@ const Search = ({ isOpen, onClose }) => {
   );
 };
 
-export default Search; 
+export default Search;

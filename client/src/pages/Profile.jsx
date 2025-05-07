@@ -329,7 +329,7 @@ const Profile = () => {
       <div className="page-container py-24 sm:py-24 md:py-24 lg:py-32 mx-4 sm:mx-6 md:mx-12 lg:mx-32 max-w-8xl flex-grow">
         {!currentUser ? (
           <motion.div 
-            className="text-center py-16 sm:py-24 bg-white rounded-[32px] shadow-lg max-w-4xl mx-auto"
+            className="text-center py-16 sm:py-24 bg-white rounded-[16px] shadow-lg max-w-4xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -339,7 +339,7 @@ const Profile = () => {
             <p className="text-gray-500 mb-8 sm:mb-10 text-lg sm:text-xl">You need to be logged in to view your profile</p>
             <motion.button 
               onClick={() => navigate('/login')}
-              className="bg-primary text-white py-4 sm:py-5 px-8 sm:px-10 rounded-full hover:bg-primary/90 transition-colors inline-flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-medium"
+              className="bg-primary text-white py-4 sm:py-5 px-8 sm:px-10 rounded-[12px] hover:bg-primary/90 transition-colors inline-flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-medium"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -365,9 +365,9 @@ const Profile = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
                   <div className="flex items-center gap-4 mb-8">
-                    <div className="w-16 h-16 md:w-20 md:h-20 lg:w-20 lg:h-20 bg-neutral rounded-full flex items-center justify-center">
+                    <div className="w-16 h-16 md:w-20 md:h-20 lg:w-20 lg:h-20 bg-neutral rounded-[16px] flex items-center justify-center">
                       <FiUser size={24} className="md:w-8 md:h-8 lg:w-8 lg:h-8 text-gray-500" />
                     </div>
                     <div>
@@ -377,7 +377,7 @@ const Profile = () => {
                   </div>
                   <nav className="space-y-2">
                     <motion.button 
-                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-full flex items-center gap-3 transition ${
+                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-[12px] flex items-center gap-3 transition ${
                         activeTab === 'profile' 
                           ? 'bg-primary text-white' 
                           : 'bg-neutral hover:bg-neutral/80 text-gray-700'
@@ -389,7 +389,7 @@ const Profile = () => {
                       <FiUser size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Profile
                     </motion.button>
                     <motion.button 
-                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-full flex items-center gap-3 transition ${
+                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-[12px] flex items-center gap-3 transition ${
                         activeTab === 'orders' 
                           ? 'bg-primary text-white' 
                           : 'bg-neutral hover:bg-neutral/80 text-gray-700'
@@ -401,7 +401,7 @@ const Profile = () => {
                       <FiShoppingBag size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Orders
                     </motion.button>
                     <motion.button 
-                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-full flex items-center gap-3 transition ${
+                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-[12px] flex items-center gap-3 transition ${
                         activeTab === 'wishlist' 
                           ? 'bg-primary text-white' 
                           : 'bg-neutral hover:bg-neutral/80 text-gray-700'
@@ -414,7 +414,7 @@ const Profile = () => {
                     </motion.button>
                     <motion.button 
                       onClick={handleLogout}
-                      className="w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-full flex items-center gap-3 bg-red-50 text-red-500 hover:bg-red-100 transition"
+                      className="w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-[12px] flex items-center gap-3 bg-red-50 text-red-500 hover:bg-red-100 transition"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -432,13 +432,13 @@ const Profile = () => {
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
                 {activeTab === 'profile' && (
-                  <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                  <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
                     <div className="flex justify-between items-center mb-6 md:mb-8">
                       <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary">Profile Information</h2>
                       {!isEditing ? (
                         <motion.button 
                           onClick={handleEditClick}
-                          className="p-2 md:p-3 lg:p-3 rounded-full bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
+                          className="p-2 md:p-3 lg:p-3 rounded-[12px] bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
@@ -448,7 +448,7 @@ const Profile = () => {
                         <div className="flex gap-2">
                           <motion.button 
                             onClick={handleSaveChanges}
-                            className="p-2 md:p-3 lg:p-3 rounded-full bg-primary hover:bg-primary/90 text-white transition-colors"
+                            className="p-2 md:p-3 lg:p-3 rounded-[12px] bg-primary hover:bg-primary/90 text-white transition-colors"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
@@ -456,7 +456,7 @@ const Profile = () => {
                           </motion.button>
                           <motion.button 
                             onClick={handleCancelEdit}
-                            className="p-2 md:p-3 lg:p-3 rounded-full bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
+                            className="p-2 md:p-3 lg:p-3 rounded-[12px] bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
@@ -469,13 +469,13 @@ const Profile = () => {
                       <div className="space-y-4">
                         <div>
                           <label className="block text-gray-500 mb-2 font-medium">Name</label>
-                          <div className="p-4 bg-neutral/5 rounded-[16px]">
+                          <div className="p-4 bg-neutral/5 rounded-[8px]">
                             <p className="font-medium text-gray-900">{user.name}</p>
                           </div>
                         </div>
                         <div>
                           <label className="block text-gray-500 mb-2 font-medium">Email</label>
-                          <div className="p-4 bg-neutral/5 rounded-[16px]">
+                          <div className="p-4 bg-neutral/5 rounded-[8px]">
                             <p className="font-medium text-gray-900">{user.email}</p>
                           </div>
                         </div>
@@ -489,11 +489,11 @@ const Profile = () => {
                               name="phone"
                               value={editedUser.phone}
                               onChange={handleInputChange}
-                              className="w-full p-4 border border-neutral-200 rounded-[16px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                              className="w-full p-4 border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                               placeholder="Enter your phone number"
                             />
                           ) : (
-                            <div className="p-4 bg-neutral/5 rounded-[16px]">
+                            <div className="p-4 bg-neutral/5 rounded-[8px]">
                               <p className="font-medium text-gray-900">{user.phone}</p>
                             </div>
                           )}
@@ -505,12 +505,12 @@ const Profile = () => {
                               name="address"
                               value={editedUser.address}
                               onChange={handleInputChange}
-                              className="w-full p-4 border border-neutral-200 rounded-[16px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                              className="w-full p-4 border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                               placeholder="Enter your address"
                               rows="3"
                             />
                           ) : (
-                            <div className="p-4 bg-neutral/5 rounded-[16px]">
+                            <div className="p-4 bg-neutral/5 rounded-[8px]">
                               <p className="font-medium text-gray-900">{user.address}</p>
                             </div>
                           )}
@@ -521,7 +521,7 @@ const Profile = () => {
                 )}
                 
                 {activeTab === 'orders' && (
-                  <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                  <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
                     <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary mb-6 md:mb-8">Order History</h2>
                     
                     {orders.length > 0 ? (
@@ -529,7 +529,7 @@ const Profile = () => {
                         {orders.map(order => (
                           <motion.div 
                             key={order._id}
-                            className="bg-neutral/5 rounded-[24px] p-4 md:p-6 hover:shadow-md transition-shadow"
+                            className="bg-neutral/5 rounded-[12px] p-4 md:p-6 hover:shadow-md transition-shadow"
                             whileHover={{ scale: 1.01 }}
                           >
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4">
@@ -538,7 +538,7 @@ const Profile = () => {
                                 <p className="text-sm md:text-base lg:text-base text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
                               </div>
                               <div className="flex items-center gap-3 md:gap-4">
-                                <span className={`px-3 md:px-4 py-1 md:py-2 rounded-full text-xs md:text-sm font-medium ${
+                                <span className={`px-3 md:px-4 py-1 md:py-2 rounded-[8px] text-xs md:text-sm font-medium ${
                                   order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
                                   order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
                                   'bg-yellow-100 text-yellow-800'
@@ -548,7 +548,7 @@ const Profile = () => {
                                 <span className="text-base md:text-lg lg:text-lg font-medium">₹{order.totalAmount.toFixed(2)}</span>
                                 <motion.button 
                                   onClick={() => fetchOrderDetails(order._id)}
-                                  className="px-3 md:px-4 py-1 md:py-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors text-sm md:text-base"
+                                  className="px-3 md:px-4 py-1 md:py-2 bg-primary text-white rounded-[8px] hover:bg-primary/90 transition-colors text-sm md:text-base"
                                   whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
                                 >
@@ -569,14 +569,14 @@ const Profile = () => {
                 )}
                 
                 {activeTab === 'wishlist' && (
-                  <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                  <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
                     <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary mb-6 md:mb-8">My Wishlist</h2>
                     <div className="text-center py-12 md:py-16">
                       <FiHeart className="mx-auto text-gray-400 mb-4 md:mb-6 md:w-12 md:h-12 lg:w-12 lg:h-12" size={40} />
                       <p className="text-base md:text-lg lg:text-lg text-gray-500 mb-6 md:mb-8">View and manage your saved items in your wishlist.</p>
                       <motion.button 
                         onClick={() => navigate('/wishlist')}
-                        className="bg-primary text-white py-3 md:py-4 px-6 md:px-8 rounded-full hover:bg-primary/90 transition-colors inline-flex items-center gap-2 text-base md:text-lg font-medium"
+                        className="bg-primary text-white py-3 md:py-4 px-6 md:px-8 rounded-[12px] hover:bg-primary/90 transition-colors inline-flex items-center gap-2 text-base md:text-lg font-medium"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -595,7 +595,7 @@ const Profile = () => {
       {showOrderModal && selectedOrder && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <motion.div 
-            className="bg-white rounded-[32px] p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-[16px] p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
@@ -603,7 +603,7 @@ const Profile = () => {
             <div className="flex justify-between items-center mb-8 border-b pb-6">
               <h3 className="text-2xl font-cinzel-decorative text-secondary">Order Details</h3>
               <motion.button
-                className="p-3 rounded-full hover:bg-neutral/10 transition-colors"
+                className="p-3 rounded-[12px] hover:bg-neutral/10 transition-colors"
                 onClick={() => setShowOrderModal(false)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -625,11 +625,11 @@ const Profile = () => {
                     <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                       <FiShoppingBag className="text-primary" /> Order Information
                     </h4>
-                    <div className="bg-neutral/5 rounded-[24px] p-6 space-y-4">
+                    <div className="bg-neutral/5 rounded-[12px] p-6 space-y-4">
                       <p><span className="font-medium">Order ID:</span> {selectedOrder._id}</p>
                       <p><span className="font-medium">Date:</span> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
                       <p><span className="font-medium">Status:</span> 
-                        <span className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
+                        <span className={`ml-2 px-3 py-1 rounded-[8px] text-sm font-medium ${
                           selectedOrder.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
                           selectedOrder.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
@@ -652,7 +652,7 @@ const Profile = () => {
                       <p><span className="font-medium">Total Amount:</span> ₹{selectedOrder.totalAmount.toLocaleString('en-IN')}</p>
                       <p><span className="font-medium">Payment Method:</span> {formatPaymentMethod(selectedOrder.paymentMethod)}</p>
                       <p><span className="font-medium">Payment Status:</span> 
-                        <span className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
+                        <span className={`ml-2 px-3 py-1 rounded-[8px] text-sm font-medium ${
                           selectedOrder.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' :
                           selectedOrder.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
@@ -667,7 +667,7 @@ const Profile = () => {
                     <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                       <FiMapPin className="text-primary" /> Shipping Information
                     </h4>
-                    <div className="bg-neutral/5 rounded-[24px] p-6">
+                    <div className="bg-neutral/5 rounded-[12px] p-6">
                       {selectedOrder.shippingAddress ? (
                         <div className="space-y-3">
                           <p className="font-medium">Delivery Address:</p>
@@ -690,7 +690,7 @@ const Profile = () => {
                 </div>
 
                 <h4 className="text-lg font-medium text-gray-900 mb-4">Order Items</h4>
-                <div className="bg-neutral/5 rounded-[24px] overflow-hidden mb-8">
+                <div className="bg-neutral/5 rounded-[12px] overflow-hidden mb-8">
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-neutral-200">
                       <thead className="bg-neutral/10">
@@ -714,7 +714,7 @@ const Profile = () => {
                                 {item.jewelry && typeof item.jewelry === 'object' && item.jewelry.imageUrl && (
                                   <div className="h-16 w-16 flex-shrink-0">
                                     <img 
-                                      className="h-16 w-16 object-cover rounded-[12px]" 
+                                      className="h-16 w-16 object-cover rounded-[8px]" 
                                       src={
                                         item.jewelry.imageUrl.startsWith('http') 
                                           ? item.jewelry.imageUrl 
@@ -739,7 +739,7 @@ const Profile = () => {
                                       {item.jewelry.categories.map((category, idx) => (
                                         <span 
                                           key={idx}
-                                          className="px-2 py-0.5 text-xs bg-neutral/10 text-gray-600 rounded-full"
+                                          className="px-2 py-0.5 text-xs bg-neutral/10 text-gray-600 rounded-[4px]"
                                         >
                                           {category}
                                         </span>
@@ -798,7 +798,7 @@ const Profile = () => {
                             setRequestType('replacement');
                             setShowRequestModal(true);
                           }}
-                          className="px-6 py-3 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors"
+                          className="px-6 py-3 bg-primary text-white rounded-[12px] hover:bg-primary/90 transition-colors"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
@@ -810,7 +810,7 @@ const Profile = () => {
                             setRequestType('refund');
                             setShowRequestModal(true);
                           }}
-                          className="px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                          className="px-6 py-3 bg-red-500 text-white rounded-[12px] hover:bg-red-600 transition-colors"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
@@ -830,7 +830,7 @@ const Profile = () => {
       {showRequestModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100]">
           <motion.div 
-            className="bg-white rounded-[32px] p-8 w-full max-w-2xl"
+            className="bg-white rounded-[16px] p-8 w-full max-w-2xl"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
@@ -842,7 +842,7 @@ const Profile = () => {
                 <textarea
                   value={requestReason}
                   onChange={(e) => setRequestReason(e.target.value)}
-                  className="w-full px-4 py-3 border border-neutral-200 rounded-[16px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                  className="w-full px-4 py-3 border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                   rows="4"
                   required
                 />
@@ -851,7 +851,7 @@ const Profile = () => {
                 <label className="block text-gray-700 mb-2 font-medium">Upload Image</label>
                 <div className="space-y-4">
                   {requestImagePreview && (
-                    <div className="relative w-full h-48 rounded-[16px] overflow-hidden">
+                    <div className="relative w-full h-48 rounded-[8px] overflow-hidden">
                       <img
                         src={requestImagePreview}
                         alt="Request preview"
@@ -863,7 +863,7 @@ const Profile = () => {
                           setRequestImage(null);
                           setRequestImagePreview(null);
                         }}
-                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-[8px] hover:bg-red-600 transition-colors"
                       >
                         <FiX size={20} />
                       </button>
@@ -883,7 +883,7 @@ const Profile = () => {
                         reader.readAsDataURL(file);
                       }
                     }}
-                    className="w-full p-4 border border-neutral-200 rounded-[16px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                    className="w-full p-4 border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                     required
                   />
                 </div>
@@ -898,7 +898,7 @@ const Profile = () => {
                     setRequestImage(null);
                     setRequestImagePreview(null);
                   }}
-                  className="px-6 py-3 bg-neutral text-gray-700 rounded-full hover:bg-neutral/80 transition-colors"
+                  className="px-6 py-3 bg-neutral text-gray-700 rounded-[12px] hover:bg-neutral/80 transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -907,7 +907,7 @@ const Profile = () => {
                 <motion.button
                   type="submit"
                   disabled={loading || !requestType || !requestReason || !requestImage}
-                  className={`px-6 py-3 bg-primary text-white rounded-full ${
+                  className={`px-6 py-3 bg-primary text-white rounded-[12px] ${
                     loading || !requestType || !requestReason || !requestImage ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90'
                   } transition-colors`}
                   whileHover={{ scale: 1.05 }}
@@ -925,14 +925,14 @@ const Profile = () => {
       {showRequestStatusModal && selectedOrderForRequest && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100]">
           <motion.div 
-            className="bg-white rounded-[32px] p-8 w-full max-w-2xl"
+            className="bg-white rounded-[16px] p-8 w-full max-w-2xl"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
           >
             <h3 className="text-2xl font-cinzel-decorative text-secondary mb-6">Request Status</h3>
             <div className="space-y-6">
-              <div className="bg-neutral/5 rounded-[24px] p-6">
+              <div className="bg-neutral/5 rounded-[12px] p-6">
                 <p className="font-medium text-lg mb-2">Type: {selectedOrderForRequest.type}</p>
                 <p className="mb-4">Status: {selectedOrderForRequest.status}</p>
                 {selectedOrderForRequest.adminResponse && (
@@ -945,7 +945,7 @@ const Profile = () => {
                     setShowRequestStatusModal(false);
                     setSelectedOrderForRequest(null);
                   }}
-                  className="px-6 py-3 bg-neutral text-gray-700 rounded-full hover:bg-neutral/80 transition-colors"
+                  className="px-6 py-3 bg-neutral text-gray-700 rounded-[12px] hover:bg-neutral/80 transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >

@@ -73,13 +73,13 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
         animate={cardAnimation.animate}
         transition={cardAnimation.transition}
         whileHover={cardAnimation.whileHover}
-        className={`group flex flex-col h-full border rounded-b-[20px] rounded-t-[32px] w-full bg-white ${isOutOfStock ? 'opacity-75' : ''}`}
+        className={`group flex flex-col h-full border rounded-b-[10px] rounded-t-[10px] w-full bg-white ${isOutOfStock ? 'opacity-75' : ''}`}
       >
-        {/* Product Image - Responsive height with top border radius of 32px */}
+        {/* Product Image - Responsive height with top border radius of 10px */}
         <motion.div 
           whileHover={imageAnimation.whileHover}
           transition={imageAnimation.transition}
-          className="w-full aspect-square overflow-hidden bg-gray-200 rounded-[32px] relative"
+          className="w-full aspect-square overflow-hidden bg-gray-200 rounded-[10px] relative"
         >
           <Link to={`/product/${productData?._id || '#'}`}>
             <img
@@ -94,15 +94,15 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
           </Link>
           {isOutOfStock && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="text-white text-xl font-bold bg-red-600 px-4 py-2 rounded-full">
+              <span className="text-white text-xl font-bold bg-red-600 px-4 py-2 rounded-[6px]">
                 OUT OF STOCK
               </span>
             </div>
           )}
         </motion.div>
 
-        {/* Product Details - in a container with bottom border radius of 20px */}
-        <div className="mt-2 sm:mt-4 flex flex-col flex-grow rounded-b-[20px] bg-white px-2 sm:px-3 pb-2 sm:pb-3">
+        {/* Product Details - in a container with bottom border radius of 10px */}
+        <div className="mt-2 sm:mt-4 flex flex-col flex-grow rounded-b-[10px] bg-white px-2 sm:px-3 pb-2 sm:pb-3">
           <Link to={`/product/${productData?._id || '#'}`} className="flex-grow">
             {/* Heading */}
             <motion.h3 
@@ -118,7 +118,7 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
                 {productData.categories.map((category, index) => (
                   <span 
                     key={index}
-                    className="px-2 py-0.5 text-xs bg-neutral/10 text-gray-700 rounded-full font-cinzel capitalize"
+                    className="px-2 py-0.5 text-xs bg-neutral/10 text-gray-700 rounded-[6px] font-cinzel capitalize"
                   >
                     {category}
                   </span>
@@ -160,7 +160,7 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
               whileTap={!isOutOfStock ? addToCartButtonAnimation.whileTap : {}}
               onClick={handleAddToCart}
               disabled={isOutOfStock}
-              className={`flex-1 text-sm sm:text-base md:text-xl py-2 sm:py-2 rounded-full transition-colors ${
+              className={`flex-1 text-sm sm:text-base md:text-xl py-2 sm:py-2 rounded-[8px] transition-colors ${
                 isOutOfStock 
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                   : 'bg-primary text-white hover:bg-white/0 hover:text-primary border hover:border-primary'
@@ -176,7 +176,7 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
                 e.preventDefault();
                 onWishlistToggle && onWishlistToggle(productData);
               }}
-              className="text-white hover:text-primary transition-colors text-base bg-primary hover:bg-primary/0 border hover:border-primary aspect-square w-[36px] sm:w-[42px] rounded-full flex-shrink-0 flex items-center justify-center"
+              className="text-white hover:text-primary transition-colors text-base bg-primary hover:bg-primary/0 border hover:border-primary aspect-square w-[36px] sm:w-[42px] rounded-[8px] flex-shrink-0 flex items-center justify-center"
               aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
             >
               <motion.div

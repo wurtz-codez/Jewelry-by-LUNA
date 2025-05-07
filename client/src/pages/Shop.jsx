@@ -177,14 +177,14 @@ const Shop = () => {
             <div className="w-full sm:w-1/4 lg:w-1/5 relative">
               <button 
                 onClick={() => setShowFilters(!showFilters)}
-                className="w-full h-12 sm:h-16 flex text-lg sm:text-xl items-center justify-center gap-2 py-2 sm:py-3 px-4 bg-neutral  rounded-full transition-colors"
+                className="w-full h-12 sm:h-16 flex text-lg sm:text-xl items-center justify-center gap-2 py-2 sm:py-3 px-4 bg-neutral rounded-[8px] transition-colors"
               >
                 <FiFilter />
                 <span>Filters</span>
               </button>
               
               {showFilters && (
-                <div className="fixed sm:absolute inset-0 sm:inset-auto top-16 sm:top-20 left-0 w-full sm:w-[300px] lg:w-[350px] mt-0 sm:mt-2 bg-neutral rounded-none sm:rounded-3xl shadow-lg p-4 sm:p-6 z-[100] flex flex-col h-[calc(100vh-4rem)] sm:h-auto sm:max-h-[calc(80vh-2rem)]">
+                <div className="fixed sm:absolute inset-0 sm:inset-auto top-16 sm:top-20 left-0 w-full sm:w-[300px] lg:w-[350px] mt-0 sm:mt-2 bg-neutral rounded-none sm:rounded-[10px] shadow-lg p-4 sm:p-6 z-[100] flex flex-col h-[calc(100vh-4rem)] sm:h-auto sm:max-h-[calc(80vh-2rem)]">
                   <div className="flex justify-between items-center mb-4 sm:hidden">
                     <h2 className="text-xl font-medium text-neutral-800">Filters</h2>
                     <button 
@@ -201,7 +201,7 @@ const Shop = () => {
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           onClick={() => setSelectedCategory('all')}
-                          className={`p-2 sm:p-3 rounded-full text-sm sm:text-base font-medium transition-all ${
+                          className={`p-2 sm:p-3 rounded-[8px] text-sm sm:text-base font-medium transition-all ${
                             selectedCategory === 'all' 
                               ? 'bg-primary text-white' 
                               : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -213,7 +213,7 @@ const Shop = () => {
                           <button
                             key={category}
                             onClick={() => setSelectedCategory(category)}
-                            className={`p-2 sm:p-3 rounded-full text-sm sm:text-base font-medium transition-all ${
+                            className={`p-2 sm:p-3 rounded-[8px] text-sm sm:text-base font-medium transition-all ${
                               selectedCategory === category 
                                 ? 'bg-primary text-white' 
                                 : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -231,7 +231,7 @@ const Shop = () => {
                       <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => setSelectedTag('all')}
-                          className={`px-3 sm:px-4 py-2 rounded-full text-sm sm:text-base font-medium transition-all ${
+                          className={`px-3 sm:px-4 py-2 rounded-[8px] text-sm sm:text-base font-medium transition-all ${
                             selectedTag === 'all' 
                               ? 'bg-primary text-white' 
                               : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -243,7 +243,7 @@ const Shop = () => {
                           <button
                             key={tag}
                             onClick={() => setSelectedTag(tag)}
-                            className={`px-3 sm:px-4 py-2 rounded-full text-sm sm:text-base font-medium transition-all ${
+                            className={`px-3 sm:px-4 py-2 rounded-[8px] text-sm sm:text-base font-medium transition-all ${
                               selectedTag === tag 
                                 ? 'bg-primary text-white' 
                                 : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -271,7 +271,7 @@ const Shop = () => {
                                 max={priceRange[1]}
                                 value={priceRange[0]}
                                 onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
-                                className="w-full p-2 sm:p-3 pl-10 sm:pl-12 bg-white border border-neutral-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base"
+                                className="w-full p-2 sm:p-3 pl-10 sm:pl-12 bg-white border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base"
                                 placeholder="0"
                               />
                             </div>
@@ -287,7 +287,7 @@ const Shop = () => {
                                 max="100000"
                                 value={priceRange[1]}
                                 onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
-                                className="w-full p-2 sm:p-3 pl-10 sm:pl-12 bg-white border border-neutral-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base"
+                                className="w-full p-2 sm:p-3 pl-10 sm:pl-12 bg-white border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base"
                                 placeholder="100000"
                               />
                             </div>
@@ -311,7 +311,7 @@ const Shop = () => {
                           setSortBy(newSortBy);
                           setSortOrder(newSortOrder);
                         }}
-                        className="w-full p-2 sm:p-3 bg-white border border-neutral-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base text-neutral-700"
+                        className="w-full p-2 sm:p-3 bg-white border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base text-neutral-700"
                       >
                         <option value="createdAt-desc">Newest First</option>
                         <option value="createdAt-asc">Oldest First</option>
@@ -326,7 +326,7 @@ const Shop = () => {
                     {(debouncedSearchTerm || selectedCategory !== 'all' || selectedTag !== 'all' || priceRange[0] > 0 || priceRange[1] < Infinity) && (
                       <button 
                         onClick={clearFilters}
-                        className="w-full py-2 sm:py-3 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-full transition-colors font-medium text-sm sm:text-base"
+                        className="w-full py-2 sm:py-3 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-[8px] transition-colors font-medium text-sm sm:text-base"
                       >
                         Clear All Filters
                       </button>
@@ -345,7 +345,7 @@ const Shop = () => {
                   placeholder="Search for jewelry..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full h-12 sm:h-16 p-2 sm:p-3 pl-12 sm:pl-16 bg-neutral border border-neutral-200 rounded-full focus:outline-none focus:ring-2 focus:ring-neutral-200 text-neutral-900 placeholder-neutral-400 text-base sm:text-lg placeholder:text-base sm:placeholder:text-xl"
+                  className="w-full h-12 sm:h-16 p-2 sm:p-3 pl-12 sm:pl-16 bg-neutral border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-neutral-200 text-neutral-900 placeholder-neutral-400 text-base sm:text-lg placeholder:text-base sm:placeholder:text-xl"
                 />
                 {searchTerm && (
                   <button 

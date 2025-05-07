@@ -288,7 +288,7 @@ function ProductDetailsPage() {
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="container mx-auto px-4 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+          <div className="bg-red-50 border border-red-200 rounded-[8px] p-4 text-center">
             <p className="text-red-600">{error}</p>
           </div>
         </div>
@@ -307,8 +307,8 @@ function ProductDetailsPage() {
               <div className="flex flex-col gap-2.5 max-h-[400px] overflow-y-auto">
                 {productImages.map((image, index) => (
                   <div 
-                    key={index}
-                    className={`w-20 h-20 border cursor-pointer overflow-hidden rounded ${
+                    key={index} 
+                    className={`w-20 h-20 border cursor-pointer overflow-hidden rounded-[6px] ${
                       selectedImage === index ? 'border-[#8B4513]' : 'border-gray-200'
                     }`}
                     onClick={() => setSelectedImage(index)}
@@ -325,12 +325,12 @@ function ProductDetailsPage() {
                 <img 
                   src={productImages[selectedImage]} 
                   alt="Main product" 
-                  className="w-full h-auto object-cover rounded-lg" 
+                  className="w-full h-auto object-cover rounded-[8px]" 
                 />
                 {productImages.length > 1 && (
                   <>
                     <button 
-                      className={`absolute left-2.5 top-1/2 -translate-y-1/2 bg-white/80 border-none rounded-full w-10 h-10 flex items-center justify-center cursor-pointer ${
+                      className={`absolute left-2.5 top-1/2 -translate-y-1/2 bg-white/80 border-none rounded-[6px] w-10 h-10 flex items-center justify-center cursor-pointer ${
                         selectedImage === 0 ? 'opacity-50' : 'opacity-100'
                       }`}
                       onClick={() => setSelectedImage(prev => Math.max(0, prev - 1))}
@@ -341,7 +341,7 @@ function ProductDetailsPage() {
                       </svg>
                     </button>
                     <button 
-                      className={`absolute right-2.5 top-1/2 -translate-y-1/2 bg-white/80 border-none rounded-full w-10 h-10 flex items-center justify-center cursor-pointer ${
+                      className={`absolute right-2.5 top-1/2 -translate-y-1/2 bg-white/80 border-none rounded-[6px] w-10 h-10 flex items-center justify-center cursor-pointer ${
                         selectedImage === productImages.length - 1 ? 'opacity-50' : 'opacity-100'
                       }`}
                       onClick={() => setSelectedImage(prev => Math.min(productImages.length - 1, prev + 1))}
@@ -360,7 +360,7 @@ function ProductDetailsPage() {
               <h1 className="text-2xl font-bold mb-1">{product?.name || 'Product Name'}</h1>
               <p className="text-gray-600 mb-4">{product?.description || 'Product description'}</p>
               
-              <div className="inline-flex items-center bg-gray-800 text-white px-2.5 py-1.5 rounded-full mb-4">
+              <div className="inline-flex items-center bg-gray-800 text-white px-2.5 py-1.5 rounded-[6px] mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
@@ -389,7 +389,8 @@ function ProductDetailsPage() {
                   <div className="flex items-center gap-2.5">
                     <button
                       onClick={() => handleQuantityUpdate(quantity - 1)}
-                      className={`w-9 h-9 border border-gray-200 rounded-l bg-white ${
+                      disabled={quantity <= 1}
+                      className={`w-9 h-9 border border-gray-200 rounded-l-[6px] bg-white ${
                         quantity > 1 ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-50'
                       }`}
                     >
@@ -405,7 +406,7 @@ function ProductDetailsPage() {
                     />
                     <button
                       onClick={() => handleQuantityUpdate(quantity + 1)}
-                      className={`w-9 h-9 border border-gray-200 rounded-r bg-white ${
+                      className={`w-9 h-9 border border-gray-200 rounded-r-[6px] bg-white ${
                         quantity < product.stock ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-50'
                       }`}
                     >
@@ -423,7 +424,7 @@ function ProductDetailsPage() {
                     product.categories.map((category, index) => (
                       <span 
                         key={index}
-                        className="px-3 py-1.5 bg-gray-200 rounded-full text-sm capitalize"
+                        className="px-3 py-1.5 bg-gray-200 rounded-[8px] text-sm capitalize"
                       >
                         {category}
                       </span>
@@ -441,7 +442,7 @@ function ProductDetailsPage() {
                     product.tags.map((tag, index) => (
                       <span 
                         key={index} 
-                        className="px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-600 rounded-full text-sm capitalize"
+                        className="px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-600 rounded-[6px] text-sm capitalize"
                       >
                         {tag}
                       </span>
@@ -453,7 +454,7 @@ function ProductDetailsPage() {
               
               <div className="flex gap-2.5 mb-8">
                 <button 
-                  className={`flex-1 py-3 px-4 rounded ${
+                  className={`flex-1 py-3 px-4 rounded-[8px] ${
                     (product?.stock > 0 && product?.isAvailable) 
                       ? 'bg-[#8B4513] text-white cursor-pointer' 
                       : 'bg-gray-300 text-white cursor-not-allowed'
@@ -471,7 +472,7 @@ function ProductDetailsPage() {
                 <button 
                   className={`py-3 px-4 bg-white ${
                     isInWishlist ? 'text-pink-500' : 'text-gray-800'
-                  } border border-gray-200 rounded flex items-center justify-center gap-2 cursor-pointer`}
+                  } border border-gray-200 rounded-[8px] flex items-center justify-center gap-2 cursor-pointer`}
                   onClick={handleWishlistToggle}
                 >
                   {isInWishlist ? (
@@ -541,16 +542,16 @@ function ProductDetailsPage() {
               <h2 className="text-2xl mb-2.5">{product?.rating || '4.5'}</h2>
               <div className="mb-2.5">{renderStars(product?.rating || 4.5)}</div>
               <p className="mb-2.5">33 ratings</p>
-              <button className="py-2 px-4 bg-gray-800 text-white border-none rounded cursor-pointer">RATE</button>
+              <button className="py-2 px-4 bg-gray-800 text-white border-none rounded-[8px] cursor-pointer">RATE</button>
             </div>
             
             <div className="flex-1">
               {ratingData.map(item => (
                 <div key={item.stars} className="flex items-center gap-2.5 mb-1">
                   <span className="w-12">{item.stars} ★</span>
-                  <div className="flex-1 h-2 bg-gray-200 rounded">
+                  <div className="flex-1 h-2 bg-gray-200 rounded-[4px]">
                     <div 
-                      className="h-full bg-yellow-400 rounded"
+                      className="h-full bg-yellow-400 rounded-[4px]"
                       style={{ width: `${(item.count / 33) * 100}%` }}
                     ></div>
                   </div>
@@ -565,7 +566,7 @@ function ProductDetailsPage() {
             
             {relatedProducts.length > 0 ? (
               <div className="relative">
-                <button className="absolute -left-8 top-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer">
+                <button className="absolute -left-8 top-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-[8px] w-10 h-10 flex items-center justify-center cursor-pointer">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m15 18-6-6 6-6" />
                   </svg>
@@ -582,7 +583,7 @@ function ProductDetailsPage() {
                       : placeholderImage;
                     
                     return (
-                      <div key={relatedProduct._id} className="border border-gray-200 rounded overflow-hidden">
+                      <div key={relatedProduct._id} className="border border-gray-200 rounded-[12px] overflow-hidden">
                         <div className="h-50 overflow-hidden">
                           <img src={productImage} alt={relatedProduct.name} className="w-full h-full object-cover" />
                         </div>

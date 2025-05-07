@@ -21,7 +21,7 @@ const Contact = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12">
           {/* Contact Form */}
           <motion.div 
-            className="bg-white p-4 sm:p-6 md:p-8 rounded-[24px] sm:rounded-[32px] shadow-lg"
+            className="bg-white p-4 sm:p-6 md:p-8 rounded-[12px] sm:rounded-[12px] shadow-lg"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -33,7 +33,7 @@ const Contact = () => {
                 <input 
                   type="text" 
                   id="name" 
-                  className="w-full p-3 sm:p-4 bg-white border border-neutral-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm sm:text-base" 
+                  className="w-full p-3 sm:p-4 bg-white border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm sm:text-base" 
                   placeholder="Your Name"
                 />
               </div>
@@ -42,7 +42,7 @@ const Contact = () => {
                 <input 
                   type="email" 
                   id="email" 
-                  className="w-full p-3 sm:p-4 bg-white border border-neutral-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm sm:text-base" 
+                  className="w-full p-3 sm:p-4 bg-white border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm sm:text-base" 
                   placeholder="your@email.com"
                 />
               </div>
@@ -51,7 +51,7 @@ const Contact = () => {
                 <input 
                   type="text" 
                   id="subject" 
-                  className="w-full p-3 sm:p-4 bg-white border border-neutral-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm sm:text-base" 
+                  className="w-full p-3 sm:p-4 bg-white border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm sm:text-base" 
                   placeholder="How can we help you?"
                 />
               </div>
@@ -60,13 +60,13 @@ const Contact = () => {
                 <textarea 
                   id="message" 
                   rows="4" 
-                  className="w-full p-3 sm:p-4 bg-white border border-neutral-200 rounded-[20px] sm:rounded-[24px] focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm sm:text-base resize-none"
+                  className="w-full p-3 sm:p-4 bg-white border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 text-sm sm:text-base resize-none"
                   placeholder="Your message here..."
                 ></textarea>
               </div>
               <motion.button 
                 type="submit" 
-                className="w-full py-3 sm:py-4 px-6 sm:px-8 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 text-base sm:text-lg font-medium"
+                className="w-full py-3 sm:py-4 px-6 sm:px-8 bg-primary text-white rounded-[8px] hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 text-base sm:text-lg font-medium"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -80,7 +80,7 @@ const Contact = () => {
           <div className="space-y-6 sm:space-y-8">
             {/* Store Information */}
             <motion.div 
-              className="bg-white p-4 sm:p-6 md:p-8 rounded-[24px] sm:rounded-[32px] shadow-lg"
+              className="bg-white p-4 sm:p-6 md:p-8 rounded-[12px] sm:rounded-[12px] shadow-lg"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -125,7 +125,7 @@ const Contact = () => {
 
             {/* Social Media */}
             <motion.div 
-              className="bg-white p-4 sm:p-6 md:p-8 rounded-[24px] sm:rounded-[32px] shadow-lg"
+              className="bg-white p-4 sm:p-6 md:p-8 rounded-[12px] sm:rounded-[12px] shadow-lg"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -136,7 +136,7 @@ const Contact = () => {
                   href="https://instagram.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-neutral flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition-colors"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-[6px] bg-neutral flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition-colors"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
@@ -146,7 +146,7 @@ const Contact = () => {
                   href="https://facebook.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-neutral flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition-colors"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-[6px] bg-neutral flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition-colors"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
@@ -156,7 +156,7 @@ const Contact = () => {
                   href="https://twitter.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-neutral flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition-colors"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-[6px] bg-neutral flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition-colors"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >

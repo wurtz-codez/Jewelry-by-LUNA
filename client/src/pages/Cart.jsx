@@ -348,7 +348,7 @@ const Cart = () => {
           <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 lg:gap-12">
             {/* Cart Items */}
             <div className="lg:w-3/4">
-              <div className="bg-white rounded-[32px]">
+              <div className="bg-white rounded-[16px]">
                 <AnimatePresence>
                   <div className="space-y-4">
                     {cart?.items?.filter(item => item?.jewelry).map(item => (
@@ -358,10 +358,10 @@ const Cart = () => {
                         initial="initial"
                         animate="animate"
                         exit="exit"
-                        className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 lg:gap-12 p-4 rounded-[32px] bg-white shadow-lg transition-colors"
+                        className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 lg:gap-12 p-4 rounded-[16px] bg-white shadow-lg transition-colors"
                       >
                         <motion.div 
-                          className="w-full sm:w-40 h-40 sm:h-48 rounded-[24px] overflow-hidden flex-shrink-0"
+                          className="w-full sm:w-40 h-40 sm:h-48 rounded-[14px] overflow-hidden flex-shrink-0"
                           whileHover={{ scale: 1.02 }}
                           transition={{ duration: 0.2 }}
                         >
@@ -387,7 +387,7 @@ const Cart = () => {
                             {item.jewelry.name}
                             {item.jewelry.discount > 0 && (
                               <motion.span 
-                                className="ml-2 sm:ml-3 px-2 sm:px-3 py-0.5 sm:py-1 text-sm sm:text-base bg-green-100 text-green-700 rounded-full font-cinzel inline-block align-middle"
+                                className="ml-2 sm:ml-3 px-2 sm:px-3 py-0.5 sm:py-1 text-sm sm:text-base bg-green-100 text-green-700 rounded-[8px] font-cinzel inline-block align-middle"
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.3 }}
@@ -408,7 +408,7 @@ const Cart = () => {
                                   initial="initial"
                                   animate="animate"
                                   whileHover="hover"
-                                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-neutral/10 text-gray-700 rounded-full font-cinzel hover:bg-neutral/20 transition-colors border"
+                                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-neutral/10 text-gray-700 rounded-[8px] font-cinzel hover:bg-neutral/20 transition-colors border"
                                 >
                                   {category}
                                 </motion.span>
@@ -419,16 +419,8 @@ const Cart = () => {
                           <div className="mt-4 sm:mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
                             {/* Quantity Controls */}
                             <div className="flex items-center gap-4 sm:gap-6">
-                              {/* <motion.button 
-                                onClick={() => handleUpdateQuantity(item.jewelry._id, item.quantity - 1)}
-                                className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-neutral hover:bg-neutral/80 text-gray-700 flex items-center justify-center transition-colors text-xl sm:text-2xl"
-                                whileHover={quantityControlAnimation.hover}
-                                whileTap={quantityControlAnimation.tap}
-                              >
-                                -
-                              </motion.button> */}
                               <motion.span 
-                                className="text-xl sm:text-2xl font-montserrat-alt px-6 sm:px-10 py-2 sm:py-4 rounded-full bg-neutral/5"
+                                className="text-xl sm:text-2xl font-montserrat-alt px-6 sm:px-10 py-2 sm:py-4 rounded-[12px] bg-neutral/5"
                                 variants={priceUpdateAnimation}
                                 initial="initial"
                                 animate="animate"
@@ -436,14 +428,6 @@ const Cart = () => {
                               >
                                 {item.quantity}
                               </motion.span>
-                              {/* <motion.button 
-                                onClick={() => handleUpdateQuantity(item.jewelry._id, item.quantity + 1)}
-                                className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-neutral hover:bg-neutral/80 text-gray-700 flex items-center justify-center transition-colors text-xl sm:text-2xl"
-                                whileHover={quantityControlAnimation.hover}
-                                whileTap={quantityControlAnimation.tap}
-                              >
-                                +
-                              </motion.button> */}
                             </div>
                             
                             {/* Price Calculation */}
@@ -474,7 +458,7 @@ const Cart = () => {
                         
                         <motion.button 
                           onClick={() => handleRemoveItem(item.jewelry._id)}
-                          className="p-3 sm:p-5 rounded-full hover:bg-red-50 text-red-500 hover:text-red-600 transition-colors self-start sm:self-center"
+                          className="p-3 sm:p-5 rounded-[8px] hover:bg-red-50 text-red-500 hover:text-red-600 transition-colors self-start sm:self-center"
                           variants={removeButtonAnimation}
                           initial="initial"
                           animate="animate"
@@ -496,7 +480,7 @@ const Cart = () => {
               initial="initial"
               animate="animate"
             >
-              <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 lg:p-12 sticky top-24">
+              <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 lg:p-12 sticky top-24">
                 <h2 className="text-2xl sm:text-3xl font-cinzel-decorative text-secondary mb-6 sm:mb-8">Order Summary</h2>
                 
                 <div className="space-y-4 sm:space-y-6">
@@ -545,7 +529,7 @@ const Cart = () => {
                 
                 <motion.button 
                   onClick={openCheckoutModal}
-                  className="w-full mt-6 sm:mt-10 bg-primary text-white py-4 sm:py-5 px-6 sm:px-8 rounded-full hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 sm:gap-3 text-lg sm:text-xl font-medium"
+                  className="w-full mt-6 sm:mt-10 bg-primary text-white py-4 sm:py-5 px-6 sm:px-8 rounded-[12px] hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 sm:gap-3 text-lg sm:text-xl font-medium"
                   whileHover={buttonHoverAnimation}
                   whileTap={buttonTapAnimation}
                 >
@@ -555,7 +539,7 @@ const Cart = () => {
                 
                 <motion.button 
                   onClick={() => navigate('/shop')}
-                  className="w-full mt-4 sm:mt-6 bg-neutral text-gray-700 py-4 sm:py-5 px-6 sm:px-8 rounded-full hover:bg-neutral/80 transition-colors flex items-center justify-center gap-2 sm:gap-3 text-lg sm:text-xl font-medium"
+                  className="w-full mt-4 sm:mt-6 bg-neutral text-gray-700 py-4 sm:py-5 px-6 sm:px-8 rounded-[12px] hover:bg-neutral/80 transition-colors flex items-center justify-center gap-2 sm:gap-3 text-lg sm:text-xl font-medium"
                   whileHover={buttonHoverAnimation}
                   whileTap={buttonTapAnimation}
                 >
@@ -567,7 +551,7 @@ const Cart = () => {
           </div>
         ) : (
           <motion.div 
-            className="text-center py-16 sm:py-24 bg-white rounded-[32px] shadow-lg max-w-4xl mx-auto"
+            className="text-center py-16 sm:py-24 bg-white rounded-[16px] shadow-lg max-w-4xl mx-auto"
             variants={emptyCartAnimation}
             initial="initial"
             animate="animate"
@@ -577,7 +561,7 @@ const Cart = () => {
             <p className="text-gray-500 mb-8 sm:mb-10 text-lg sm:text-xl">Looks like you haven't added any jewelry to your cart yet.</p>
             <motion.button 
               onClick={() => navigate('/shop')}
-              className="bg-primary text-white py-4 sm:py-5 px-8 sm:px-10 rounded-full hover:bg-primary/90 transition-colors inline-flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-medium"
+              className="bg-primary text-white py-4 sm:py-5 px-8 sm:px-10 rounded-[12px] hover:bg-primary/90 transition-colors inline-flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-medium"
               whileHover={buttonHoverAnimation}
               whileTap={buttonTapAnimation}
             >
@@ -591,12 +575,12 @@ const Cart = () => {
       {/* Checkout Modal */}
       {showCheckoutModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-[32px] p-10 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-[16px] p-10 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-10 border-b pb-8">
               <h2 className="text-4xl font-cinzel-decorative text-secondary">Complete Your Order</h2>
               <button
                 onClick={closeCheckoutModal}
-                className="p-3 rounded-full hover:bg-neutral/10 transition-colors"
+                className="p-3 rounded-[8px] hover:bg-neutral/10 transition-colors"
               >
                 <FiX size={28} />
               </button>
@@ -616,7 +600,7 @@ const Cart = () => {
                       value={shippingAddress.street}
                       onChange={handleShippingChange}
                       placeholder="123 Main Street"
-                      className={`w-full border ${errors.street ? 'border-red-500' : 'border-neutral-200'} rounded-full px-6 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
+                      className={`w-full border ${errors.street ? 'border-red-500' : 'border-neutral-200'} rounded-[8px] px-6 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
                     />
                     {errors.street && <p className="text-red-500 text-sm mt-2">{errors.street}</p>}
                   </div>
@@ -629,7 +613,7 @@ const Cart = () => {
                       value={shippingAddress.landmark}
                       onChange={handleShippingChange}
                       placeholder="Near Bank, Behind Mall, etc."
-                      className="w-full border border-neutral-200 rounded-full px-6 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                      className="w-full border border-neutral-200 rounded-[8px] px-6 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                     />
                   </div>
                   
@@ -642,7 +626,7 @@ const Cart = () => {
                         value={shippingAddress.city}
                         onChange={handleShippingChange}
                         placeholder="Mumbai"
-                        className={`w-full border ${errors.city ? 'border-red-500' : 'border-neutral-200'} rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
+                        className={`w-full border ${errors.city ? 'border-red-500' : 'border-neutral-200'} rounded-[8px] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
                       />
                       {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
                     </div>
@@ -655,7 +639,7 @@ const Cart = () => {
                         value={shippingAddress.state}
                         onChange={handleShippingChange}
                         placeholder="Maharashtra"
-                        className={`w-full border ${errors.state ? 'border-red-500' : 'border-neutral-200'} rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
+                        className={`w-full border ${errors.state ? 'border-red-500' : 'border-neutral-200'} rounded-[8px] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
                       />
                       {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
                     </div>
@@ -670,7 +654,7 @@ const Cart = () => {
                         value={shippingAddress.zipCode}
                         onChange={handleShippingChange}
                         placeholder="400001"
-                        className={`w-full border ${errors.zipCode ? 'border-red-500' : 'border-neutral-200'} rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
+                        className={`w-full border ${errors.zipCode ? 'border-red-500' : 'border-neutral-200'} rounded-[8px] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
                       />
                       {errors.zipCode && <p className="text-red-500 text-sm mt-1">{errors.zipCode}</p>}
                     </div>
@@ -683,55 +667,20 @@ const Cart = () => {
                         value={shippingAddress.country}
                         onChange={handleShippingChange}
                         readOnly
-                        className="w-full border border-neutral-200 rounded-full px-4 py-3 bg-neutral/5"
+                        className="w-full border border-neutral-200 rounded-[8px] px-4 py-3 bg-neutral/5"
                       />
                     </div>
                   </div>
                 </div>
-                
-                {/* <h3 className="text-xl font-cinzel-decorative text-secondary mt-8 mb-6">Payment Method</h3>
-                <div className="space-y-4">
-                  {paymentMethods.map(method => (
-                    <div key={method.id} className="flex items-center">
-                      <input 
-                        type="radio" 
-                        id={method.id} 
-                        name="payment-method"
-                        value={method.id}
-                        checked={paymentMethod === method.id}
-                        onChange={() => setPaymentMethod(method.id)}
-                        className="w-5 h-5 text-primary focus:ring-primary"
-                      />
-                      <label htmlFor={method.id} className="ml-3 text-gray-700">{method.name}</label>
-                    </div>
-                  ))}
-                </div> */}
-                
-                {/* <h3 className="text-xl font-cinzel-decorative text-secondary mt-8 mb-6">Apply Coupon</h3>
-                <div>
-                  <select
-                    value={selectedCoupon}
-                    onChange={(e) => setSelectedCoupon(e.target.value)}
-                    className="w-full border border-neutral-200 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-white text-gray-800"
-                  >
-                    <option value="">Select a coupon (optional)</option>
-                    {availableCoupons.map(coupon => (
-                      <option key={coupon.code} value={coupon.code}>
-                        {coupon.code} - {coupon.description}
-                      </option>
-                    ))}
-                  </select>
-                </div> */}
-                
               </div>
               
               {/* Right column - Order Summary */}
               <div>
                 <h3 className="text-xl font-cinzel-decorative text-secondary mb-6">Order Summary</h3>
-                <div className="bg-neutral/5 rounded-[20px] p-6">
+                <div className="bg-neutral/5 rounded-[14px] p-6">
                   {cart?.items?.filter(item => item?.jewelry).map(item => (
                     <div key={item.jewelry._id} className="flex items-center gap-4 mb-4 pb-4 border-b border-neutral-200 last:border-0">
-                      <div className="w-16 h-16 rounded-[12px] overflow-hidden">
+                      <div className="w-16 h-16 rounded-[10px] overflow-hidden">
                         <img 
                           src={getImageUrl(item.jewelry)}
                           alt={item.jewelry.name} 
@@ -776,7 +725,7 @@ const Cart = () => {
                   <button
                     onClick={handleCheckout}
                     disabled={isProcessing}
-                    className={`w-full py-4 rounded-full flex items-center justify-center gap-2 text-lg font-medium ${
+                    className={`w-full py-4 rounded-[8px] flex items-center justify-center gap-2 text-lg font-medium ${
                       isProcessing 
                         ? 'bg-neutral/50 text-gray-500 cursor-not-allowed' 
                         : 'bg-primary text-white hover:bg-primary/90'
@@ -800,7 +749,7 @@ const Cart = () => {
                   
                   <button
                     onClick={closeCheckoutModal}
-                    className="w-full py-4 bg-neutral text-gray-700 rounded-full hover:bg-neutral/80 transition-colors text-lg font-medium"
+                    className="w-full py-4 bg-neutral text-gray-700 rounded-[8px] hover:bg-neutral/80 transition-colors text-lg font-medium"
                   >
                     Cancel
                   </button>
