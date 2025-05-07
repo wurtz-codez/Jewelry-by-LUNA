@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { FiEdit, FiUser, FiShoppingBag, FiHeart, FiLogOut, FiX, FiLoader, FiMapPin, FiCreditCard } from 'react-icons/fi';
+import { FiEdit, FiUser, FiShoppingBag, FiHeart, FiLogOut, FiX, FiLoader, FiMapPin, FiCreditCard, FiCheck } from 'react-icons/fi';
 import Toast from '../components/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
@@ -60,13 +60,38 @@ const Profile = () => {
   // Add this new state for showing request status
   const [showRequestStatusModal, setShowRequestStatusModal] = useState(false);
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedUser, setEditedUser] = useState({
+    phone: '',
+    address: ''
+  });
+
   useEffect(() => {
     if (currentUser) {
-      setUser({
-        ...user,
-        name: currentUser.name,
-        email: currentUser.email
-      });
+      const fetchUserProfile = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) return;
+
+          const response = await axios.get(`${API_BASE_URL}/auth/me`, {
+            headers: { 'x-auth-token': token }
+          });
+
+          setUser({
+            name: response.data.name,
+            email: response.data.email,
+            phone: response.data.phone || '(123) 456-7890',
+            address: response.data.address || '123 Main St, New York, NY 10001'
+          });
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+          setToastMessage('Failed to fetch user profile');
+          setToastType('error');
+          setShowToast(true);
+        }
+      };
+
+      fetchUserProfile();
       fetchOrders();
       fetchUserRequests();
       setIsInitialLoading(false);
@@ -231,6 +256,64 @@ const Profile = () => {
     );
   };
 
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setEditedUser({
+      phone: user.phone,
+      address: user.address
+    });
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await axios.put(
+        `${API_BASE_URL}/auth/profile`,
+        {
+          phone: editedUser.phone,
+          address: editedUser.address
+        },
+        {
+          headers: { 'x-auth-token': token }
+        }
+      );
+
+      setUser(prev => ({
+        ...prev,
+        phone: editedUser.phone,
+        address: editedUser.address
+      }));
+
+      setToastMessage('Profile updated successfully');
+      setToastType('success');
+      setShowToast(true);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setToastMessage(error.response?.data?.message || 'Failed to update profile');
+      setToastType('error');
+      setShowToast(true);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedUser({
+      phone: user.phone,
+      address: user.address
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditedUser(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   if (isInitialLoading) {
     return <LoadingScreen />;
   }
@@ -347,13 +430,35 @@ const Profile = () => {
                   <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
                     <div className="flex justify-between items-center mb-6 md:mb-8">
                       <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary">Profile Information</h2>
-                      <motion.button 
-                        className="p-2 md:p-3 lg:p-3 rounded-full bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <FiEdit size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" />
-                      </motion.button>
+                      {!isEditing ? (
+                        <motion.button 
+                          onClick={handleEditClick}
+                          className="p-2 md:p-3 lg:p-3 rounded-full bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <FiEdit size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" />
+                        </motion.button>
+                      ) : (
+                        <div className="flex gap-2">
+                          <motion.button 
+                            onClick={handleSaveChanges}
+                            className="p-2 md:p-3 lg:p-3 rounded-full bg-primary hover:bg-primary/90 text-white transition-colors"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <FiCheck size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" />
+                          </motion.button>
+                          <motion.button 
+                            onClick={handleCancelEdit}
+                            className="p-2 md:p-3 lg:p-3 rounded-full bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <FiX size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" />
+                          </motion.button>
+                        </div>
+                      )}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-6">
                       <div className="space-y-4">
@@ -373,15 +478,37 @@ const Profile = () => {
                       <div className="space-y-4">
                         <div>
                           <label className="block text-gray-500 mb-2 font-medium">Phone</label>
-                          <div className="p-4 bg-neutral/5 rounded-[16px]">
-                            <p className="font-medium text-gray-900">{user.phone}</p>
-                          </div>
+                          {isEditing ? (
+                            <input
+                              type="tel"
+                              name="phone"
+                              value={editedUser.phone}
+                              onChange={handleInputChange}
+                              className="w-full p-4 border border-neutral-200 rounded-[16px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                              placeholder="Enter your phone number"
+                            />
+                          ) : (
+                            <div className="p-4 bg-neutral/5 rounded-[16px]">
+                              <p className="font-medium text-gray-900">{user.phone}</p>
+                            </div>
+                          )}
                         </div>
                         <div>
                           <label className="block text-gray-500 mb-2 font-medium">Address</label>
-                          <div className="p-4 bg-neutral/5 rounded-[16px]">
-                            <p className="font-medium text-gray-900">{user.address}</p>
-                          </div>
+                          {isEditing ? (
+                            <textarea
+                              name="address"
+                              value={editedUser.address}
+                              onChange={handleInputChange}
+                              className="w-full p-4 border border-neutral-200 rounded-[16px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                              placeholder="Enter your address"
+                              rows="3"
+                            />
+                          ) : (
+                            <div className="p-4 bg-neutral/5 rounded-[16px]">
+                              <p className="font-medium text-gray-900">{user.address}</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
