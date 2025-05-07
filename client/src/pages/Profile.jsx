@@ -238,7 +238,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-white">
       <Navbar variant="white" />
-      <div className="page-container py-24 sm:py-24 md:py-32 mx-4 sm:mx-6 lg:mx-32 max-w-8xl flex-grow">
+      <div className="page-container py-24 sm:py-24 md:py-24 lg:py-32 mx-4 sm:mx-6 md:mx-12 lg:mx-32 max-w-8xl flex-grow">
         {!currentUser ? (
           <motion.div 
             className="text-center py-16 sm:py-24 bg-white rounded-[32px] shadow-lg max-w-4xl mx-auto"
@@ -272,24 +272,24 @@ const Profile = () => {
             <div className="flex flex-col md:flex-row gap-8">
               {/* Sidebar */}
               <motion.div 
-                className="md:w-1/4"
+                className="md:w-1/3 lg:w-1/4"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8">
+                <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
                   <div className="flex items-center gap-4 mb-8">
-                    <div className="w-20 h-20 bg-neutral rounded-full flex items-center justify-center">
-                      <FiUser size={32} className="text-gray-500" />
+                    <div className="w-16 h-16 md:w-20 md:h-20 lg:w-20 lg:h-20 bg-neutral rounded-full flex items-center justify-center">
+                      <FiUser size={24} className="md:w-8 md:h-8 lg:w-8 lg:h-8 text-gray-500" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-cinzel-decorative text-secondary">{user.name}</h2>
-                      <p className="text-gray-500">{user.email}</p>
+                      <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary">{user.name}</h2>
+                      <p className="text-sm md:text-base lg:text-base text-gray-500">{user.email}</p>
                     </div>
                   </div>
                   <nav className="space-y-2">
                     <motion.button 
-                      className={`w-full text-left py-4 px-6 rounded-full flex items-center gap-3 transition ${
+                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-full flex items-center gap-3 transition ${
                         activeTab === 'profile' 
                           ? 'bg-primary text-white' 
                           : 'bg-neutral hover:bg-neutral/80 text-gray-700'
@@ -298,10 +298,10 @@ const Profile = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <FiUser size={20} /> Profile
+                      <FiUser size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Profile
                     </motion.button>
                     <motion.button 
-                      className={`w-full text-left py-4 px-6 rounded-full flex items-center gap-3 transition ${
+                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-full flex items-center gap-3 transition ${
                         activeTab === 'orders' 
                           ? 'bg-primary text-white' 
                           : 'bg-neutral hover:bg-neutral/80 text-gray-700'
@@ -310,10 +310,10 @@ const Profile = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <FiShoppingBag size={20} /> Orders
+                      <FiShoppingBag size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Orders
                     </motion.button>
                     <motion.button 
-                      className={`w-full text-left py-4 px-6 rounded-full flex items-center gap-3 transition ${
+                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-full flex items-center gap-3 transition ${
                         activeTab === 'wishlist' 
                           ? 'bg-primary text-white' 
                           : 'bg-neutral hover:bg-neutral/80 text-gray-700'
@@ -322,15 +322,15 @@ const Profile = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <FiHeart size={20} /> Wishlist
+                      <FiHeart size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Wishlist
                     </motion.button>
                     <motion.button 
                       onClick={handleLogout}
-                      className="w-full text-left py-4 px-6 rounded-full flex items-center gap-3 bg-red-50 text-red-500 hover:bg-red-100 transition"
+                      className="w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-full flex items-center gap-3 bg-red-50 text-red-500 hover:bg-red-100 transition"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <FiLogOut size={20} /> Logout
+                      <FiLogOut size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Logout
                     </motion.button>
                   </nav>
                 </div>
@@ -338,24 +338,24 @@ const Profile = () => {
               
               {/* Main content */}
               <motion.div 
-                className="md:w-3/4"
+                className="md:w-2/3 lg:w-3/4"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
                 {activeTab === 'profile' && (
-                  <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8">
-                    <div className="flex justify-between items-center mb-8">
-                      <h2 className="text-2xl font-cinzel-decorative text-secondary">Profile Information</h2>
+                  <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                    <div className="flex justify-between items-center mb-6 md:mb-8">
+                      <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary">Profile Information</h2>
                       <motion.button 
-                        className="p-3 rounded-full bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
+                        className="p-2 md:p-3 lg:p-3 rounded-full bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        <FiEdit size={20} />
+                        <FiEdit size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" />
                       </motion.button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-6">
                       <div className="space-y-4">
                         <div>
                           <label className="block text-gray-500 mb-2 font-medium">Name</label>
@@ -389,34 +389,34 @@ const Profile = () => {
                 )}
                 
                 {activeTab === 'orders' && (
-                  <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8">
-                    <h2 className="text-2xl font-cinzel-decorative text-secondary mb-8">Order History</h2>
+                  <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                    <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary mb-6 md:mb-8">Order History</h2>
                     
                     {orders.length > 0 ? (
-                      <div className="space-y-6">
+                      <div className="space-y-4 md:space-y-6">
                         {orders.map(order => (
                           <motion.div 
                             key={order._id}
-                            className="bg-neutral/5 rounded-[24px] p-6 hover:shadow-md transition-shadow"
+                            className="bg-neutral/5 rounded-[24px] p-4 md:p-6 hover:shadow-md transition-shadow"
                             whileHover={{ scale: 1.01 }}
                           >
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4">
                               <div>
-                                <h3 className="text-lg font-medium text-gray-900">Order #{order._id.slice(-6)}</h3>
-                                <p className="text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                <h3 className="text-base md:text-lg lg:text-lg font-medium text-gray-900">Order #{order._id.slice(-6)}</h3>
+                                <p className="text-sm md:text-base lg:text-base text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
                               </div>
-                              <div className="flex items-center gap-4">
-                                <span className={`px-4 py-2 rounded-full text-sm font-medium ${
+                              <div className="flex items-center gap-3 md:gap-4">
+                                <span className={`px-3 md:px-4 py-1 md:py-2 rounded-full text-xs md:text-sm font-medium ${
                                   order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
                                   order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
                                   'bg-yellow-100 text-yellow-800'
                                 }`}>
                                   {order.requestStatus}
                                 </span>
-                                <span className="text-lg font-medium">₹{order.totalAmount.toFixed(2)}</span>
+                                <span className="text-base md:text-lg lg:text-lg font-medium">₹{order.totalAmount.toFixed(2)}</span>
                                 <motion.button 
                                   onClick={() => fetchOrderDetails(order._id)}
-                                  className="px-4 py-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors"
+                                  className="px-3 md:px-4 py-1 md:py-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors text-sm md:text-base"
                                   whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
                                 >
@@ -428,23 +428,23 @@ const Profile = () => {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-16">
-                        <FiShoppingBag className="mx-auto text-gray-400 mb-6" size={48} />
-                        <p className="text-gray-500 text-lg">You haven't placed any orders yet.</p>
+                      <div className="text-center py-12 md:py-16">
+                        <FiShoppingBag className="mx-auto text-gray-400 mb-4 md:mb-6 md:w-12 md:h-12 lg:w-12 lg:h-12" size={40} />
+                        <p className="text-base md:text-lg lg:text-lg text-gray-500">You haven't placed any orders yet.</p>
                       </div>
                     )}
                   </div>
                 )}
                 
                 {activeTab === 'wishlist' && (
-                  <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8">
-                    <h2 className="text-2xl font-cinzel-decorative text-secondary mb-8">My Wishlist</h2>
-                    <div className="text-center py-16">
-                      <FiHeart className="mx-auto text-gray-400 mb-6" size={48} />
-                      <p className="text-gray-500 text-lg mb-8">View and manage your saved items in your wishlist.</p>
+                  <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                    <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary mb-6 md:mb-8">My Wishlist</h2>
+                    <div className="text-center py-12 md:py-16">
+                      <FiHeart className="mx-auto text-gray-400 mb-4 md:mb-6 md:w-12 md:h-12 lg:w-12 lg:h-12" size={40} />
+                      <p className="text-base md:text-lg lg:text-lg text-gray-500 mb-6 md:mb-8">View and manage your saved items in your wishlist.</p>
                       <motion.button 
                         onClick={() => navigate('/wishlist')}
-                        className="bg-primary text-white py-4 px-8 rounded-full hover:bg-primary/90 transition-colors inline-flex items-center gap-2 text-lg font-medium"
+                        className="bg-primary text-white py-3 md:py-4 px-6 md:px-8 rounded-full hover:bg-primary/90 transition-colors inline-flex items-center gap-2 text-base md:text-lg font-medium"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
