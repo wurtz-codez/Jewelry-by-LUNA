@@ -8,7 +8,10 @@ const auth = require('../middleware/auth');
 router.get('/', auth, async (req, res) => {
   try {
     const cart = await Cart.findOne({ user: req.user.id })
-      .populate('items.jewelry', 'name sellingPrice imageUrl');
+      .populate({
+        path: 'items.jewelry',
+        select: 'name sellingPrice price imageUrl description'
+      });
     
     if (!cart) {
       return res.json({ items: [] });
@@ -44,7 +47,10 @@ router.post('/items', auth, async (req, res) => {
     await cart.save();
     
     // Populate jewelry details before sending response
-    await cart.populate('items.jewelry', 'name sellingPrice imageUrl');
+    await cart.populate({
+      path: 'items.jewelry',
+      select: 'name sellingPrice price imageUrl description'
+    });
     
     res.json(cart);
   } catch (error) {
@@ -59,6 +65,17 @@ router.put('/items/:jewelryId', auth, async (req, res) => {
     const { jewelryId } = req.params;
     const { quantity } = req.body;
     
+    // Find the jewelry item to check stock
+    const jewelry = await Jewelry.findById(jewelryId);
+    if (!jewelry) {
+      return res.status(404).json({ message: 'Jewelry item not found' });
+    }
+
+    // Validate quantity against stock
+    if (quantity > jewelry.stock) {
+      return res.status(400).json({ message: `Only ${jewelry.stock} items available in stock` });
+    }
+    
     const cart = await Cart.findOne({ user: req.user.id });
     if (!cart) {
       return res.status(404).json({ message: 'Cart not found' });
@@ -72,7 +89,10 @@ router.put('/items/:jewelryId', auth, async (req, res) => {
     item.quantity = quantity;
     await cart.save();
     
-    await cart.populate('items.jewelry', 'name sellingPrice imageUrl');
+    await cart.populate({
+      path: 'items.jewelry',
+      select: 'name sellingPrice price imageUrl description stock'
+    });
     res.json(cart);
   } catch (error) {
     console.error('Error updating cart:', error);
@@ -93,7 +113,10 @@ router.delete('/items/:jewelryId', auth, async (req, res) => {
     cart.items = cart.items.filter(item => item.jewelry.toString() !== jewelryId);
     await cart.save();
     
-    await cart.populate('items.jewelry', 'name sellingPrice imageUrl');
+    await cart.populate({
+      path: 'items.jewelry',
+      select: 'name sellingPrice price imageUrl description'
+    });
     res.json(cart);
   } catch (error) {
     console.error('Error removing from cart:', error);

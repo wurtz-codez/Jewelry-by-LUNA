@@ -16,7 +16,11 @@ function ProductDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [quantity, setQuantity] = useState(1);
   const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('');
+  const [showToast, setShowToast] = useState(false);
   
   // Check if product is in wishlist
   const isInWishlist = wishlist.some(item => item._id === product?._id);
@@ -121,9 +125,36 @@ function ProductDetailsPage() {
     : placeholderImage;
   
   // Handle adding to cart
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (product && product.stock > 0 && product.isAvailable) {
-      addToCart(product);
+      try {
+        const success = await addToCart(product, quantity);
+        if (success) {
+          setToastMessage(`${product.name} added to cart successfully!`);
+          setToastType('success');
+          setShowToast(true);
+          // Auto-hide toast after 3 seconds
+          setTimeout(() => {
+            setShowToast(false);
+          }, 3000);
+        }
+      } catch (error) {
+        console.error('Error in handleAddToCart:', error);
+        setToastMessage('An error occurred. Please try again.');
+        setToastType('error');
+        setShowToast(true);
+        // Auto-hide toast after 3 seconds
+        setTimeout(() => {
+          setShowToast(false);
+        }, 3000);
+      }
+    }
+  };
+
+  const handleQuantityChange = (e) => {
+    const value = parseInt(e.target.value);
+    if (value > 0 && value <= (product?.stock || 1)) {
+      setQuantity(value);
     }
   };
 
@@ -289,6 +320,60 @@ function ProductDetailsPage() {
               <div style={{ marginBottom: '20px' }}>
                 {renderStockStatus()}
               </div>
+
+              {/* Quantity Selector */}
+              {product?.stock > 0 && product?.isAvailable && (
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Quantity:</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                      onClick={() => quantity > 1 && setQuantity(quantity - 1)}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        border: '1px solid #ddd',
+                        borderRadius: '4px 0 0 4px',
+                        background: 'white',
+                        cursor: quantity > 1 ? 'pointer' : 'not-allowed',
+                        opacity: quantity > 1 ? 1 : 0.5
+                      }}
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      max={product.stock}
+                      value={quantity}
+                      onChange={handleQuantityChange}
+                      style={{
+                        width: '60px',
+                        height: '36px',
+                        border: '1px solid #ddd',
+                        borderLeft: 'none',
+                        borderRight: 'none',
+                        textAlign: 'center',
+                        backgroundColor: 'white',
+                        color: '#333'
+                      }}
+                    />
+                    <button
+                      onClick={() => quantity < product.stock && setQuantity(quantity + 1)}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        border: '1px solid #ddd',
+                        borderRadius: '0 4px 4px 0',
+                        background: 'white',
+                        cursor: quantity < product.stock ? 'pointer' : 'not-allowed',
+                        opacity: quantity < product.stock ? 1 : 0.5
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              )}
               
               {/* Categories */}
               <div style={{ marginBottom: '20px' }}>

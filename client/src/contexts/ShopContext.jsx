@@ -30,9 +30,10 @@ const ShopProvider = ({ children }) => {
       const response = await axios.get(`${API_BASE_URL}/cart`, {
         headers: { 'x-auth-token': token }
       });
-      setCart(response.data.items || []);
+      setCart(response.data || { items: [] });
     } catch (error) {
       console.error('Error fetching cart:', error);
+      setCart({ items: [] });
     }
   };
 
@@ -50,19 +51,32 @@ const ShopProvider = ({ children }) => {
     }
   };
 
-  const addToCart = async (product) => {
+  const addToCart = async (product, quantity = 1) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        console.error('No token found');
+        return false;
+      }
 
-      await axios.post(
+      const response = await axios.post(
         `${API_BASE_URL}/cart/items`,
-        { jewelryId: product._id, quantity: 1 },
+        { jewelryId: product._id, quantity },
         { headers: { 'x-auth-token': token } }
       );
-      await fetchCart();
+
+      // Check if the response has data and items array
+      if (response.data && Array.isArray(response.data.items)) {
+        await fetchCart();
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error('Error adding to cart:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+      }
+      return false;
     }
   };
 

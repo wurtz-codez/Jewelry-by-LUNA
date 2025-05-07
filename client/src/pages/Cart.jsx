@@ -52,10 +52,10 @@ const Cart = () => {
   const [errors, setErrors] = useState({});
 
   // Calculate subtotal
-  const subtotal = cart.reduce((total, item) => {
-    if (!item?.jewelry?.sellingPrice) return total;
-    return total + (item.jewelry.sellingPrice * item.quantity);
-  }, 0);
+  const subtotal = cart?.items?.reduce((total, item) => {
+    const price = item?.jewelry?.sellingPrice || item?.jewelry?.price || 0;
+    return total + (price * item.quantity);
+  }, 0) || 0;
   
   // Shipping cost (could be calculated based on location, weight, etc.)
   const shipping = 15.00;
@@ -81,9 +81,22 @@ const Cart = () => {
   };
 
   // Update item quantity
-  const handleUpdateQuantity = (id, newQuantity) => {
+  const handleUpdateQuantity = async (id, newQuantity) => {
     if (newQuantity < 1) return;
-    updateCartItemQuantity(id, newQuantity);
+    
+    try {
+      await updateCartItemQuantity(id, newQuantity);
+    } catch (error) {
+      if (error.response?.status === 400) {
+        setToastMessage(error.response.data.message);
+        setToastType('error');
+        setShowToast(true);
+      } else {
+        setToastMessage('Error updating quantity. Please try again.');
+        setToastType('error');
+        setShowToast(true);
+      }
+    }
   };
   
   // Handle shipping address change
@@ -250,7 +263,7 @@ const Cart = () => {
       <div className="page-container py-10 px-4 max-w-6xl mx-auto flex-grow">
         <h1 className="text-3xl font-semibold mb-6">Shopping Cart</h1>
         
-        {cart.length > 0 ? (
+        {cart?.items?.length > 0 ? (
           <div className="flex flex-col md:flex-row gap-8">
             {/* Cart Items */}
             <div className="md:w-2/3">
@@ -266,7 +279,7 @@ const Cart = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {cart.map(item => (
+                    {cart?.items?.map(item => (
                       <tr key={item.jewelry._id} className="border-b">
                         <td className="py-4">
                           <div className="flex items-center">
@@ -292,7 +305,8 @@ const Cart = () => {
                           <div className="flex items-center justify-center">
                             <button 
                               onClick={() => handleUpdateQuantity(item.jewelry._id, item.quantity - 1)}
-                              className="w-8 h-8 border rounded-l-md flex items-center justify-center"
+                              className="w-8 h-8 border rounded-l-md flex items-center justify-center hover:bg-gray-100"
+                              disabled={item.quantity <= 1}
                             >
                               -
                             </button>
@@ -301,14 +315,15 @@ const Cart = () => {
                             </span>
                             <button 
                               onClick={() => handleUpdateQuantity(item.jewelry._id, item.quantity + 1)}
-                              className="w-8 h-8 border rounded-r-md flex items-center justify-center"
+                              className="w-8 h-8 border rounded-r-md flex items-center justify-center hover:bg-gray-100"
+                              disabled={item.quantity >= (item.jewelry.stock || 0)}
                             >
                               +
                             </button>
                           </div>
                         </td>
-                        <td className="py-4 text-right">₹{item.jewelry.sellingPrice?.toFixed(2) || '0.00'}</td>
-                        <td className="py-4 text-right">₹{((item.jewelry.sellingPrice || 0) * item.quantity).toFixed(2)}</td>
+                        <td className="py-4 text-right">₹{(item.jewelry.sellingPrice || item.jewelry.price || 0).toFixed(2)}</td>
+                        <td className="py-4 text-right">₹{((item.jewelry.sellingPrice || item.jewelry.price || 0) * item.quantity).toFixed(2)}</td>
                         <td className="py-4 text-right">
                           <button 
                             onClick={() => handleRemoveItem(item.jewelry._id)}
@@ -504,7 +519,7 @@ const Cart = () => {
               <div>
                 <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  {cart.map(item => (
+                  {cart?.items?.map(item => (
                     <div key={item.jewelry._id} className="flex justify-between mb-3 pb-3 border-b">
                       <div className="flex items-center">
                         <img 
@@ -527,7 +542,7 @@ const Cart = () => {
                           <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                         </div>
                       </div>
-                      <p className="font-medium">₹{(item.jewelry.sellingPrice * item.quantity).toFixed(2)}</p>
+                      <p className="font-medium">₹{((item.jewelry.sellingPrice || item.jewelry.price || 0) * item.quantity).toFixed(2)}</p>
                     </div>
                   ))}
                   
