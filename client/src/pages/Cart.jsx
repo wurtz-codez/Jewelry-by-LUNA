@@ -344,14 +344,14 @@ const Cart = () => {
           Your Shopping Cart
         </motion.h1>
         
-        {cart?.items?.length > 0 ? (
+        {cart?.items?.filter(item => item?.jewelry).length > 0 ? (
           <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 lg:gap-12">
             {/* Cart Items */}
             <div className="lg:w-3/4">
               <div className="bg-white rounded-[32px]">
                 <AnimatePresence>
                   <div className="space-y-4">
-                    {cart?.items?.map(item => (
+                    {cart?.items?.filter(item => item?.jewelry).map(item => (
                       <motion.div 
                         key={item.jewelry._id}
                         variants={cartItemAnimation}
@@ -419,14 +419,14 @@ const Cart = () => {
                           <div className="mt-4 sm:mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
                             {/* Quantity Controls */}
                             <div className="flex items-center gap-4 sm:gap-6">
-                              <motion.button 
+                              {/* <motion.button 
                                 onClick={() => handleUpdateQuantity(item.jewelry._id, item.quantity - 1)}
                                 className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-neutral hover:bg-neutral/80 text-gray-700 flex items-center justify-center transition-colors text-xl sm:text-2xl"
                                 whileHover={quantityControlAnimation.hover}
                                 whileTap={quantityControlAnimation.tap}
                               >
                                 -
-                              </motion.button>
+                              </motion.button> */}
                               <motion.span 
                                 className="text-xl sm:text-2xl font-montserrat-alt px-6 sm:px-10 py-2 sm:py-4 rounded-full bg-neutral/5"
                                 variants={priceUpdateAnimation}
@@ -436,14 +436,14 @@ const Cart = () => {
                               >
                                 {item.quantity}
                               </motion.span>
-                              <motion.button 
+                              {/* <motion.button 
                                 onClick={() => handleUpdateQuantity(item.jewelry._id, item.quantity + 1)}
                                 className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-neutral hover:bg-neutral/80 text-gray-700 flex items-center justify-center transition-colors text-xl sm:text-2xl"
                                 whileHover={quantityControlAnimation.hover}
                                 whileTap={quantityControlAnimation.tap}
                               >
                                 +
-                              </motion.button>
+                              </motion.button> */}
                             </div>
                             
                             {/* Price Calculation */}
@@ -689,7 +689,7 @@ const Cart = () => {
                   </div>
                 </div>
                 
-                <h3 className="text-xl font-cinzel-decorative text-secondary mt-8 mb-6">Payment Method</h3>
+                {/* <h3 className="text-xl font-cinzel-decorative text-secondary mt-8 mb-6">Payment Method</h3>
                 <div className="space-y-4">
                   {paymentMethods.map(method => (
                     <div key={method.id} className="flex items-center">
@@ -705,9 +705,9 @@ const Cart = () => {
                       <label htmlFor={method.id} className="ml-3 text-gray-700">{method.name}</label>
                     </div>
                   ))}
-                </div>
+                </div> */}
                 
-                <h3 className="text-xl font-cinzel-decorative text-secondary mt-8 mb-6">Apply Coupon</h3>
+                {/* <h3 className="text-xl font-cinzel-decorative text-secondary mt-8 mb-6">Apply Coupon</h3>
                 <div>
                   <select
                     value={selectedCoupon}
@@ -721,14 +721,15 @@ const Cart = () => {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
+                
               </div>
               
               {/* Right column - Order Summary */}
               <div>
                 <h3 className="text-xl font-cinzel-decorative text-secondary mb-6">Order Summary</h3>
                 <div className="bg-neutral/5 rounded-[20px] p-6">
-                  {cart?.items?.map(item => (
+                  {cart?.items?.filter(item => item?.jewelry).map(item => (
                     <div key={item.jewelry._id} className="flex items-center gap-4 mb-4 pb-4 border-b border-neutral-200 last:border-0">
                       <div className="w-16 h-16 rounded-[12px] overflow-hidden">
                         <img 

@@ -26,15 +26,15 @@ function ProductDetailsPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   
   // Check if product is in wishlist
-  const isInWishlist = wishlist.some(item => item._id === product?._id);
+  const isInWishlist = product && wishlist.some(item => item._id === product._id);
 
   // Get cart quantity for this product
-  const cartQuantity = cart?.items?.find(item => item.jewelry._id === product?._id)?.quantity || 0;
+  const cartQuantity = product ? cart?.items?.find(item => item?.jewelry?._id === product._id)?.quantity || 0 : 0;
 
   // Update quantity when product is loaded or cart changes
   useEffect(() => {
     if (product) {
-      const cartItem = cart?.items?.find(item => item.jewelry._id === product._id);
+      const cartItem = cart?.items?.find(item => item?.jewelry?._id === product._id);
       if (cartItem) {
         setQuantity(cartItem.quantity);
       } else {
@@ -160,7 +160,7 @@ function ProductDetailsPage() {
         setToastType('error');
         setShowToast(true);
         // Revert to the last known good quantity
-        const cartItem = cart?.items?.find(item => item.jewelry._id === product._id);
+        const cartItem = cart?.items?.find(item => item?.jewelry?._id === product._id);
         if (cartItem) {
           setQuantity(cartItem.quantity);
         }
