@@ -1,4 +1,4 @@
-import { FiInstagram, FiFacebook, FiTwitter, FiMail } from 'react-icons/fi'
+import { FiInstagram, FiFacebook, FiTwitter, FiMail, FiYoutube } from 'react-icons/fi'
 
 const Footer = () => {
   return (
@@ -12,18 +12,21 @@ const Footer = () => {
               Elegant jewelry for every occasion.
             </p>
             <div className="flex space-x-3 sm:space-x-4">
-              <a href="#" className="text-gray-600 hover:text-primary transition-colors" aria-label="Instagram">
+              <a href="https://www.instagram.com/jewellery.by.luna" className="text-gray-600 hover:text-primary transition-colors" aria-label="Instagram">
                 <FiInstagram className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
               </a>
-              <a href="#" className="text-gray-600 hover:text-primary transition-colors" aria-label="Facebook">
+              <a href="https://www.youtube.com/@JewelleryByLUNA" className="text-gray-600 hover:text-primary transition-colors" aria-label="Email">
+                <FiYoutube className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+              </a>
+              {/* <a href="#" className="text-gray-600 hover:text-primary transition-colors" aria-label="Facebook">
                 <FiFacebook className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-primary transition-colors" aria-label="Twitter">
+              </a> */}
+              {/* <a href="#" className="text-gray-600 hover:text-primary transition-colors" aria-label="Twitter">
                 <FiTwitter className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-primary transition-colors" aria-label="Email">
+              </a> */}
+              {/* <a href="#" className="text-gray-600 hover:text-primary transition-colors" aria-label="Email">
                 <FiMail className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
-              </a>
+              </a> */}
             </div>
           </div>
           
@@ -58,10 +61,10 @@ const Footer = () => {
           <div className="space-y-3 sm:space-y-4 md:space-y-5">
             <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-cinzel text-primary">CONTACT US</h3>
             <div className="space-y-2 sm:space-y-3">
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">123 Jewelry Lane</p>
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">New York, NY 10001</p>
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">19B, Pushp Nagar Colony, Khajrana Road</p>
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">Indore, M.P. (452016)</p>
               <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">info@jewelrybyluna.com</p>
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">(123) 456-7890</p>
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">+91 9039348168</p>
             </div>
           </div>
         </div>
