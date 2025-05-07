@@ -63,11 +63,11 @@ const AdminDashboard = () => {
     name: '',
     description: '',
     price: '',
-    discount: 0,
-    sellingPrice: '',
+    discount: '0',
+    sellingPrice: '0',
     categories: ['necklace'],
     tags: ['new arrival'],
-    imageUrls: [], // Changed from imageUrl to imageUrls array
+    imageUrls: [],
     stock: 1,
     detailedDescription: '',
     rating: 0,
@@ -323,18 +323,29 @@ const AdminDashboard = () => {
     const errors = {};
     if (!formData.name.trim()) errors.name = 'Name is required';
     if (!formData.description.trim()) errors.description = 'Description is required';
-    if (!formData.price || formData.price <= 0) errors.price = 'Price must be greater than 0';
-    if (formData.discount < 0 || formData.discount >= formData.price) errors.discount = 'Discount must be less than price';
+    if (!formData.price || isNaN(formData.price) || parseFloat(formData.price) <= 0) {
+      errors.price = 'Price must be greater than 0';
+    }
+    if (isNaN(formData.discount) || parseFloat(formData.discount) < 0 || parseFloat(formData.discount) >= parseFloat(formData.price)) {
+      errors.discount = 'Discount must be less than price';
+    }
     if (formData.imageUrls.length === 0) errors.imageUrls = 'At least one image is required';
-    if (formData.stock < 0) errors.stock = 'Stock cannot be negative';
-    return errors;
+    if (isNaN(formData.stock) || parseInt(formData.stock) < 0) errors.stock = 'Stock cannot be negative';
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   // Submit form to add or update a product
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      setToastMessage('Please fix the form errors before submitting');
+      setToastType('error');
+      setShowToast(true);
+      return;
+    }
     
     try {
       setLoading(true);
@@ -343,6 +354,8 @@ const AdminDashboard = () => {
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
+        discount: parseFloat(formData.discount),
+        sellingPrice: parseFloat(formData.sellingPrice),
         stock: parseInt(formData.stock),
         rating: parseFloat(formData.rating)
       };

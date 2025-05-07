@@ -268,7 +268,7 @@ const Navbar = ({ variant }) => {
                               )}
                             </div>
                             <div>
-                              <p className="font-medium text-accent text-lg">{currentUser?.displayName || 'User'}</p>
+                              <p className="font-medium text-accent text-lg">{currentUser?.name || 'User'}</p>
                               <p className="text-sm text-gray-500">{currentUser?.email || ''}</p>
                             </div>
                           </div>
@@ -281,14 +281,6 @@ const Navbar = ({ variant }) => {
                           >
                             <FiUser className="w-5 h-5 mr-3 text-primary/70" />
                             Profile
-                          </Link>
-                          <Link
-                            to="/orders"
-                            className="flex items-center px-4 py-2.5 text-base text-black hover:bg-neutral/50 transition-colors duration-200"
-                            onClick={() => setShowProfileDropdown(false)}
-                          >
-                            <FiPackage className="w-5 h-5 mr-3 text-primary/70" />
-                            Your Orders
                           </Link>
                           <button
                             onClick={(e) => {
@@ -411,14 +403,6 @@ const Navbar = ({ variant }) => {
                         className="block px-4 py-2 text-black hover:text-primary transition-colors duration-200"
                       >
                         Profile
-                      </Link>
-                    </motion.div>
-                    <motion.div variants={mobileMenuItemVariants}>
-                      <Link
-                        to="/orders"
-                        className="block px-4 py-2 text-black hover:text-primary transition-colors duration-200"
-                      >
-                        Your Orders
                       </Link>
                     </motion.div>
                     <motion.div variants={mobileMenuItemVariants}>

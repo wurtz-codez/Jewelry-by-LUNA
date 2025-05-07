@@ -31,6 +31,12 @@ router.post('/request', auth, async (req, res) => {
       return res.status(400).json({ message: 'Cart is empty' });
     }
 
+    // Validate cart items
+    const invalidItems = cart.items.filter(item => !item.jewelry || !item.jewelry.sellingPrice);
+    if (invalidItems.length > 0) {
+      return res.status(400).json({ message: 'Some items in your cart are invalid or no longer available' });
+    }
+
     // Extract shipping and payment details from request body
     const { shippingAddress, paymentMethod, couponCode } = req.body;
     

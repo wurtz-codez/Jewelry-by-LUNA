@@ -1,4 +1,4 @@
-const ADMIN_WHATSAPP_NUMBER = '918871502696'; // Added country code 91 for India
+const ADMIN_WHATSAPP_NUMBER = '919039348168'; // Added country code 91 for India
 
 const generateWhatsAppMessage = (order, user) => {
   const itemsList = order.items.map(item => 
