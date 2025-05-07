@@ -53,6 +53,7 @@ const Profile = () => {
   const [requestType, setRequestType] = useState('');
   const [requestReason, setRequestReason] = useState('');
   const [requestImage, setRequestImage] = useState(null);
+  const [requestImagePreview, setRequestImagePreview] = useState(null);
   const [selectedOrderForRequest, setSelectedOrderForRequest] = useState(null);
   const [existingRequests, setExistingRequests] = useState([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -65,6 +66,8 @@ const Profile = () => {
     phone: '',
     address: ''
   });
+
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -208,6 +211,7 @@ const Profile = () => {
       setRequestType('');
       setRequestReason('');
       setRequestImage(null);
+      setRequestImagePreview(null);
       await fetchRequests();
     } catch (error) {
       console.error('Error submitting request:', error);
@@ -226,6 +230,7 @@ const Profile = () => {
           setRequestType('');
           setRequestReason('');
           setRequestImage(null);
+          setRequestImagePreview(null);
           setShowRequestStatusModal(true);
         }
       }
@@ -783,7 +788,7 @@ const Profile = () => {
                   </div>
                 </div>
 
-                {selectedOrder && selectedOrder.requestStatus === 'approved' && (
+                {selectedOrder && (
                   <div className="mt-8">
                     {renderRequestStatus(selectedOrder._id) || (
                       <div className="flex gap-4">
@@ -844,13 +849,44 @@ const Profile = () => {
               </div>
               <div className="mb-6">
                 <label className="block text-gray-700 mb-2 font-medium">Upload Image</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setRequestImage(e.target.files[0])}
-                  className="w-full p-4 border border-neutral-200 rounded-[16px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-                  required
-                />
+                <div className="space-y-4">
+                  {requestImagePreview && (
+                    <div className="relative w-full h-48 rounded-[16px] overflow-hidden">
+                      <img
+                        src={requestImagePreview}
+                        alt="Request preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRequestImage(null);
+                          setRequestImagePreview(null);
+                        }}
+                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      >
+                        <FiX size={20} />
+                      </button>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setRequestImage(file);
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setRequestImagePreview(reader.result);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="w-full p-4 border border-neutral-200 rounded-[16px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                    required
+                  />
+                </div>
               </div>
               <div className="flex justify-end gap-4">
                 <motion.button
@@ -860,6 +896,7 @@ const Profile = () => {
                     setRequestType('');
                     setRequestReason('');
                     setRequestImage(null);
+                    setRequestImagePreview(null);
                   }}
                   className="px-6 py-3 bg-neutral text-gray-700 rounded-full hover:bg-neutral/80 transition-colors"
                   whileHover={{ scale: 1.05 }}
@@ -869,9 +906,9 @@ const Profile = () => {
                 </motion.button>
                 <motion.button
                   type="submit"
-                  disabled={loading || !requestType || !requestReason}
+                  disabled={loading || !requestType || !requestReason || !requestImage}
                   className={`px-6 py-3 bg-primary text-white rounded-full ${
-                    loading || !requestType || !requestReason ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90'
+                    loading || !requestType || !requestReason || !requestImage ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90'
                   } transition-colors`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

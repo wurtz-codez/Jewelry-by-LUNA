@@ -2240,7 +2240,11 @@ const AdminDashboard = () => {
             <div className="mb-6">
               <h4 className="font-medium text-gray-700 mb-2">Image</h4>
               <div className="bg-gray-50 rounded-lg p-4">
-                <img src={selectedRequest.imageUrl} alt="Request" className="max-w-full h-auto" />
+                <img 
+                  src={selectedRequest.imageUrl} 
+                  alt="Request" 
+                  className="max-w-full max-h-[300px] object-contain mx-auto" 
+                />
               </div>
             </div>
             {selectedRequest.status === 'pending' && (

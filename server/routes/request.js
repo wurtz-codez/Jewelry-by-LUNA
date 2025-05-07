@@ -4,20 +4,7 @@ const Request = require('../models/Request');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
-const multer = require('multer');
-const path = require('path');
-
-// Configure multer for image upload
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/requests/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage: storage });
+const { upload } = require('../config/cloudinary');
 
 // Middleware to check if user is admin
 const isAdmin = async (req, res, next) => {
