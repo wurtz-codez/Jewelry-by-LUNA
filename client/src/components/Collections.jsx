@@ -1,11 +1,11 @@
-import necklaceImage from '../assets/necklace-collection-image.png'
-import earringsCollectionImage from '../assets/earrings-collection-image.png'
-import braceletImage from '../assets/bracelet-collection-image.png'
+import necklaceImage from '../assets/necklace-collection-image.jpg'
+import earringsCollectionImage from '../assets/earrings-collection-image.jpg'
+import braceletImage from '../assets/bracelet-collection-image.jpg'
 
 const Collections = () => {
   return (
     <section className="collections-section my-8 sm:my-12 md:my-16">
-      <h2 className="text-4xl sm:text-5xl md:text-7xl font-cinzel text-center mb-8 sm:mb-12 md:mb-16">EXPLORE OUR COLLECTIONS</h2>
+      <h2 className="text-4xl sm:text-5xl md:text-7xl font-cinzel-decorative text-center mb-8 sm:mb-12 md:mb-16">Explore our Collections</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-16 max-w-7xl mx-auto px-4">
         <div className="collection-item flex flex-col items-center">

@@ -8,7 +8,7 @@ import Search from './Search'
 import { motion, AnimatePresence } from 'framer-motion'
 import { itemVariants, iconVariants, mobileMenuVariants, mobileMenuItemVariants } from '../animations/navbar'
 
-const Navbar = () => {
+const Navbar = ({ variant }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeLink, setActiveLink] = useState('');
@@ -59,7 +59,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-neutral shadow-sm font-body">
+    <nav className={`fixed top-0 left-0 right-0 z-50 ${variant === 'white' ? 'bg-white' : 'bg-neutral'} shadow-sm font-body`}>
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-32">
         <div className="flex justify-between items-center h-16 md:h-20">
           {/* Left Section - Navigation Links */}
