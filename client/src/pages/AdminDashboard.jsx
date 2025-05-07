@@ -1299,7 +1299,7 @@ const AdminDashboard = () => {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className={`w-full p-2 border rounded-md ${formErrors.name ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`w-full p-2 border rounded-md bg-white ${formErrors.name ? 'border-red-500' : 'border-gray-300'}`}
                       placeholder="Enter product name"
                     />
                     {formErrors.name && (
@@ -1332,7 +1332,7 @@ const AdminDashboard = () => {
                       <select 
                         value={newCategory}
                         onChange={(e) => setNewCategory(e.target.value)}
-                        className="flex-1 p-2 border border-gray-300 rounded-md"
+                        className="flex-1 p-2 border border-gray-300 rounded-md bg-white"
                       >
                         <option value="">Select a category</option>
                         {['necklace', 'earrings', 'bracelet', 'ring', 'pendant', 'set'].map(cat => (
@@ -1346,7 +1346,7 @@ const AdminDashboard = () => {
                             type="text"
                             value={customCategory}
                             onChange={(e) => setCustomCategory(e.target.value)}
-                            className="flex-1 p-2 border border-gray-300 rounded-md"
+                            className="flex-1 p-2 border border-gray-300 rounded-md bg-white"
                             placeholder="Enter custom category"
                             onKeyPress={(e) => {
                               if (e.key === 'Enter') {
@@ -1396,7 +1396,7 @@ const AdminDashboard = () => {
                       <select 
                         value={newTag}
                         onChange={(e) => setNewTag(e.target.value)}
-                        className="flex-1 p-2 border border-gray-300 rounded-md"
+                        className="flex-1 p-2 border border-gray-300 rounded-md bg-white"
                       >
                         <option value="">Select a tag</option>
                         {['new arrival', 'trending', 'best seller', 'sale', 'limited edition', 'premium', 'handcrafted'].map(tag => (
@@ -1410,7 +1410,7 @@ const AdminDashboard = () => {
                             type="text"
                             value={customTag}
                             onChange={(e) => setCustomTag(e.target.value)}
-                            className="flex-1 p-2 border border-gray-300 rounded-md"
+                            className="flex-1 p-2 border border-gray-300 rounded-md bg-white"
                             placeholder="Enter custom tag"
                             onKeyPress={(e) => {
                               if (e.key === 'Enter') {
@@ -1446,11 +1446,30 @@ const AdminDashboard = () => {
                       min="0"
                       value={formData.price}
                       onChange={handleInputChange}
-                      className={`w-full p-2 border rounded-md ${formErrors.price ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`w-full p-2 border rounded-md bg-white ${formErrors.price ? 'border-red-500' : 'border-gray-300'}`}
                       placeholder="Enter price"
                     />
                     {formErrors.price && (
                       <p className="mt-1 text-sm text-red-500">{formErrors.price}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Discount ($)
+                    </label>
+                    <input
+                      type="number"
+                      name="discount"
+                      step="0.01"
+                      min="0"
+                      value={formData.discount}
+                      onChange={handleInputChange}
+                      className={`w-full p-2 border rounded-md bg-white ${formErrors.discount ? 'border-red-500' : 'border-gray-300'}`}
+                      placeholder="Enter discount amount"
+                    />
+                    {formErrors.discount && (
+                      <p className="mt-1 text-sm text-red-500">{formErrors.discount}</p>
                     )}
                   </div>
                   
@@ -1464,7 +1483,7 @@ const AdminDashboard = () => {
                       min="0"
                       value={formData.stock}
                       onChange={handleInputChange}
-                      className={`w-full p-2 border rounded-md ${formErrors.stock ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`w-full p-2 border rounded-md bg-white ${formErrors.stock ? 'border-red-500' : 'border-gray-300'}`}
                       placeholder="Enter available stock"
                     />
                     {formErrors.stock && (
@@ -1560,7 +1579,7 @@ const AdminDashboard = () => {
                       step="0.1"
                       value={formData.rating}
                       onChange={handleInputChange}
-                      className="w-full p-2 border border-gray-300 rounded-md"
+                      className="w-full p-2 border border-gray-300 rounded-md bg-white"
                       placeholder="Enter initial rating"
                     />
                   </div>
@@ -1574,7 +1593,7 @@ const AdminDashboard = () => {
                       value={formData.description}
                       onChange={handleInputChange}
                       rows="3"
-                      className={`w-full p-2 border rounded-md ${formErrors.description ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`w-full p-2 border rounded-md bg-white ${formErrors.description ? 'border-red-500' : 'border-gray-300'}`}
                       placeholder="Enter a short product description"
                     ></textarea>
                     {formErrors.description && (
@@ -1591,7 +1610,7 @@ const AdminDashboard = () => {
                       value={formData.detailedDescription}
                       onChange={handleInputChange}
                       rows="5"
-                      className={`w-full p-2 border rounded-md ${formErrors.detailedDescription ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`w-full p-2 border rounded-md bg-white ${formErrors.detailedDescription ? 'border-red-500' : 'border-gray-300'}`}
                       placeholder="Enter detailed product information including materials, dimensions, etc."
                     ></textarea>
                     {formErrors.detailedDescription && (

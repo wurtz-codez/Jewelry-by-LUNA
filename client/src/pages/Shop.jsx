@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useShop } from '../contexts/ShopContext';
 import ProductCard from '../assets/cards/ProductCard';
 import useDebounce from '../hooks/useDebounce';
+import Toast from '../components/Toast';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -108,8 +109,28 @@ const Shop = () => {
   }, [currentPage, debouncedSearchTerm, selectedCategory, selectedTag, debouncedPriceRange, sortBy, sortOrder]);
 
   // Handle adding to cart
-  const handleAddToCart = (product) => {
-    addToCart(product);
+  const handleAddToCart = async (product) => {
+    try {
+      const success = await addToCart(product);
+      if (success) {
+        setToastMessage(`${product.name} added to cart successfully!`);
+        setToastType('success');
+        setShowToast(true);
+        // Auto-hide toast after 3 seconds
+        setTimeout(() => {
+          setShowToast(false);
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Error in handleAddToCart:', error);
+      setToastMessage('An error occurred. Please try again.');
+      setToastType('error');
+      setShowToast(true);
+      // Auto-hide toast after 3 seconds
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    }
   };
 
   // Handle adding to wishlist
@@ -134,6 +155,10 @@ const Shop = () => {
     setSortOrder('desc');
     navigate('/shop');
   };
+
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
 
   return (
     <div className="shop-page bg-white">
@@ -393,6 +418,13 @@ const Shop = () => {
       )}
       
       <Footer />
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 };

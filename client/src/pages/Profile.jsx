@@ -7,6 +7,7 @@ import Toast from '../components/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import LoadingScreen from '../components/LoadingScreen';
+import { motion } from 'framer-motion';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -235,190 +236,268 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-white">
+      <Navbar variant="white" />
+      <div className="page-container py-24 sm:py-24 md:py-24 lg:py-32 mx-4 sm:mx-6 md:mx-12 lg:mx-32 max-w-8xl flex-grow">
         {!currentUser ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">Please log in to view your profile</p>
-            <button
+          <motion.div 
+            className="text-center py-16 sm:py-24 bg-white rounded-[32px] shadow-lg max-w-4xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <FiUser className="mx-auto text-gray-400 mb-6 sm:mb-8 sm:w-20 sm:h-20" size={60} />
+            <h2 className="text-3xl sm:text-4xl font-cinzel-decorative text-secondary mb-4 sm:mb-6">Please Log In</h2>
+            <p className="text-gray-500 mb-8 sm:mb-10 text-lg sm:text-xl">You need to be logged in to view your profile</p>
+            <motion.button 
               onClick={() => navigate('/login')}
-              className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition"
+              className="bg-primary text-white py-4 sm:py-5 px-8 sm:px-10 rounded-full hover:bg-primary/90 transition-colors inline-flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-medium"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               Login
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         ) : (
           <div className="max-w-6xl mx-auto">
+            <motion.h1 
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-cinzel-decorative text-secondary text-center mb-8 sm:mb-12 md:mb-16"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              My Profile
+            </motion.h1>
+
             <div className="flex flex-col md:flex-row gap-8">
               {/* Sidebar */}
-              <div className="md:w-1/4">
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                      <FiUser size={24} className="text-gray-500" />
+              <motion.div 
+                className="md:w-1/3 lg:w-1/4"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="w-16 h-16 md:w-20 md:h-20 lg:w-20 lg:h-20 bg-neutral rounded-full flex items-center justify-center">
+                      <FiUser size={24} className="md:w-8 md:h-8 lg:w-8 lg:h-8 text-gray-500" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-semibold">{user.name}</h2>
-                      <p className="text-gray-500">{user.email}</p>
+                      <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary">{user.name}</h2>
+                      <p className="text-sm md:text-base lg:text-base text-gray-500">{user.email}</p>
                     </div>
                   </div>
-                  <nav className="profile-nav">
-                    <button 
-                      className={`w-full text-left py-2 px-3 rounded mb-1 flex items-center gap-2 transition ${activeTab === 'profile' ? 'bg-gray-100 text-black' : 'hover:bg-gray-50'}`}
+                  <nav className="space-y-2">
+                    <motion.button 
+                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-full flex items-center gap-3 transition ${
+                        activeTab === 'profile' 
+                          ? 'bg-primary text-white' 
+                          : 'bg-neutral hover:bg-neutral/80 text-gray-700'
+                      }`}
                       onClick={() => setActiveTab('profile')}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <FiUser /> Profile
-                    </button>
-                    <button 
-                      className={`w-full text-left py-2 px-3 rounded mb-1 flex items-center gap-2 transition ${activeTab === 'orders' ? 'bg-gray-100 text-black' : 'hover:bg-gray-50'}`}
+                      <FiUser size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Profile
+                    </motion.button>
+                    <motion.button 
+                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-full flex items-center gap-3 transition ${
+                        activeTab === 'orders' 
+                          ? 'bg-primary text-white' 
+                          : 'bg-neutral hover:bg-neutral/80 text-gray-700'
+                      }`}
                       onClick={() => setActiveTab('orders')}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <FiShoppingBag /> Orders
-                    </button>
-                    <button 
-                      className={`w-full text-left py-2 px-3 rounded mb-1 flex items-center gap-2 transition ${activeTab === 'wishlist' ? 'bg-gray-100 text-black' : 'hover:bg-gray-50'}`}
+                      <FiShoppingBag size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Orders
+                    </motion.button>
+                    <motion.button 
+                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-full flex items-center gap-3 transition ${
+                        activeTab === 'wishlist' 
+                          ? 'bg-primary text-white' 
+                          : 'bg-neutral hover:bg-neutral/80 text-gray-700'
+                      }`}
                       onClick={() => setActiveTab('wishlist')}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <FiHeart /> Wishlist
-                    </button>
-                    <button 
+                      <FiHeart size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Wishlist
+                    </motion.button>
+                    <motion.button 
                       onClick={handleLogout}
-                      className="w-full text-left py-2 px-3 rounded mb-1 flex items-center gap-2 text-red-500 hover:bg-red-50 transition"
+                      className="w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-full flex items-center gap-3 bg-red-50 text-red-500 hover:bg-red-100 transition"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <FiLogOut /> Logout
-                    </button>
+                      <FiLogOut size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Logout
+                    </motion.button>
                   </nav>
                 </div>
-              </div>
+              </motion.div>
               
               {/* Main content */}
-              <div className="md:w-3/4">
+              <motion.div 
+                className="md:w-2/3 lg:w-3/4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
                 {activeTab === 'profile' && (
-                  <div className="bg-white rounded-lg shadow-md p-6">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-xl font-semibold">Profile Information</h2>
-                      <button className="text-blue-500 hover:text-blue-700">
-                        <FiEdit size={20} />
-                      </button>
+                  <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                    <div className="flex justify-between items-center mb-6 md:mb-8">
+                      <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary">Profile Information</h2>
+                      <motion.button 
+                        className="p-2 md:p-3 lg:p-3 rounded-full bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <FiEdit size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" />
+                      </motion.button>
                     </div>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-gray-500 mb-1">Name</label>
-                        <p className="font-medium">{user.name}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-gray-500 mb-2 font-medium">Name</label>
+                          <div className="p-4 bg-neutral/5 rounded-[16px]">
+                            <p className="font-medium text-gray-900">{user.name}</p>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-gray-500 mb-2 font-medium">Email</label>
+                          <div className="p-4 bg-neutral/5 rounded-[16px]">
+                            <p className="font-medium text-gray-900">{user.email}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-gray-500 mb-1">Email</label>
-                        <p className="font-medium">{user.email}</p>
-                      </div>
-                      <div>
-                        <label className="block text-gray-500 mb-1">Phone</label>
-                        <p className="font-medium">{user.phone}</p>
-                      </div>
-                      <div>
-                        <label className="block text-gray-500 mb-1">Address</label>
-                        <p className="font-medium">{user.address}</p>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-gray-500 mb-2 font-medium">Phone</label>
+                          <div className="p-4 bg-neutral/5 rounded-[16px]">
+                            <p className="font-medium text-gray-900">{user.phone}</p>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-gray-500 mb-2 font-medium">Address</label>
+                          <div className="p-4 bg-neutral/5 rounded-[16px]">
+                            <p className="font-medium text-gray-900">{user.address}</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
                 
                 {activeTab === 'orders' && (
-                  <div className="bg-white rounded-lg shadow-md p-6">
-                    <h2 className="text-xl font-semibold mb-4">Order History</h2>
+                  <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                    <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary mb-6 md:mb-8">Order History</h2>
                     
                     {orders.length > 0 ? (
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full">
-                          <thead>
-                            <tr className="border-b">
-                              <th className="text-left pb-3">Order ID</th>
-                              <th className="text-left pb-3">Date</th>
-                              <th className="text-left pb-3">Status</th>
-                              <th className="text-right pb-3">Total</th>
-                              <th className="text-right pb-3">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {orders.map(order => (
-                              <tr key={order._id} className="border-b hover:bg-gray-50">
-                                <td className="py-4">#{order._id.slice(-6)}</td>
-                                <td className="py-4">{new Date(order.createdAt).toLocaleDateString()}</td>
-                                <td className="py-4">
-                                  <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(order.requestStatus)}`}>
-                                    {order.requestStatus}
-                                  </span>
-                                </td>
-                                <td className="py-4 text-right">₹{order.totalAmount.toFixed(2)}</td>
-                                <td className="py-4 text-right">
-                                  <button 
-                                    className="text-blue-500 hover:underline"
-                                    onClick={() => fetchOrderDetails(order._id)}
-                                  >
-                                    View Details
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <div className="space-y-4 md:space-y-6">
+                        {orders.map(order => (
+                          <motion.div 
+                            key={order._id}
+                            className="bg-neutral/5 rounded-[24px] p-4 md:p-6 hover:shadow-md transition-shadow"
+                            whileHover={{ scale: 1.01 }}
+                          >
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4">
+                              <div>
+                                <h3 className="text-base md:text-lg lg:text-lg font-medium text-gray-900">Order #{order._id.slice(-6)}</h3>
+                                <p className="text-sm md:text-base lg:text-base text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                              </div>
+                              <div className="flex items-center gap-3 md:gap-4">
+                                <span className={`px-3 md:px-4 py-1 md:py-2 rounded-full text-xs md:text-sm font-medium ${
+                                  order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                                  order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                                  'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {order.requestStatus}
+                                </span>
+                                <span className="text-base md:text-lg lg:text-lg font-medium">₹{order.totalAmount.toFixed(2)}</span>
+                                <motion.button 
+                                  onClick={() => fetchOrderDetails(order._id)}
+                                  className="px-3 md:px-4 py-1 md:py-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors text-sm md:text-base"
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                >
+                                  View Details
+                                </motion.button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8">
-                        <p className="text-gray-500">You haven't placed any orders yet.</p>
+                      <div className="text-center py-12 md:py-16">
+                        <FiShoppingBag className="mx-auto text-gray-400 mb-4 md:mb-6 md:w-12 md:h-12 lg:w-12 lg:h-12" size={40} />
+                        <p className="text-base md:text-lg lg:text-lg text-gray-500">You haven't placed any orders yet.</p>
                       </div>
                     )}
                   </div>
                 )}
                 
                 {activeTab === 'wishlist' && (
-                  <div className="wishlist-info">
-                    <h2 className="text-xl font-semibold mb-4">My Wishlist</h2>
-                    <p className="text-gray-500 mb-4">
-                      <a href="/wishlist" className="text-blue-500 hover:underline">
-                        Go to My Wishlist
-                      </a> to view all your saved items.
-                    </p>
+                  <div className="bg-white rounded-[32px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                    <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary mb-6 md:mb-8">My Wishlist</h2>
+                    <div className="text-center py-12 md:py-16">
+                      <FiHeart className="mx-auto text-gray-400 mb-4 md:mb-6 md:w-12 md:h-12 lg:w-12 lg:h-12" size={40} />
+                      <p className="text-base md:text-lg lg:text-lg text-gray-500 mb-6 md:mb-8">View and manage your saved items in your wishlist.</p>
+                      <motion.button 
+                        onClick={() => navigate('/wishlist')}
+                        className="bg-primary text-white py-3 md:py-4 px-6 md:px-8 rounded-full hover:bg-primary/90 transition-colors inline-flex items-center gap-2 text-base md:text-lg font-medium"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        Go to Wishlist
+                      </motion.button>
+                    </div>
                   </div>
                 )}
-              </div>
+              </motion.div>
             </div>
           </div>
         )}
       </div>
-      
+
       {/* Order Details Modal */}
       {showOrderModal && selectedOrder && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4 border-b pb-4">
-              <h3 className="text-lg font-medium text-gray-900">Order Details</h3>
-              <button
-                className="text-gray-400 hover:text-gray-500"
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <motion.div 
+            className="bg-white rounded-[32px] p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <div className="flex justify-between items-center mb-8 border-b pb-6">
+              <h3 className="text-2xl font-cinzel-decorative text-secondary">Order Details</h3>
+              <motion.button
+                className="p-3 rounded-full hover:bg-neutral/10 transition-colors"
                 onClick={() => setShowOrderModal(false)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
               >
-                <FiX size={20} />
-              </button>
+                <FiX size={24} />
+              </motion.button>
             </div>
 
             {loadingOrderDetails ? (
               <div className="flex justify-center items-center h-48">
-                <div className="animate-spin text-purple-500">
-                  <FiLoader size={24} />
+                <div className="animate-spin text-primary">
+                  <FiLoader size={32} />
                 </div>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                   <div>
-                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
-                      <FiShoppingBag className="mr-2" /> Order Information
+                    <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                      <FiShoppingBag className="text-primary" /> Order Information
                     </h4>
-                    <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="bg-neutral/5 rounded-[24px] p-6 space-y-4">
                       <p><span className="font-medium">Order ID:</span> {selectedOrder._id}</p>
                       <p><span className="font-medium">Date:</span> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
                       <p><span className="font-medium">Status:</span> 
-                        <span className={`ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        <span className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
                           selectedOrder.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
                           selectedOrder.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
@@ -426,10 +505,22 @@ const Profile = () => {
                           {selectedOrder.requestStatus}
                         </span>
                       </p>
-                      <p><span className="font-medium">Total Amount:</span> ₹{selectedOrder.totalAmount.toFixed(2)}</p>
+                      <p><span className="font-medium">Items Total:</span> ₹{selectedOrder.items.reduce((total, item) => 
+                        total + ((item.jewelry?.sellingPrice || item.jewelry?.price || 0) * item.quantity), 0).toLocaleString('en-IN')}
+                      </p>
+                      {selectedOrder.items.reduce((total, item) => 
+                        total + ((item.jewelry?.sellingPrice || item.jewelry?.price || 0) * item.quantity), 0) > selectedOrder.totalAmount && (
+                        <p><span className="font-medium">Coupon Discount:</span> 
+                          <span className="text-green-600">
+                            -₹{(selectedOrder.items.reduce((total, item) => 
+                              total + ((item.jewelry?.sellingPrice || item.jewelry?.price || 0) * item.quantity), 0) - selectedOrder.totalAmount).toLocaleString('en-IN')}
+                          </span>
+                        </p>
+                      )}
+                      <p><span className="font-medium">Total Amount:</span> ₹{selectedOrder.totalAmount.toLocaleString('en-IN')}</p>
                       <p><span className="font-medium">Payment Method:</span> {formatPaymentMethod(selectedOrder.paymentMethod)}</p>
                       <p><span className="font-medium">Payment Status:</span> 
-                        <span className={`ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        <span className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
                           selectedOrder.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' :
                           selectedOrder.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
@@ -441,13 +532,13 @@ const Profile = () => {
                   </div>
 
                   <div>
-                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
-                      <FiMapPin className="mr-2" /> Shipping Information
+                    <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                      <FiMapPin className="text-primary" /> Shipping Information
                     </h4>
-                    <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="bg-neutral/5 rounded-[24px] p-6">
                       {selectedOrder.shippingAddress ? (
-                        <>
-                          <p className="font-medium mb-1">Delivery Address:</p>
+                        <div className="space-y-3">
+                          <p className="font-medium">Delivery Address:</p>
                           <p>{selectedOrder.shippingAddress.street || 'No street address provided'}</p>
                           {selectedOrder.shippingAddress.landmark && (
                             <p>Landmark: {selectedOrder.shippingAddress.landmark}</p>
@@ -458,7 +549,7 @@ const Profile = () => {
                             {selectedOrder.shippingAddress.zipCode ? ' - ' + selectedOrder.shippingAddress.zipCode : ''}
                           </p>
                           <p>{selectedOrder.shippingAddress.country || ''}</p>
-                        </>
+                        </div>
                       ) : (
                         <p>No shipping address provided</p>
                       )}
@@ -466,131 +557,176 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <h4 className="font-medium text-gray-700 mb-2">Order Items</h4>
-                <div className="overflow-x-auto bg-gray-50 rounded-lg mb-6">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {selectedOrder.items && selectedOrder.items.map((item, index) => (
-                        <tr key={index}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              {item.jewelry && typeof item.jewelry === 'object' && item.jewelry.imageUrl && (
-                                <div className="h-12 w-12 flex-shrink-0 mr-4">
-                                  <img 
-                                    className="h-12 w-12 object-cover rounded-md" 
-                                    src={
-                                      item.jewelry.imageUrl.startsWith('http') 
-                                        ? item.jewelry.imageUrl 
-                                        : item.jewelry.imageUrl.startsWith('/uploads') 
-                                          ? `${API_BASE_URL}${item.jewelry.imageUrl}` 
-                                          : '/src/assets/placeholder.svg'
-                                    }
-                                    alt={item.jewelry.name}
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = '/src/assets/placeholder.svg';
-                                    }}
-                                  />
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Order Items</h4>
+                <div className="bg-neutral/5 rounded-[24px] overflow-hidden mb-8">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-neutral-200">
+                      <thead className="bg-neutral/10">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">Item</th>
+                          <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">Price</th>
+                          <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">Quantity</th>
+                          <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">Subtotal</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-200">
+                        {selectedOrder.items && selectedOrder.items.map((item, index) => (
+                          <tr key={index} className="hover:bg-neutral/5">
+                            <td className="px-6 py-4">
+                              <motion.div 
+                                className="flex items-center gap-4 cursor-pointer"
+                                onClick={() => navigate(`/product/${item.jewelry._id}`)}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                              >
+                                {item.jewelry && typeof item.jewelry === 'object' && item.jewelry.imageUrl && (
+                                  <div className="h-16 w-16 flex-shrink-0">
+                                    <img 
+                                      className="h-16 w-16 object-cover rounded-[12px]" 
+                                      src={
+                                        item.jewelry.imageUrl.startsWith('http') 
+                                          ? item.jewelry.imageUrl 
+                                          : item.jewelry.imageUrl.startsWith('/uploads') 
+                                            ? `${API_BASE_URL}${item.jewelry.imageUrl}` 
+                                            : '/src/assets/placeholder.svg'
+                                      }
+                                      alt={item.jewelry.name}
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = '/src/assets/placeholder.svg';
+                                      }}
+                                    />
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <p className="font-medium text-gray-900 hover:text-primary transition-colors">
+                                    {item.jewelry && typeof item.jewelry === 'object' ? item.jewelry.name : 'Unknown Product'}
+                                  </p>
+                                  {item.jewelry && typeof item.jewelry === 'object' && item.jewelry.categories && (
+                                    <div className="flex flex-wrap gap-2 mt-1">
+                                      {item.jewelry.categories.map((category, idx) => (
+                                        <span 
+                                          key={idx}
+                                          className="px-2 py-0.5 text-xs bg-neutral/10 text-gray-600 rounded-full"
+                                        >
+                                          {category}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                              <div className="flex-1">
-                                {item.jewelry && typeof item.jewelry === 'object' ? item.jewelry.name : 'Unknown Product'}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            ₹{item.sellingPrice ? item.sellingPrice.toFixed(2) : '0.00'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {item.quantity}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            ₹{(item.sellingPrice * item.quantity).toFixed(2)}
+                              </motion.div>
+                            </td>
+                            <td className="px-6 py-4">
+                              ₹{((item.jewelry?.sellingPrice || item.jewelry?.price || 0)).toLocaleString('en-IN')}
+                            </td>
+                            <td className="px-6 py-4">{item.quantity}</td>
+                            <td className="px-6 py-4">
+                              ₹{((item.jewelry?.sellingPrice || item.jewelry?.price || 0) * item.quantity).toLocaleString('en-IN')}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot className="bg-neutral/10">
+                        <tr>
+                          <td colSpan="3" className="px-6 py-4 text-right font-medium">Items Total:</td>
+                          <td className="px-6 py-4 font-medium">
+                            ₹{selectedOrder.items.reduce((total, item) => 
+                              total + ((item.jewelry?.sellingPrice || item.jewelry?.price || 0) * item.quantity), 0).toLocaleString('en-IN')}
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="bg-gray-100">
-                      <tr>
-                        <td colSpan="3" className="px-6 py-4 text-right font-medium">Total:</td>
-                        <td className="px-6 py-4 font-medium">₹{selectedOrder.totalAmount.toFixed(2)}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
+                        {selectedOrder.items.reduce((total, item) => 
+                          total + ((item.jewelry?.sellingPrice || item.jewelry?.price || 0) * item.quantity), 0) > selectedOrder.totalAmount && (
+                          <tr>
+                            <td colSpan="3" className="px-6 py-4 text-right font-medium text-green-600">Coupon Discount:</td>
+                            <td className="px-6 py-4 font-medium text-green-600">
+                              -₹{(selectedOrder.items.reduce((total, item) => 
+                                total + ((item.jewelry?.sellingPrice || item.jewelry?.price || 0) * item.quantity), 0) - selectedOrder.totalAmount).toLocaleString('en-IN')}
+                            </td>
+                          </tr>
+                        )}
+                        <tr>
+                          <td colSpan="3" className="px-6 py-4 text-right font-medium">Final Total:</td>
+                          <td className="px-6 py-4 font-medium">
+                            ₹{selectedOrder.totalAmount.toLocaleString('en-IN')}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
                 </div>
 
                 {selectedOrder && selectedOrder.requestStatus === 'approved' && (
-                  <div className="mt-6">
+                  <div className="mt-8">
                     {renderRequestStatus(selectedOrder._id) || (
-                      <>
-                        <h4 className="font-medium text-gray-700 mb-2">Request Replacement/Refund</h4>
-                        <div className="flex space-x-4">
-                          <button
-                            onClick={() => {
-                              setSelectedOrderForRequest(selectedOrder);
-                              setRequestType('replacement');
-                              setShowRequestModal(true);
-                            }}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                          >
-                            Request Replacement
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedOrderForRequest(selectedOrder);
-                              setRequestType('refund');
-                              setShowRequestModal(true);
-                            }}
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                          >
-                            Request Refund
-                          </button>
-                        </div>
-                      </>
+                      <div className="flex gap-4">
+                        <motion.button
+                          onClick={() => {
+                            setSelectedOrderForRequest(selectedOrder);
+                            setRequestType('replacement');
+                            setShowRequestModal(true);
+                          }}
+                          className="px-6 py-3 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Request Replacement
+                        </motion.button>
+                        <motion.button
+                          onClick={() => {
+                            setSelectedOrderForRequest(selectedOrder);
+                            setRequestType('refund');
+                            setShowRequestModal(true);
+                          }}
+                          className="px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Request Refund
+                        </motion.button>
+                      </div>
                     )}
                   </div>
                 )}
               </>
             )}
-          </div>
+          </motion.div>
         </div>
       )}
       
+      {/* Request Modal */}
       {showRequestModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] mt-16">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-            <h3 className="text-lg font-medium mb-4">Submit Request</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100]">
+          <motion.div 
+            className="bg-white rounded-[32px] p-8 w-full max-w-2xl"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <h3 className="text-2xl font-cinzel-decorative text-secondary mb-6">Submit Request</h3>
             <form onSubmit={handleRequestSubmit}>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Reason</label>
+              <div className="mb-6">
+                <label className="block text-gray-700 mb-2 font-medium">Reason</label>
                 <textarea
                   value={requestReason}
                   onChange={(e) => setRequestReason(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full px-4 py-3 border border-neutral-200 rounded-[16px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                   rows="4"
                   required
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Upload Image</label>
+              <div className="mb-6">
+                <label className="block text-gray-700 mb-2 font-medium">Upload Image</label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => setRequestImage(e.target.files[0])}
-                  className="w-full"
+                  className="w-full p-4 border border-neutral-200 rounded-[16px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                   required
                 />
               </div>
-              <div className="flex justify-end space-x-4 mt-4">
-                <button
+              <div className="flex justify-end gap-4">
+                <motion.button
                   type="button"
                   onClick={() => {
                     setShowRequestModal(false);
@@ -598,50 +734,62 @@ const Profile = () => {
                     setRequestReason('');
                     setRequestImage(null);
                   }}
-                  className="px-4 py-2 border rounded-lg"
+                  className="px-6 py-3 bg-neutral text-gray-700 rounded-full hover:bg-neutral/80 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   Cancel
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="submit"
                   disabled={loading || !requestType || !requestReason}
-                  className={`px-4 py-2 bg-purple-600 text-white rounded-lg ${
-                    loading || !requestType || !requestReason ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700'
-                  }`}
+                  className={`px-6 py-3 bg-primary text-white rounded-full ${
+                    loading || !requestType || !requestReason ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90'
+                  } transition-colors`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   {loading ? 'Submitting...' : 'Submit Request'}
-                </button>
+                </motion.button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
       
+      {/* Request Status Modal */}
       {showRequestStatusModal && selectedOrderForRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] mt-16">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-            <h3 className="text-lg font-medium mb-4">Request Status</h3>
-            <div className="space-y-4">
-              <div>
-                <p className="font-medium">Type: {selectedOrderForRequest.type}</p>
-                <p>Status: {selectedOrderForRequest.status}</p>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100]">
+          <motion.div 
+            className="bg-white rounded-[32px] p-8 w-full max-w-2xl"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <h3 className="text-2xl font-cinzel-decorative text-secondary mb-6">Request Status</h3>
+            <div className="space-y-6">
+              <div className="bg-neutral/5 rounded-[24px] p-6">
+                <p className="font-medium text-lg mb-2">Type: {selectedOrderForRequest.type}</p>
+                <p className="mb-4">Status: {selectedOrderForRequest.status}</p>
                 {selectedOrderForRequest.adminResponse && (
-                  <p className="mt-2">Admin Response: {selectedOrderForRequest.adminResponse}</p>
+                  <p className="text-gray-600">Admin Response: {selectedOrderForRequest.adminResponse}</p>
                 )}
               </div>
               <div className="flex justify-end">
-                <button
+                <motion.button
                   onClick={() => {
                     setShowRequestStatusModal(false);
                     setSelectedOrderForRequest(null);
                   }}
-                  className="px-4 py-2 border rounded-lg"
+                  className="px-6 py-3 bg-neutral text-gray-700 rounded-full hover:bg-neutral/80 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   Close
-                </button>
+                </motion.button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
       

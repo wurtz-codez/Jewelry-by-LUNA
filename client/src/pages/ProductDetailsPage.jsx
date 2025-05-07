@@ -6,6 +6,7 @@ import { useShop } from '../contexts/ShopContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { debounce } from 'lodash';
+import Toast from '../components/Toast';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -297,59 +298,41 @@ function ProductDetailsPage() {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-neutral">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-          <div style={{ display: 'flex', gap: '40px', marginBottom: '40px' }}>
-            <div style={{ display: 'flex', gap: '20px', flex: 1 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '400px', overflowY: 'auto' }}>
+      <div className="container mx-auto px-4 py-8 pt-24">
+        <div className="font-sans max-w-7xl mx-auto p-5">
+          <div className="flex gap-10 mb-10">
+            <div className="flex gap-5 flex-1">
+              <div className="flex flex-col gap-2.5 max-h-[400px] overflow-y-auto">
                 {productImages.map((image, index) => (
                   <div 
                     key={index}
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      border: `1px solid ${selectedImage === index ? '#8B4513' : '#e0e0e0'}`,
-                      cursor: 'pointer',
-                      overflow: 'hidden',
-                      borderRadius: '4px'
-                    }}
+                    className={`w-20 h-20 border cursor-pointer overflow-hidden rounded ${
+                      selectedImage === index ? 'border-[#8B4513]' : 'border-gray-200'
+                    }`}
                     onClick={() => setSelectedImage(index)}
                   >
                     <img 
                       src={image} 
                       alt={`Product thumbnail ${index + 1}`} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      className="w-full h-full object-cover" 
                     />
                   </div>
                 ))}
               </div>
-              <div style={{ flex: 1, maxWidth: '400px', position: 'relative' }}>
+              <div className="flex-1 max-w-[400px] relative">
                 <img 
                   src={productImages[selectedImage]} 
                   alt="Main product" 
-                  style={{ width: '100%', height: 'auto', objectFit: 'cover', borderRadius: '8px' }} 
+                  className="w-full h-auto object-cover rounded-lg" 
                 />
                 {productImages.length > 1 && (
                   <>
                     <button 
-                      style={{
-                        position: 'absolute',
-                        left: '10px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'rgba(255, 255, 255, 0.8)',
-                        border: 'none',
-                        borderRadius: '50%',
-                        width: '40px',
-                        height: '40px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        opacity: selectedImage === 0 ? 0.5 : 1
-                      }}
+                      className={`absolute left-2.5 top-1/2 -translate-y-1/2 bg-white/80 border-none rounded-full w-10 h-10 flex items-center justify-center cursor-pointer ${
+                        selectedImage === 0 ? 'opacity-50' : 'opacity-100'
+                      }`}
                       onClick={() => setSelectedImage(prev => Math.max(0, prev - 1))}
                       disabled={selectedImage === 0}
                     >
@@ -358,22 +341,9 @@ function ProductDetailsPage() {
                       </svg>
                     </button>
                     <button 
-                      style={{
-                        position: 'absolute',
-                        right: '10px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'rgba(255, 255, 255, 0.8)',
-                        border: 'none',
-                        borderRadius: '50%',
-                        width: '40px',
-                        height: '40px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        opacity: selectedImage === productImages.length - 1 ? 0.5 : 1
-                      }}
+                      className={`absolute right-2.5 top-1/2 -translate-y-1/2 bg-white/80 border-none rounded-full w-10 h-10 flex items-center justify-center cursor-pointer ${
+                        selectedImage === productImages.length - 1 ? 'opacity-50' : 'opacity-100'
+                      }`}
                       onClick={() => setSelectedImage(prev => Math.min(productImages.length - 1, prev + 1))}
                       disabled={selectedImage === productImages.length - 1}
                     >
@@ -386,48 +356,42 @@ function ProductDetailsPage() {
               </div>
             </div>
             
-            <div style={{ flex: 1 }}>
-              <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 5px 0' }}>{product?.name || 'Product Name'}</h1>
-              <p style={{ color: '#666', margin: '0 0 15px 0' }}>{product?.description || 'Product description'}</p>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold mb-1">{product?.name || 'Product Name'}</h1>
+              <p className="text-gray-600 mb-4">{product?.description || 'Product description'}</p>
               
-              <div style={{ display: 'inline-flex', alignItems: 'center', background: '#333', color: 'white', padding: '5px 10px', borderRadius: '20px', marginBottom: '15px' }}>
+              <div className="inline-flex items-center bg-gray-800 text-white px-2.5 py-1.5 rounded-full mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
-                <span style={{ marginLeft: '5px' }}>{product?.rating || '4.5'}</span>
+                <span className="ml-1.5">{product?.rating || '4.5'}</span>
               </div>
               
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                <span style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{product?.sellingPrice?.toFixed(2) || '0.00'}</span>
+              <div className="flex items-center gap-2.5 mb-1">
+                <span className="text-2xl font-bold">₹{product?.sellingPrice?.toFixed(2) || '0.00'}</span>
                 {product?.price && (
-                  <span style={{ textDecoration: 'line-through', color: '#999' }}>₹{product.price.toFixed(2)}</span>
+                  <span className="line-through text-gray-500">₹{product.price.toFixed(2)}</span>
                 )}
                 {Math.round(((product.price - product.sellingPrice) / product.price) * 100)}% OFF
               </div>
               
-              <p style={{ color: '#666', marginBottom: '10px', fontSize: '14px' }}>inclusive of all the taxes</p>
+              <p className="text-gray-600 mb-2.5 text-sm">inclusive of all the taxes</p>
               
               {/* Stock Status */}
-              <div style={{ marginBottom: '20px' }}>
+              <div className="mb-5">
                 {renderStockStatus()}
               </div>
 
               {/* Quantity Selector */}
               {product?.stock > 0 && product?.isAvailable && (
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Quantity:</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="mb-5">
+                  <label className="block mb-2 font-medium">Quantity:</label>
+                  <div className="flex items-center gap-2.5">
                     <button
                       onClick={() => handleQuantityUpdate(quantity - 1)}
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px 0 0 4px',
-                        background: 'white',
-                        cursor: quantity > 1 ? 'pointer' : 'not-allowed',
-                        opacity: quantity > 1 ? 1 : 0.5
-                      }}
+                      className={`w-9 h-9 border border-gray-200 rounded-l bg-white ${
+                        quantity > 1 ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-50'
+                      }`}
                     >
                       -
                     </button>
@@ -437,28 +401,13 @@ function ProductDetailsPage() {
                       max={product.stock}
                       value={quantity}
                       onChange={(e) => handleQuantityUpdate(parseInt(e.target.value))}
-                      style={{
-                        width: '60px',
-                        height: '36px',
-                        border: '1px solid #ddd',
-                        borderLeft: 'none',
-                        borderRight: 'none',
-                        textAlign: 'center',
-                        backgroundColor: 'white',
-                        color: '#333'
-                      }}
+                      className="w-15 h-9 border border-gray-200 border-l-0 border-r-0 text-center bg-white text-gray-800"
                     />
                     <button
                       onClick={() => handleQuantityUpdate(quantity + 1)}
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        border: '1px solid #ddd',
-                        borderRadius: '0 4px 4px 0',
-                        background: 'white',
-                        cursor: quantity < product.stock ? 'pointer' : 'not-allowed',
-                        opacity: quantity < product.stock ? 1 : 0.5
-                      }}
+                      className={`w-9 h-9 border border-gray-200 rounded-r bg-white ${
+                        quantity < product.stock ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-50'
+                      }`}
                     >
                       +
                     </button>
@@ -467,70 +416,48 @@ function ProductDetailsPage() {
               )}
               
               {/* Categories */}
-              <div style={{ marginBottom: '20px' }}>
-                <p style={{ fontWeight: 'medium', marginBottom: '5px' }}>Categories:</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div className="mb-5">
+                <p className="font-medium mb-1">Categories:</p>
+                <div className="flex flex-wrap gap-2">
                   {product?.categories && product.categories.length > 0 ? 
                     product.categories.map((category, index) => (
                       <span 
                         key={index}
-                        style={{ 
-                          padding: '6px 12px', 
-                          background: '#e0e0e0',
-                          borderRadius: '16px', 
-                          fontSize: '14px',
-                          textTransform: 'capitalize' 
-                        }}
+                        className="px-3 py-1.5 bg-gray-200 rounded-full text-sm capitalize"
                       >
                         {category}
                       </span>
                     )) : 
-                    <span style={{ color: '#666' }}>No categories</span>
+                    <span className="text-gray-600">No categories</span>
                   }
                 </div>
               </div>
 
               {/* Tags */}
-              <div style={{ marginBottom: '20px' }}>
-                <p style={{ fontWeight: 'medium', marginBottom: '5px' }}>Tags:</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div className="mb-5">
+                <p className="font-medium mb-1">Tags:</p>
+                <div className="flex flex-wrap gap-2">
                   {product?.tags && product.tags.length > 0 ? 
                     product.tags.map((tag, index) => (
                       <span 
                         key={index} 
-                        style={{ 
-                          padding: '6px 12px',
-                          background: '#f0f8ff', 
-                          color: '#1e90ff',
-                          border: '1px solid #1e90ff',
-                          borderRadius: '16px',
-                          fontSize: '14px',
-                          textTransform: 'capitalize'
-                        }}
+                        className="px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-600 rounded-full text-sm capitalize"
                       >
                         {tag}
                       </span>
                     )) : 
-                    <span style={{ color: '#666' }}>No tags</span>
+                    <span className="text-gray-600">No tags</span>
                   }
                 </div>
               </div>
               
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
+              <div className="flex gap-2.5 mb-8">
                 <button 
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    background: (product?.stock > 0 && product?.isAvailable) ? '#8B4513' : '#cccccc',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: (product?.stock > 0 && product?.isAvailable) ? 'pointer' : 'not-allowed',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}
+                  className={`flex-1 py-3 px-4 rounded ${
+                    (product?.stock > 0 && product?.isAvailable) 
+                      ? 'bg-[#8B4513] text-white cursor-pointer' 
+                      : 'bg-gray-300 text-white cursor-not-allowed'
+                  } flex items-center justify-center gap-2`}
                   onClick={handleAddToCart}
                   disabled={!product?.stock || product?.stock <= 0 || !product?.isAvailable}
                 >
@@ -542,18 +469,9 @@ function ProductDetailsPage() {
                   {(product?.stock > 0 && product?.isAvailable) ? 'Add to Cart' : 'Out of Stock'}
                 </button>
                 <button 
-                  style={{
-                    padding: '12px',
-                    background: 'white',
-                    color: isInWishlist ? '#FF4081' : '#333',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}
+                  className={`py-3 px-4 bg-white ${
+                    isInWishlist ? 'text-pink-500' : 'text-gray-800'
+                  } border border-gray-200 rounded flex items-center justify-center gap-2 cursor-pointer`}
                   onClick={handleWishlistToggle}
                 >
                   {isInWishlist ? (
@@ -574,35 +492,35 @@ function ProductDetailsPage() {
                 </button>
               </div>
 
-              <div style={{ marginBottom: '20px', borderTop: '1px solid #e0e0e0', paddingTop: '15px' }}>
-                <h2 style={{ fontSize: '18px', marginBottom: '10px' }}>Product Specifications</h2>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <div className="mb-5 border-t border-gray-200 pt-4">
+                <h2 className="text-lg mb-2.5">Product Specifications</h2>
+                <table className="w-full border-collapse">
                   <tbody>
                     <tr>
-                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', fontWeight: 'bold', width: '40%' }}>Categories</td>
-                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', textTransform: 'capitalize' }}>
+                      <td className="py-2 border-b border-gray-200 font-bold w-2/5">Categories</td>
+                      <td className="py-2 border-b border-gray-200 capitalize">
                         {product?.categories && product.categories.length > 0 
                           ? product.categories.join(', ') 
                           : 'N/A'}
                       </td>
                     </tr>
                     <tr>
-                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', fontWeight: 'bold' }}>Tags</td>
-                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', textTransform: 'capitalize' }}>
+                      <td className="py-2 border-b border-gray-200 font-bold">Tags</td>
+                      <td className="py-2 border-b border-gray-200 capitalize">
                         {product?.tags && product.tags.length > 0 
                           ? product.tags.join(', ') 
                           : 'N/A'}
                       </td>
                     </tr>
                     <tr>
-                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0', fontWeight: 'bold' }}>Availability</td>
-                      <td style={{ padding: '8px 0', borderBottom: '1px solid #e0e0e0' }}>{product?.isAvailable ? 'Yes' : 'No'}</td>
+                      <td className="py-2 border-b border-gray-200 font-bold">Availability</td>
+                      <td className="py-2 border-b border-gray-200">{product?.isAvailable ? 'Yes' : 'No'}</td>
                     </tr>
                     <tr>
-                      <td style={{ padding: '8px 0', fontWeight: 'bold' }}>Rating</td>
-                      <td style={{ padding: '8px 0', display: 'flex', alignItems: 'center' }}>
+                      <td className="py-2 font-bold">Rating</td>
+                      <td className="py-2 flex items-center">
                         {renderStars(product?.rating || 0)} 
-                        <span style={{ marginLeft: '5px' }}>({product?.rating || '0'})</span>
+                        <span className="ml-1.5">({product?.rating || '0'})</span>
                       </td>
                     </tr>
                   </tbody>
@@ -610,75 +528,50 @@ function ProductDetailsPage() {
               </div>
               
               <div>
-                <h2 style={{ fontSize: '18px', marginBottom: '15px' }}>Product Description</h2>
-                <p style={{ color: '#333', lineHeight: '1.6', marginBottom: '15px', whiteSpace: 'pre-line' }}>
+                <h2 className="text-lg mb-4">Product Description</h2>
+                <p className="text-gray-800 leading-relaxed mb-4 whitespace-pre-line">
                   {product?.detailedDescription || 'Product description will be loaded here.'}
                 </p>
               </div>
             </div>
           </div>
           
-          <div style={{ display: 'flex', gap: '40px', marginBottom: '40px' }}>
-            <div style={{ textAlign: 'center' }}>
-              <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>{product?.rating || '4.5'}</h2>
-              <div style={{ marginBottom: '10px' }}>{renderStars(product?.rating || 4.5)}</div>
-              <p style={{ marginBottom: '10px' }}>33 ratings</p>
-              <button style={{
-                padding: '8px 16px',
-                background: '#333',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}>RATE</button>
+          <div className="flex gap-10 mb-10">
+            <div className="text-center">
+              <h2 className="text-2xl mb-2.5">{product?.rating || '4.5'}</h2>
+              <div className="mb-2.5">{renderStars(product?.rating || 4.5)}</div>
+              <p className="mb-2.5">33 ratings</p>
+              <button className="py-2 px-4 bg-gray-800 text-white border-none rounded cursor-pointer">RATE</button>
             </div>
             
-            <div style={{ flex: 1 }}>
+            <div className="flex-1">
               {ratingData.map(item => (
-                <div key={item.stars} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                  <span style={{ width: '50px' }}>{item.stars} ★</span>
-                  <div style={{ flex: 1, height: '8px', background: '#e0e0e0', borderRadius: '4px' }}>
+                <div key={item.stars} className="flex items-center gap-2.5 mb-1">
+                  <span className="w-12">{item.stars} ★</span>
+                  <div className="flex-1 h-2 bg-gray-200 rounded">
                     <div 
-                      style={{ 
-                        height: '100%', 
-                        background: '#FFD700',
-                        borderRadius: '4px',
-                        width: `${(item.count / 33) * 100}%`
-                      }}
+                      className="h-full bg-yellow-400 rounded"
+                      style={{ width: `${(item.count / 33) * 100}%` }}
                     ></div>
                   </div>
-                  <span style={{ width: '40px' }}>({item.count})</span>
+                  <span className="w-10">({item.count})</span>
                 </div>
               ))}
             </div>
           </div>
           
           <div>
-            <h2 style={{ marginBottom: '20px' }}>You May Also Like</h2>
+            <h2 className="mb-5">You May Also Like</h2>
             
             {relatedProducts.length > 0 ? (
-              <div style={{ position: 'relative' }}>
-                <button style={{
-                  position: 'absolute',
-                  left: '-30px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'white',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '50%',
-                  width: '40px',
-                  height: '40px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer'
-                }}>
+              <div className="relative">
+                <button className="absolute -left-8 top-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m15 18-6-6 6-6" />
                   </svg>
                 </button>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+                <div className="grid grid-cols-4 gap-5">
                   {relatedProducts.map(relatedProduct => {
                     const productImage = relatedProduct.imageUrls && relatedProduct.imageUrls.length > 0
                       ? (relatedProduct.imageUrls[0].startsWith('http') 
@@ -689,25 +582,20 @@ function ProductDetailsPage() {
                       : placeholderImage;
                     
                     return (
-                      <div key={relatedProduct._id} style={{ border: '1px solid #e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ height: '200px', overflow: 'hidden' }}>
-                          <img src={productImage} alt={relatedProduct.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div key={relatedProduct._id} className="border border-gray-200 rounded overflow-hidden">
+                        <div className="h-50 overflow-hidden">
+                          <img src={productImage} alt={relatedProduct.name} className="w-full h-full object-cover" />
                         </div>
-                        <div style={{ padding: '15px' }}>
-                          <p style={{ color: '#666', marginBottom: '5px' }}>{relatedProduct.categories?.[0] || 'Jewelry'}</p>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '5px' }}>
-                            <span style={{ color: '#FFD700' }}>★</span>
+                        <div className="p-4">
+                          <p className="text-gray-600 mb-1">{relatedProduct.categories?.[0] || 'Jewelry'}</p>
+                          <div className="flex items-center gap-1 mb-1">
+                            <span className="text-yellow-400">★</span>
                             <span>{relatedProduct.rating || '0'}</span>
                           </div>
-                          <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>₹{relatedProduct.sellingPrice?.toFixed(2) || '0.00'}</p>
-                          <div style={{ display: 'flex', gap: '10px' }}>
+                          <p className="font-bold mb-2.5">₹{relatedProduct.sellingPrice?.toFixed(2) || '0.00'}</p>
+                          <div className="flex gap-2.5">
                             <button 
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                padding: '5px'
-                              }}
+                              className="bg-transparent border-none cursor-pointer p-1"
                               onClick={() => addToWishlist(relatedProduct)}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -715,12 +603,7 @@ function ProductDetailsPage() {
                               </svg>
                             </button>
                             <button 
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                padding: '5px'
-                              }}
+                              className="bg-transparent border-none cursor-pointer p-1"
                               onClick={() => addToCart(relatedProduct)}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -737,12 +620,19 @@ function ProductDetailsPage() {
                 </div>
               </div>
             ) : (
-              <p style={{ textAlign: 'center', color: '#666' }}>No related products found.</p>
+              <p className="text-center text-gray-600">No related products found.</p>
             )}
           </div>
         </div>
       </div>
       <Footer />
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 }
