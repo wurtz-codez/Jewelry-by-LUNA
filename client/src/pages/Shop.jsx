@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { FiSearch, FiShoppingCart, FiStar, FiLoader, FiRefreshCw, FiHeart, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import bannerImage from '../assets/Shop-page-banner.png';
+import { FiSearch, FiShoppingCart, FiStar, FiLoader, FiRefreshCw, FiHeart, FiChevronLeft, FiChevronRight, FiFilter } from 'react-icons/fi';
 import axios from 'axios';
 import { useShop } from '../contexts/ShopContext';
 import ProductCard from '../assets/cards/ProductCard';
+import useDebounce from '../hooks/useDebounce';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -30,6 +30,11 @@ const Shop = () => {
   const [sortOrder, setSortOrder] = useState('desc');
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Add debounced values
+  const debouncedSearchTerm = useDebounce(searchTerm, 500); // 500ms delay
+  const debouncedPriceRange = useDebounce(priceRange, 500); // 500ms delay
   
   // Clear filters on mount
   useEffect(() => {
@@ -61,11 +66,11 @@ const Shop = () => {
         limit: 20,
         sort: sortBy,
         order: sortOrder,
-        ...(searchTerm && { search: searchTerm }),
+        ...(debouncedSearchTerm && { search: debouncedSearchTerm }),
         ...(selectedCategory !== 'all' && { category: selectedCategory }),
         ...(selectedTag !== 'all' && { tag: selectedTag }),
-        ...(priceRange[0] > 0 && { minPrice: priceRange[0] }),
-        ...(priceRange[1] < Infinity && { maxPrice: priceRange[1] })
+        ...(debouncedPriceRange[0] > 0 && { minPrice: debouncedPriceRange[0] }),
+        ...(debouncedPriceRange[1] < Infinity && { maxPrice: debouncedPriceRange[1] })
       });
 
       const response = await axios.get(`${API_BASE_URL}/jewelry?${queryParams}`);
@@ -87,7 +92,7 @@ const Shop = () => {
   // Update URL with current filters
   const updateURL = () => {
     const queryParams = new URLSearchParams();
-    if (searchTerm) queryParams.set('search', searchTerm);
+    if (debouncedSearchTerm) queryParams.set('search', debouncedSearchTerm);
     if (currentPage > 1) queryParams.set('page', currentPage);
     if (selectedCategory !== 'all') queryParams.set('category', selectedCategory);
     if (selectedTag !== 'all') queryParams.set('tag', selectedTag);
@@ -96,11 +101,11 @@ const Shop = () => {
     navigate(`/shop?${queryParams.toString()}`);
   };
 
-  // Effect to fetch products when filters change
+  // Update the useEffect to use debounced values
   useEffect(() => {
     fetchProducts();
     updateURL();
-  }, [currentPage, searchTerm, selectedCategory, selectedTag, priceRange, sortBy, sortOrder]);
+  }, [currentPage, debouncedSearchTerm, selectedCategory, selectedTag, debouncedPriceRange, sortBy, sortOrder]);
 
   // Handle adding to cart
   const handleAddToCart = (product) => {
@@ -132,122 +137,207 @@ const Shop = () => {
 
   return (
     <div className="shop-page bg-white">
-      <Navbar />
+      <Navbar variant="white" />
       
-      {/* Shop Banner */}
-      <div className="shop-banner">
-        <img src={bannerImage} alt="Jewelry Collection" />
+      {/* Shop Heading */}
+      <div className="text-center mt-16 sm:mt-24 md:mt-32 mb-8 sm:mb-12 md:mb-16 px-4">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-cinzel-decorative text-secondary">Explore our collection</h1>
       </div>
       
       {/* Search and Filters */}
-      <div className="shop-controls">
-        <div className="search-container">
-          <FiSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search for jewelry..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-          {searchTerm && (
-            <button 
-              onClick={() => setSearchTerm('')}
-              className="clear-search"
-            >
-              ×
-            </button>
-          )}
-        </div>
-        
-        <div className="filters">
-          <div className="filter-group">
-            <label htmlFor="category">Category:</label>
-            <select 
-              id="category" 
-              value={selectedCategory} 
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              <option value="all">All Categories</option>
-              {categories.map(category => (
-                <option key={category} value={category}>
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="filter-group">
-            <label htmlFor="tag">Tag:</label>
-            <select 
-              id="tag" 
-              value={selectedTag} 
-              onChange={(e) => setSelectedTag(e.target.value)}
-            >
-              <option value="all">All Tags</option>
-              {tags.map(tag => (
-                <option key={tag} value={tag}>
-                  {tag.charAt(0).toUpperCase() + tag.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="filter-group">
-            <label htmlFor="sort">Sort By:</label>
-            <select
-              id="sort"
-              value={`${sortBy}-${sortOrder}`}
-              onChange={(e) => {
-                const [newSortBy, newSortOrder] = e.target.value.split('-');
-                setSortBy(newSortBy);
-                setSortOrder(newSortOrder);
-              }}
-            >
-              <option value="createdAt-desc">Newest First</option>
-              <option value="createdAt-asc">Oldest First</option>
-              <option value="sellingPrice-asc">Price: Low to High</option>
-              <option value="sellingPrice-desc">Price: High to Low</option>
-              <option value="name-asc">Name: A to Z</option>
-              <option value="name-desc">Name: Z to A</option>
-            </select>
-          </div>
-          
-          <div className="filter-group">
-            <label htmlFor="price-min">Price Range:</label>
-            <div className="price-inputs">
-              <input
-                type="number"
-                id="price-min"
-                min="0"
-                max={priceRange[1]}
-                value={priceRange[0]}
-                onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
-              />
-              <span>to</span>
-              <input
-                type="number"
-                id="price-max"
-                min={priceRange[0]}
-                value={priceRange[1]}
-                onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
-              />
+      <div className="sticky top-16 md:top-20 z-40 bg-white shadow-sm">
+        <div className="shop-controls px-4 sm:px-6 lg:px-8 xl:px-32 py-4">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
+            {/* Filters Button and Dropdown */}
+            <div className="w-full sm:w-1/4 lg:w-1/5 relative">
+              <button 
+                onClick={() => setShowFilters(!showFilters)}
+                className="w-full h-12 sm:h-16 flex text-lg sm:text-xl items-center justify-center gap-2 py-2 sm:py-3 px-4 bg-neutral  rounded-full transition-colors"
+              >
+                <FiFilter />
+                <span>Filters</span>
+              </button>
+              
+              {showFilters && (
+                <div className="fixed sm:absolute inset-0 sm:inset-auto top-16 sm:top-20 left-0 w-full sm:w-[300px] lg:w-[350px] mt-0 sm:mt-2 bg-neutral rounded-none sm:rounded-3xl shadow-lg p-4 sm:p-6 z-[100] flex flex-col h-[calc(100vh-4rem)] sm:h-auto sm:max-h-[calc(80vh-2rem)]">
+                  <div className="flex justify-between items-center mb-4 sm:hidden">
+                    <h2 className="text-xl font-medium text-neutral-800">Filters</h2>
+                    <button 
+                      onClick={() => setShowFilters(false)}
+                      className="p-2 hover:bg-neutral-100 rounded-full text-xl text-neutral-700"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="filters space-y-6 overflow-y-auto flex-1">
+                    {/* Categories Section */}
+                    <div className="filter-group">
+                      <label htmlFor="category" className="block text-base sm:text-lg font-medium text-neutral-800 mb-2 sm:mb-3">Categories</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => setSelectedCategory('all')}
+                          className={`p-2 sm:p-3 rounded-full text-sm sm:text-base font-medium transition-all ${
+                            selectedCategory === 'all' 
+                              ? 'bg-primary text-white' 
+                              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                          }`}
+                        >
+                          All Categories
+                        </button>
+                        {categories.map(category => (
+                          <button
+                            key={category}
+                            onClick={() => setSelectedCategory(category)}
+                            className={`p-2 sm:p-3 rounded-full text-sm sm:text-base font-medium transition-all ${
+                              selectedCategory === category 
+                                ? 'bg-primary text-white' 
+                                : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                            }`}
+                          >
+                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Tags Section */}
+                    <div className="filter-group">
+                      <label htmlFor="tag" className="block text-base sm:text-lg font-medium text-neutral-800 mb-2 sm:mb-3">Tags</label>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => setSelectedTag('all')}
+                          className={`px-3 sm:px-4 py-2 rounded-full text-sm sm:text-base font-medium transition-all ${
+                            selectedTag === 'all' 
+                              ? 'bg-primary text-white' 
+                              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                          }`}
+                        >
+                          All Tags
+                        </button>
+                        {tags.map(tag => (
+                          <button
+                            key={tag}
+                            onClick={() => setSelectedTag(tag)}
+                            className={`px-3 sm:px-4 py-2 rounded-full text-sm sm:text-base font-medium transition-all ${
+                              selectedTag === tag 
+                                ? 'bg-primary text-white' 
+                                : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                            }`}
+                          >
+                            {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Price Range Section */}
+                    <div className="filter-group">
+                      <label className="block text-base sm:text-lg font-medium text-neutral-800 mb-2 sm:mb-3">Price Range</label>
+                      <div className="space-y-4">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                          <div className="flex-1">
+                            <label htmlFor="price-min" className="block text-sm sm:text-base text-neutral-600 mb-1">Min Price</label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-base sm:text-lg">₹</span>
+                              <input
+                                type="number"
+                                id="price-min"
+                                min="0"
+                                max={priceRange[1]}
+                                value={priceRange[0]}
+                                onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                                className="w-full p-2 sm:p-3 pl-10 sm:pl-12 bg-white border border-neutral-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base"
+                                placeholder="0"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <label htmlFor="price-max" className="block text-sm sm:text-base text-neutral-600 mb-1">Max Price</label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-base sm:text-lg">₹</span>
+                              <input
+                                type="number"
+                                id="price-max"
+                                min={priceRange[0]}
+                                max="100000"
+                                value={priceRange[1]}
+                                onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                                className="w-full p-2 sm:p-3 pl-10 sm:pl-12 bg-white border border-neutral-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base"
+                                placeholder="100000"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex justify-between text-sm sm:text-base text-neutral-500">
+                          <span>₹{priceRange[0]}</span>
+                          <span>₹{priceRange[1]}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sort Section */}
+                    <div className="filter-group">
+                      <label htmlFor="sort" className="block text-base sm:text-lg font-medium text-neutral-800 mb-2 sm:mb-3">Sort By</label>
+                      <select
+                        id="sort"
+                        value={`${sortBy}-${sortOrder}`}
+                        onChange={(e) => {
+                          const [newSortBy, newSortOrder] = e.target.value.split('-');
+                          setSortBy(newSortBy);
+                          setSortOrder(newSortOrder);
+                        }}
+                        className="w-full p-2 sm:p-3 bg-white border border-neutral-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base text-neutral-700"
+                      >
+                        <option value="createdAt-desc">Newest First</option>
+                        <option value="createdAt-asc">Oldest First</option>
+                        <option value="sellingPrice-asc">Price: Low to High</option>
+                        <option value="sellingPrice-desc">Price: High to Low</option>
+                        <option value="name-asc">Name: A to Z</option>
+                        <option value="name-desc">Name: Z to A</option>
+                      </select>
+                    </div>
+
+                    {/* Clear Filters Button */}
+                    {(debouncedSearchTerm || selectedCategory !== 'all' || selectedTag !== 'all' || priceRange[0] > 0 || priceRange[1] < Infinity) && (
+                      <button 
+                        onClick={clearFilters}
+                        className="w-full py-2 sm:py-3 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-full transition-colors font-medium text-sm sm:text-base"
+                      >
+                        Clear All Filters
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Search Section */}
+            <div className="w-full sm:w-3/4 lg:w-4/5">
+              <div className="search-container relative">
+                <FiSearch className="search-icon absolute left-4 sm:left-8 top-1/2 transform -translate-y-1/2 text-neutral-400 text-lg sm:text-xl" />
+                <input
+                  type="text"
+                  placeholder="Search for jewelry..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full h-12 sm:h-16 p-2 sm:p-3 pl-12 sm:pl-16 bg-neutral border border-neutral-200 rounded-full focus:outline-none focus:ring-2 focus:ring-neutral-200 text-neutral-900 placeholder-neutral-400 text-base sm:text-lg placeholder:text-base sm:placeholder:text-xl"
+                />
+                {searchTerm && (
+                  <button 
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-4 sm:right-8 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600 text-lg sm:text-xl"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-          
-          {(searchTerm || selectedCategory !== 'all' || selectedTag !== 'all' || priceRange[0] > 0 || priceRange[1] < Infinity) && (
-            <button 
-              onClick={clearFilters}
-              className="clear-filters-btn"
-            >
-              Clear Filters
-            </button>
-          )}
         </div>
       </div>
       
       {/* Products Display */}
-      <div className="products-container grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-10 px-4 sm:px-6 lg:px-32 py-8 auto-rows-fr">
+      <div className="products-container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 xl:gap-10 px-4 sm:px-6 lg:px-8 xl:px-32 py-8 auto-rows-fr">
         {loading ? (
           <div className="col-span-full flex justify-center items-center w-full py-20">
             <div className="animate-spin text-gray-500 mr-2">

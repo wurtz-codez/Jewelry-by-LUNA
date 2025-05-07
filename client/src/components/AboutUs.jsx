@@ -1,5 +1,5 @@
-import aboutImage from '../assets/about-image.png'
-import earringsImage from '../assets/earrings-image.png'
+import aboutImage from '../assets/about-image.jpg'
+import jewelryImage from '../assets/aboutus-jewelry.jpg'
 
 const AboutUs = () => {
   return (
@@ -8,7 +8,7 @@ const AboutUs = () => {
         {/* Left Section */}
         <div className="w-full md:flex-[60%]">
           <div className="mb-4 md:mb-6 flex items-center gap-2 md:gap-4">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-cinzel text-primary">ABOUT US</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-cinzel text-primary">About Us</h2>
             <div className="w-16 sm:w-24 md:w-40 lg:w-60 h-0.5 md:h-1 bg-primary"></div>
           </div>
           <div className="mt-8 sm:mt-12 md:mt-16 lg:mt-24 mx-2 sm:mx-6 md:mx-10">
@@ -40,7 +40,7 @@ const AboutUs = () => {
         </div>
         <div className="w-2/5 sm:w-3/5 md:w-3/5 md:flex-[20%] mt-8 mx-auto md:mx-0 rounded-[100px] sm:rounded-[120px] overflow-hidden">
           <img 
-            src={earringsImage || "/placeholder.svg"} 
+            src={jewelryImage || "/placeholder.svg"} 
             alt="Elegant earrings" 
             className="w-full h-auto rounded-lg"
           />
