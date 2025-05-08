@@ -65,11 +65,11 @@ const Navbar = ({ variant }) => {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 ${variant === 'white' ? 'bg-white' : 'bg-neutral'} shadow-sm font-body`}>
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-32">
-        <div className="flex justify-between items-center h-16 md:h-20">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-32">
+        <div className="flex justify-between items-center h-14 sm:h-16 md:h-20">
           {/* Left Section - Navigation Links */}
           <motion.div 
-            className="hidden md:flex items-center space-x-4 lg:space-x-7 w-1/3 justify-start text-lg lg:text-xl"
+            className="hidden md:flex items-center space-x-4 lg:space-x-7 w-1/3 justify-start text-base sm:text-lg lg:text-xl"
             variants={itemVariants}
           >
             <Link 
@@ -147,12 +147,13 @@ const Navbar = ({ variant }) => {
 
           {/* Center Section - Logo */}
           <motion.div 
-            className="w-full md:w-1/3 flex justify-start md:justify-center"
+            className="w-full md:w-1/3 flex justify-center"
             variants={itemVariants}
           >
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              className="scale-90 sm:scale-100"
             >
               <Logo size="default" />
             </motion.div>
@@ -160,7 +161,7 @@ const Navbar = ({ variant }) => {
 
           {/* Right Section - Icons */}
           <motion.div 
-            className="flex items-center space-x-4 md:space-x-8 lg:space-x-16 w-full md:w-1/3 justify-end"
+            className="flex items-center space-x-3 sm:space-x-4 md:space-x-8 lg:space-x-16 w-full md:w-1/3 justify-end"
             variants={itemVariants}
           >
             <motion.button 
@@ -171,7 +172,7 @@ const Navbar = ({ variant }) => {
               whileHover="hover"
               whileTap="tap"
             >
-              <FiSearch className="w-5 h-5" />
+              <FiSearch className="w-4 h-4 sm:w-5 sm:h-5" />
             </motion.button>
 
             <motion.div
@@ -190,7 +191,7 @@ const Navbar = ({ variant }) => {
                   }
                 }}
               >
-                <FaRegHeart className="w-5 h-5" />
+                <FaRegHeart className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </motion.div>
 
@@ -210,10 +211,10 @@ const Navbar = ({ variant }) => {
                   }
                 }}
               >
-                <FaBagShopping className="w-5 h-5" />
+                <FaBagShopping className="w-4 h-4 sm:w-5 sm:h-5" />
                 {cartItemCount > 0 && (
                   <motion.span 
-                    className="absolute -top-2 -right-2 bg-primary text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center"
+                    className="absolute -top-2 -right-2 bg-primary text-white text-[10px] sm:text-xs font-medium rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -231,7 +232,7 @@ const Navbar = ({ variant }) => {
               whileHover="hover"
               whileTap="tap"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </motion.button>
@@ -245,7 +246,7 @@ const Navbar = ({ variant }) => {
                 aria-label={currentUser ? "Profile" : "Login"}
                 className="text-black hover:text-primary transition-colors duration-200"
               >
-                <FaRegUser className="w-5 h-5" />
+                <FaRegUser className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               <AnimatePresence>
                 {showProfileDropdown && (
@@ -311,124 +312,103 @@ const Navbar = ({ variant }) => {
             </motion.div>
           </motion.div>
         </div>
+      </div>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {showMobileMenu && (
-            <motion.div 
-              className="md:hidden"
-              variants={mobileMenuVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-            >
-              <motion.div className="py-4 space-y-2">
-                <motion.div variants={mobileMenuItemVariants}>
-                  <Link 
-                    to="/" 
-                    className={`block px-4 py-2 text-black hover:text-primary transition-colors duration-200 ${
-                      activeLink === 'Home' ? 'font-medium' : ''
-                    }`}
-                  >
-                    Home
-                  </Link>
-                </motion.div>
-                <motion.div variants={mobileMenuItemVariants}>
-                  <Link 
-                    to="/shop" 
-                    className={`block px-4 py-2 text-black hover:text-primary transition-colors duration-200 ${
-                      activeLink === 'Shop' ? 'font-medium' : ''
-                    }`}
-                  >
-                    Shop
-                  </Link>
-                </motion.div>
-                {currentUser?.role !== 'admin' && (
-                  <>
-                    <motion.div variants={mobileMenuItemVariants}>
-                      <Link 
-                        to="/about" 
-                        className={`block px-4 py-2 text-black hover:text-primary transition-colors duration-200 ${
-                          activeLink === 'About' ? 'font-medium' : ''
-                        }`}
-                      >
-                        About
-                      </Link>
-                    </motion.div>
-                    <motion.div variants={mobileMenuItemVariants}>
-                      <Link 
-                        to="/contact" 
-                        className={`block px-4 py-2 text-black hover:text-primary transition-colors duration-200 ${
-                          activeLink === 'Contact' ? 'font-medium' : ''
-                        }`}
-                      >
-                        Contact
-                      </Link>
-                    </motion.div>
-                  </>
-                )}
-                {currentUser?.role === 'admin' && (
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {showMobileMenu && (
+          <motion.div
+            className="md:hidden bg-white border-t border-gray-200"
+            initial="closed"
+            animate="open"
+            exit="closed"
+            variants={mobileMenuVariants}
+          >
+            <div className="px-4 py-3 space-y-3">
+              <motion.div variants={mobileMenuItemVariants}>
+                <Link 
+                  to="/" 
+                  className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  Home
+                </Link>
+              </motion.div>
+              <motion.div variants={mobileMenuItemVariants}>
+                <Link 
+                  to="/shop" 
+                  className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  Shop
+                </Link>
+              </motion.div>
+              {currentUser?.role !== 'admin' && (
+                <>
                   <motion.div variants={mobileMenuItemVariants}>
                     <Link 
-                      to="/admin" 
-                      className={`block px-4 py-2 text-black hover:text-primary transition-colors duration-200 ${
-                        activeLink === 'Dashboard' ? 'font-medium' : ''
-                      }`}
+                      to="/about" 
+                      className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                      onClick={() => setShowMobileMenu(false)}
                     >
-                      Dashboard
+                      About
                     </Link>
                   </motion.div>
-                )}
+                  <motion.div variants={mobileMenuItemVariants}>
+                    <Link 
+                      to="/contact" 
+                      className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      Contact
+                    </Link>
+                  </motion.div>
+                </>
+              )}
+              {currentUser?.role === 'admin' && (
                 <motion.div variants={mobileMenuItemVariants}>
                   <Link 
-                    to="/wishlist" 
-                    className={`block px-4 py-2 text-black hover:text-primary transition-colors duration-200 ${
-                      activeLink === 'Wishlist' ? 'font-medium' : ''
-                    }`}
-                    onClick={(e) => {
-                      if (!currentUser) {
-                        e.preventDefault();
-                        navigate('/login');
-                      }
-                    }}
+                    to="/admin" 
+                    className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                    onClick={() => setShowMobileMenu(false)}
                   >
-                    Wishlist
+                    Dashboard
                   </Link>
                 </motion.div>
-                {currentUser ? (
-                  <>
-                    <motion.div variants={mobileMenuItemVariants}>
-                      <Link
-                        to="/profile"
-                        className="block px-4 py-2 text-black hover:text-primary transition-colors duration-200"
-                      >
-                        Profile
-                      </Link>
-                    </motion.div>
-                    <motion.div variants={mobileMenuItemVariants}>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-black hover:text-primary transition-colors duration-200"
-                      >
-                        Logout
-                      </button>
-                    </motion.div>
-                  </>
-                ) : (
-                  <motion.div variants={mobileMenuItemVariants}>
-                    <Link
-                      to="/login"
-                      className="block px-4 py-2 text-black hover:text-primary transition-colors duration-200"
-                    >
-                      Login / Signup
-                    </Link>
-                  </motion.div>
-                )}
+              )}
+              <motion.div variants={mobileMenuItemVariants}>
+                <Link 
+                  to="/wishlist" 
+                  className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  Wishlist
+                </Link>
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+              {currentUser ? (
+                <motion.div variants={mobileMenuItemVariants}>
+                  <button 
+                    onClick={handleLogout}
+                    className="block w-full text-left text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                  >
+                    Logout
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div variants={mobileMenuItemVariants}>
+                  <Link 
+                    to="/login" 
+                    className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    Login
+                  </Link>
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Search isOpen={showSearch} onClose={() => setShowSearch(false)} />
     </nav>

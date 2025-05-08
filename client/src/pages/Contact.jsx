@@ -106,7 +106,7 @@ const Contact = () => {
                   <FiMail className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-1" />
                   <div>
                     <h3 className="font-medium text-gray-800 text-sm sm:text-base">Email</h3>
-                    <p className="text-gray-600 text-sm sm:text-base">info@jewelrybyluna.com</p>
+                    <p className="text-gray-600 text-sm sm:text-base">jewelrybyluna.official@gmail.com</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 sm:gap-4">

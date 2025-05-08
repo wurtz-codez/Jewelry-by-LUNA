@@ -4,6 +4,9 @@ import placeholderImage from '../placeholder.png';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Toast from '../../components/Toast';
+import { useShop } from '../../contexts/ShopContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import {
   cardAnimation,
   imageAnimation,
@@ -16,13 +19,17 @@ import {
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
-const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) => {
+const ProductCard = ({ product, onAddToCart }) => {
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const { toggleWishlist, wishlist } = useShop();
   // Get the actual product data, handling both direct and nested cases
   const productData = product?.jewelry || product;
   const isOutOfStock = productData?.stock === 0;
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
+  const isInWishlist = wishlist.some(item => item._id === productData?._id);
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -51,6 +58,39 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
     }
   };
 
+  const handleWishlistToggle = async (e) => {
+    e.preventDefault();
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const success = await toggleWishlist(productData);
+      if (success) {
+        setToastMessage(
+          isInWishlist 
+            ? `${productData.name} removed from wishlist` 
+            : `${productData.name} added to wishlist`
+        );
+        setToastType('success');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      } else {
+        setToastMessage('Failed to update wishlist');
+        setToastType('error');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }
+    } catch (error) {
+      console.error('Error in handleWishlistToggle:', error);
+      setToastMessage('An error occurred. Please try again.');
+      setToastType('error');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
+  };
+
   const getImageUrl = (product) => {
     if (!product?.imageUrls || product.imageUrls.length === 0) return placeholderImage;
     
@@ -73,19 +113,19 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
         animate={cardAnimation.animate}
         transition={cardAnimation.transition}
         whileHover={cardAnimation.whileHover}
-        className={`group flex flex-col h-full border rounded-b-[10px] rounded-t-[10px] w-full bg-white ${isOutOfStock ? 'opacity-75' : ''}`}
+        className={`group flex flex-col h-full border rounded-[8px] w-full bg-white ${isOutOfStock ? 'opacity-75' : ''}`}
       >
-        {/* Product Image - Responsive height with top border radius of 10px */}
+        {/* Product Image */}
         <motion.div 
           whileHover={imageAnimation.whileHover}
           transition={imageAnimation.transition}
-          className="w-full aspect-square overflow-hidden bg-gray-200 rounded-[10px] relative"
+          className="w-full aspect-square overflow-hidden bg-gray-200 rounded-t-[8px] relative"
         >
           <Link to={`/product/${productData?._id || '#'}`}>
             <img
               src={getImageUrl(productData)}
               alt={productData?.name || "Jewelry Product"}
-              className="h-full w-full object-cover object-center group-hover:opacity-75"
+              className="h-full w-full object-cover object-center group-hover:opacity-75 transition-opacity duration-300"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = placeholderImage;
@@ -94,31 +134,31 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
           </Link>
           {isOutOfStock && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="text-white text-xl font-bold bg-red-600 px-4 py-2 rounded-[6px]">
+              <span className="text-white text-xs sm:text-sm md:text-base font-bold bg-red-600 px-2 sm:px-3 py-1 sm:py-1.5 rounded-[4px] sm:rounded-[6px]">
                 OUT OF STOCK
               </span>
             </div>
           )}
         </motion.div>
 
-        {/* Product Details - in a container with bottom border radius of 10px */}
-        <div className="mt-2 sm:mt-4 flex flex-col flex-grow rounded-b-[10px] bg-white px-2 sm:px-3 pb-2 sm:pb-3">
+        {/* Product Details */}
+        <div className="flex flex-col flex-grow p-1.5 sm:p-2 md:p-3">
           <Link to={`/product/${productData?._id || '#'}`} className="flex-grow">
             {/* Heading */}
             <motion.h3 
               whileHover={titleAnimation.whileHover}
-              className="text-sm sm:text-base md:text-lg font-montserrat-alt font-medium text-gray-900 line-clamp-2"
+              className="text-xs sm:text-sm md:text-base font-montserrat-alt font-medium text-gray-900 line-clamp-2"
             >
               {productData?.name || "Product Name"}
             </motion.h3>
 
             {/* Category */}
             {productData?.categories && productData.categories.length > 0 && (
-              <div className="mt-1 flex flex-wrap gap-1">
+              <div className="mt-0.5 sm:mt-1 flex flex-wrap gap-0.5 sm:gap-1">
                 {productData.categories.map((category, index) => (
                   <span 
                     key={index}
-                    className="px-2 py-0.5 text-xs bg-neutral/10 text-gray-700 rounded-[6px] font-cinzel capitalize"
+                    className="px-1 sm:px-1.5 py-0.5 text-[8px] sm:text-xs md:text-sm bg-neutral/10 text-gray-700 rounded-[3px] sm:rounded-[4px] font-cinzel capitalize"
                   >
                     {category}
                   </span>
@@ -127,40 +167,40 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
             )}
 
             {/* Price and Discount */}
-            <div className="mt-1 sm:mt-2 flex items-center gap-2">
+            <div className="mt-0.5 sm:mt-1 flex items-center gap-1 sm:gap-1.5">
               {productData?.discount > 0 ? (
                 <>
                   <motion.div 
                     whileHover={discountBadgeAnimation.whileHover}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-1 sm:gap-1.5"
                   >
-                    <span className="text-sm sm:text-base md:text-lg font-montserrat-alt font-medium text-gray-900">
+                    <span className="text-xs sm:text-sm md:text-base font-montserrat-alt font-medium text-gray-900">
                       ₹{productData?.sellingPrice?.toLocaleString('en-IN') || '0'}
                     </span>
-                    <span className="text-xs sm:text-sm text-gray-500 line-through">
+                    <span className="text-[10px] sm:text-xs text-gray-500 line-through">
                       ₹{productData?.price?.toLocaleString('en-IN') || '0'}
                     </span>
-                    <span className="text-xs sm:text-sm font-medium text-green-600">
+                    <span className="text-[8px] sm:text-[10px] md:text-xs font-medium text-green-600">
                       {Math.round(((productData.price - productData.sellingPrice) / productData.price) * 100)}% OFF
                     </span>
                   </motion.div>
                 </>
               ) : (
-                <p className="text-sm sm:text-lg font-montserrat-alt font-medium text-gray-900">₹{productData?.price?.toLocaleString('en-IN') || '0'}</p>
+                <p className="text-xs sm:text-sm md:text-base font-montserrat-alt font-medium text-gray-900">
+                  ₹{productData?.price?.toLocaleString('en-IN') || '0'}
+                </p>
               )}
             </div>
           </Link>
-        </div>
 
-        {/* Action Buttons at the bottom */}
-        <div className="mt-auto pt-2 sm:pt-3 flex flex-col gap-2">
-          <div className="flex gap-2 sm:gap-2 items-center">
+          {/* Action Buttons */}
+          <div className="mt-1.5 sm:mt-2 md:mt-3 flex gap-1.5 sm:gap-2 items-center">
             <motion.button
               whileHover={!isOutOfStock ? addToCartButtonAnimation.whileHover : {}}
               whileTap={!isOutOfStock ? addToCartButtonAnimation.whileTap : {}}
               onClick={handleAddToCart}
               disabled={isOutOfStock}
-              className={`flex-1 text-sm sm:text-base md:text-xl py-2 sm:py-2 rounded-[8px] transition-colors ${
+              className={`flex-1 text-[10px] sm:text-xs md:text-sm py-1 sm:py-1.5 md:py-2 rounded-[4px] sm:rounded-[6px] transition-colors ${
                 isOutOfStock 
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                   : 'bg-primary text-white hover:bg-white/0 hover:text-primary border hover:border-primary'
@@ -172,18 +212,18 @@ const ProductCard = ({ product, onAddToCart, onWishlistToggle, isInWishlist }) =
             <motion.button
               whileHover={wishlistButtonAnimation.whileHover}
               whileTap={wishlistButtonAnimation.whileTap}
-              onClick={(e) => {
-                e.preventDefault();
-                onWishlistToggle && onWishlistToggle(productData);
-              }}
-              className="text-white hover:text-primary transition-colors text-base bg-primary hover:bg-primary/0 border hover:border-primary aspect-square w-[36px] sm:w-[42px] rounded-[8px] flex-shrink-0 flex items-center justify-center"
+              onClick={handleWishlistToggle}
+              className={`text-white hover:text-primary transition-colors text-xs sm:text-sm ${
+                isInWishlist ? 'bg-primary/20 text-primary' : 'bg-primary'
+              } hover:bg-primary/0 border hover:border-primary aspect-square w-[24px] sm:w-[28px] md:w-[32px] rounded-[4px] sm:rounded-[6px] flex-shrink-0 flex items-center justify-center`}
               aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
             >
               <motion.div
                 whileHover={heartIconAnimation.whileHover}
                 whileTap={heartIconAnimation.whileTap}
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4"
               >
-                {isInWishlist ? <FaHeart /> : <FaRegHeart />}
+                {isInWishlist ? <FaHeart className="w-full h-full" /> : <FaRegHeart className="w-full h-full" />}
               </motion.div>
             </motion.button>
           </div>

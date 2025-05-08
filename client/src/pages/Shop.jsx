@@ -165,28 +165,28 @@ const Shop = () => {
       <Navbar variant="white" />
       
       {/* Shop Heading */}
-      <div className="text-center mt-16 sm:mt-24 md:mt-32 mb-8 sm:mb-12 md:mb-16 px-4">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-cinzel-decorative text-secondary">Explore our collection</h1>
+      <div className="text-center mt-16 sm:mt-20 md:mt-24 lg:mt-32 mb-6 sm:mb-8 md:mb-12 lg:mb-16 px-4">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-cinzel-decorative text-secondary">Explore our collection</h1>
       </div>
       
       {/* Search and Filters */}
       <div className="sticky top-16 md:top-20 z-40 bg-white shadow-sm">
-        <div className="shop-controls px-4 sm:px-6 lg:px-8 xl:px-32 py-4">
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
+        <div className="shop-controls px-4 sm:px-6 lg:px-8 xl:px-32 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-8">
             {/* Filters Button and Dropdown */}
             <div className="w-full sm:w-1/4 lg:w-1/5 relative">
               <button 
                 onClick={() => setShowFilters(!showFilters)}
-                className="w-full h-12 sm:h-16 flex text-lg sm:text-xl items-center justify-center gap-2 py-2 sm:py-3 px-4 bg-neutral rounded-[8px] transition-colors"
+                className="w-full h-10 sm:h-12 md:h-16 flex text-base sm:text-lg md:text-xl items-center justify-center gap-2 py-2 px-3 sm:px-4 bg-neutral rounded-[8px] transition-colors"
               >
-                <FiFilter />
+                <FiFilter className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>Filters</span>
               </button>
               
               {showFilters && (
-                <div className="fixed sm:absolute inset-0 sm:inset-auto top-16 sm:top-20 left-0 w-full sm:w-[300px] lg:w-[350px] mt-0 sm:mt-2 bg-neutral rounded-none sm:rounded-[10px] shadow-lg p-4 sm:p-6 z-[100] flex flex-col h-[calc(100vh-4rem)] sm:h-auto sm:max-h-[calc(80vh-2rem)]">
+                <div className="fixed sm:absolute inset-0 sm:inset-auto top-16 sm:top-20 left-0 w-full sm:w-[280px] lg:w-[320px] mt-0 sm:mt-2 bg-neutral rounded-none sm:rounded-[10px] shadow-lg p-4 sm:p-6 z-[100] flex flex-col h-[calc(100vh-4rem)] sm:h-auto sm:max-h-[calc(80vh-2rem)]">
                   <div className="flex justify-between items-center mb-4 sm:hidden">
-                    <h2 className="text-xl font-medium text-neutral-800">Filters</h2>
+                    <h2 className="text-lg sm:text-xl font-medium text-neutral-800">Filters</h2>
                     <button 
                       onClick={() => setShowFilters(false)}
                       className="p-2 hover:bg-neutral-100 rounded-full text-xl text-neutral-700"
@@ -194,14 +194,14 @@ const Shop = () => {
                       ×
                     </button>
                   </div>
-                  <div className="filters space-y-6 overflow-y-auto flex-1">
+                  <div className="filters space-y-4 sm:space-y-6 overflow-y-auto flex-1">
                     {/* Categories Section */}
                     <div className="filter-group">
-                      <label htmlFor="category" className="block text-base sm:text-lg font-medium text-neutral-800 mb-2 sm:mb-3">Categories</label>
+                      <label htmlFor="category" className="block text-sm sm:text-base md:text-lg font-medium text-neutral-800 mb-2 sm:mb-3">Categories</label>
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           onClick={() => setSelectedCategory('all')}
-                          className={`p-2 sm:p-3 rounded-[8px] text-sm sm:text-base font-medium transition-all ${
+                          className={`p-2 sm:p-3 rounded-[8px] text-xs sm:text-sm md:text-base font-medium transition-all ${
                             selectedCategory === 'all' 
                               ? 'bg-primary text-white' 
                               : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -213,7 +213,7 @@ const Shop = () => {
                           <button
                             key={category}
                             onClick={() => setSelectedCategory(category)}
-                            className={`p-2 sm:p-3 rounded-[8px] text-sm sm:text-base font-medium transition-all ${
+                            className={`p-2 sm:p-3 rounded-[8px] text-xs sm:text-sm md:text-base font-medium transition-all ${
                               selectedCategory === category 
                                 ? 'bg-primary text-white' 
                                 : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -227,11 +227,11 @@ const Shop = () => {
 
                     {/* Tags Section */}
                     <div className="filter-group">
-                      <label htmlFor="tag" className="block text-base sm:text-lg font-medium text-neutral-800 mb-2 sm:mb-3">Tags</label>
+                      <label htmlFor="tag" className="block text-sm sm:text-base md:text-lg font-medium text-neutral-800 mb-2 sm:mb-3">Tags</label>
                       <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => setSelectedTag('all')}
-                          className={`px-3 sm:px-4 py-2 rounded-[8px] text-sm sm:text-base font-medium transition-all ${
+                          className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-[8px] text-xs sm:text-sm md:text-base font-medium transition-all ${
                             selectedTag === 'all' 
                               ? 'bg-primary text-white' 
                               : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -243,7 +243,7 @@ const Shop = () => {
                           <button
                             key={tag}
                             onClick={() => setSelectedTag(tag)}
-                            className={`px-3 sm:px-4 py-2 rounded-[8px] text-sm sm:text-base font-medium transition-all ${
+                            className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-[8px] text-xs sm:text-sm md:text-base font-medium transition-all ${
                               selectedTag === tag 
                                 ? 'bg-primary text-white' 
                                 : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -257,167 +257,144 @@ const Shop = () => {
 
                     {/* Price Range Section */}
                     <div className="filter-group">
-                      <label className="block text-base sm:text-lg font-medium text-neutral-800 mb-2 sm:mb-3">Price Range</label>
-                      <div className="space-y-4">
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                          <div className="flex-1">
-                            <label htmlFor="price-min" className="block text-sm sm:text-base text-neutral-600 mb-1">Min Price</label>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-base sm:text-lg">₹</span>
-                              <input
-                                type="number"
-                                id="price-min"
-                                min="0"
-                                max={priceRange[1]}
-                                value={priceRange[0]}
-                                onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
-                                className="w-full p-2 sm:p-3 pl-10 sm:pl-12 bg-white border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base"
-                                placeholder="0"
-                              />
-                            </div>
-                          </div>
-                          <div className="flex-1">
-                            <label htmlFor="price-max" className="block text-sm sm:text-base text-neutral-600 mb-1">Max Price</label>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-base sm:text-lg">₹</span>
-                              <input
-                                type="number"
-                                id="price-max"
-                                min={priceRange[0]}
-                                max="100000"
-                                value={priceRange[1]}
-                                onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
-                                className="w-full p-2 sm:p-3 pl-10 sm:pl-12 bg-white border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base"
-                                placeholder="100000"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex justify-between text-sm sm:text-base text-neutral-500">
-                          <span>₹{priceRange[0]}</span>
-                          <span>₹{priceRange[1]}</span>
+                      <label className="block text-sm sm:text-base md:text-lg font-medium text-neutral-800 mb-2 sm:mb-3">Price Range</label>
+                      <div className="space-y-2 sm:space-y-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <input
+                            type="number"
+                            value={priceRange[0]}
+                            onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                            className="w-full p-2 sm:p-3 rounded-[8px] border border-neutral-200 text-sm sm:text-base"
+                            placeholder="Min Price"
+                          />
+                          <span className="text-sm sm:text-base text-neutral-600">to</span>
+                          <input
+                            type="number"
+                            value={priceRange[1] === Infinity ? '' : priceRange[1]}
+                            onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                            className="w-full p-2 sm:p-3 rounded-[8px] border border-neutral-200 text-sm sm:text-base"
+                            placeholder="Max Price"
+                          />
                         </div>
                       </div>
                     </div>
 
-                    {/* Sort Section */}
-                    <div className="filter-group">
-                      <label htmlFor="sort" className="block text-base sm:text-lg font-medium text-neutral-800 mb-2 sm:mb-3">Sort By</label>
-                      <select
-                        id="sort"
-                        value={`${sortBy}-${sortOrder}`}
-                        onChange={(e) => {
-                          const [newSortBy, newSortOrder] = e.target.value.split('-');
-                          setSortBy(newSortBy);
-                          setSortOrder(newSortOrder);
-                        }}
-                        className="w-full p-2 sm:p-3 bg-white border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base text-neutral-700"
-                      >
-                        <option value="createdAt-desc">Newest First</option>
-                        <option value="createdAt-asc">Oldest First</option>
-                        <option value="sellingPrice-asc">Price: Low to High</option>
-                        <option value="sellingPrice-desc">Price: High to Low</option>
-                        <option value="name-asc">Name: A to Z</option>
-                        <option value="name-desc">Name: Z to A</option>
-                      </select>
-                    </div>
-
                     {/* Clear Filters Button */}
-                    {(debouncedSearchTerm || selectedCategory !== 'all' || selectedTag !== 'all' || priceRange[0] > 0 || priceRange[1] < Infinity) && (
-                      <button 
-                        onClick={clearFilters}
-                        className="w-full py-2 sm:py-3 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-[8px] transition-colors font-medium text-sm sm:text-base"
-                      >
-                        Clear All Filters
-                      </button>
-                    )}
+                    <button
+                      onClick={clearFilters}
+                      className="w-full py-2 sm:py-3 px-4 bg-neutral-200 text-neutral-700 rounded-[8px] text-sm sm:text-base font-medium hover:bg-neutral-300 transition-colors"
+                    >
+                      Clear Filters
+                    </button>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Search Section */}
-            <div className="w-full sm:w-3/4 lg:w-4/5">
-              <div className="search-container relative">
-                <FiSearch className="search-icon absolute left-4 sm:left-8 top-1/2 transform -translate-y-1/2 text-neutral-400 text-lg sm:text-xl" />
+            {/* Search Bar */}
+            <div className="w-full sm:w-2/3 lg:w-3/5">
+              <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search for jewelry..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full h-12 sm:h-16 p-2 sm:p-3 pl-12 sm:pl-16 bg-neutral border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-neutral-200 text-neutral-900 placeholder-neutral-400 text-base sm:text-lg placeholder:text-base sm:placeholder:text-xl"
+                  placeholder="Search for jewelry..."
+                  className="w-full h-10 sm:h-12 md:h-16 pl-10 sm:pl-12 pr-4 rounded-[8px] border border-neutral-200 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
-                {searchTerm && (
-                  <button 
-                    onClick={() => setSearchTerm('')}
-                    className="absolute right-4 sm:right-8 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600 text-lg sm:text-xl"
-                  >
-                    ×
-                  </button>
-                )}
+                <FiSearch className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-neutral-400" />
               </div>
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="w-full sm:w-1/4 lg:w-1/5">
+              <select
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [newSortBy, newSortOrder] = e.target.value.split('-');
+                  setSortBy(newSortBy);
+                  setSortOrder(newSortOrder);
+                }}
+                className="w-full h-10 sm:h-12 md:h-16 px-3 sm:px-4 rounded-[8px] border border-neutral-200 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="createdAt-desc">Newest First</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="name-asc">Name: A to Z</option>
+                <option value="name-desc">Name: Z to A</option>
+              </select>
             </div>
           </div>
         </div>
       </div>
-      
-      {/* Products Display */}
-      <div className="products-container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 xl:gap-10 px-4 sm:px-6 lg:px-8 xl:px-32 py-8 auto-rows-fr">
+
+      {/* Products Grid */}
+      <div className="px-4 sm:px-6 lg:px-8 xl:px-32 py-6 sm:py-8 md:py-12">
         {loading ? (
-          <div className="col-span-full flex justify-center items-center w-full py-20">
-            <div className="animate-spin text-gray-500 mr-2">
-              <FiLoader size={30} />
-            </div>
-            <span>Loading products...</span>
+          <div className="flex justify-center items-center min-h-[400px]">
+            <FiLoader className="w-8 h-8 sm:w-10 sm:h-10 animate-spin text-primary" />
           </div>
         ) : error ? (
-          <div className="col-span-full text-center text-red-500 py-20">
-            {error}
+          <div className="text-center py-8 sm:py-12">
+            <p className="text-red-500 text-sm sm:text-base">{error}</p>
+            <button
+              onClick={fetchProducts}
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-[8px] text-sm sm:text-base hover:bg-primary/90 transition-colors"
+            >
+              <FiRefreshCw className="inline-block mr-2" />
+              Try Again
+            </button>
           </div>
         ) : products.length === 0 ? (
-          <div className="col-span-full text-center text-gray-500 py-20">
-            No products found matching your criteria
+          <div className="text-center py-8 sm:py-12">
+            <p className="text-neutral-600 text-sm sm:text-base">No products found matching your criteria.</p>
+            <button
+              onClick={clearFilters}
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-[8px] text-sm sm:text-base hover:bg-primary/90 transition-colors"
+            >
+              Clear Filters
+            </button>
           </div>
         ) : (
-          products.map((product) => (
-            <ProductCard
-              key={product._id}
-              product={product}
-              onAddToCart={() => handleAddToCart(product)}
-              onAddToWishlist={() => handleAddToWishlist(product)}
-              onClick={() => handleProductClick(product._id)}
-              isInWishlist={wishlist.some(item => item._id === product._id)}
-            />
-          ))
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-6 lg:gap-8">
+            {products.map((product) => (
+              <ProductCard
+                key={product._id}
+                product={product}
+                onAddToCart={() => handleAddToCart(product)}
+                onAddToWishlist={() => handleAddToWishlist(product)}
+                onClick={() => handleProductClick(product._id)}
+                isInWishlist={wishlist.some(item => item._id === product._id)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 sm:gap-4 mt-8 sm:mt-12">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2 sm:p-3 rounded-[8px] border border-neutral-200 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100 transition-colors"
+            >
+              <FiChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+            <span className="text-sm sm:text-base">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-2 sm:p-3 rounded-[8px] border border-neutral-200 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-100 transition-colors"
+            >
+              <FiChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+          </div>
         )}
       </div>
 
-      {/* Pagination */}
-      {!loading && products.length > 0 && (
-        <div className="pagination flex justify-center items-center gap-4 py-8">
-          <button
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className="pagination-btn"
-          >
-            <FiChevronLeft />
-          </button>
-          
-          <span className="text-gray-600">
-            Page {currentPage} of {totalPages}
-          </span>
-          
-          <button
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className="pagination-btn"
-          >
-            <FiChevronRight />
-          </button>
-        </div>
-      )}
-      
       <Footer />
+      
       {showToast && (
         <Toast
           message={toastMessage}

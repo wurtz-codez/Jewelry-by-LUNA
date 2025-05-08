@@ -59,6 +59,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setError(null);
+      console.log('Attempting login with:', { email });
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
         password
@@ -69,6 +70,12 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(user);
       return { success: true, user };
     } catch (error) {
+      console.error('Login error details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      
       if (error.response?.status === 403 && error.response?.data?.message === 'Account is banned') {
         handleBannedUser(error.response.data);
         return { success: false, error: 'Account is banned' };

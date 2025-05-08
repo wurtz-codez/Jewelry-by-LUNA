@@ -71,57 +71,56 @@ function ProductDetailsPage() {
       }
 
       let filteredProducts = response.data.filter(p => p._id !== product._id);
+      let relatedProducts = [];
 
       // First try to find products with matching categories
       if (product.categories?.length > 0) {
         const categoryMatches = filteredProducts.filter(p => 
           p.categories?.some(category => product.categories.includes(category))
         );
-        if (categoryMatches.length >= 4) {
-          setRelatedProducts(categoryMatches.slice(0, 4));
-          return;
+        if (categoryMatches.length > 0) {
+          // Sort by number of matching categories (most matches first)
+          categoryMatches.sort((a, b) => {
+            const aMatches = a.categories.filter(c => product.categories.includes(c)).length;
+            const bMatches = b.categories.filter(c => product.categories.includes(c)).length;
+            return bMatches - aMatches;
+          });
+          relatedProducts = categoryMatches.slice(0, 4);
         }
       }
 
-      // Then try to find products with matching tags
-      if (product.tags?.length > 0) {
+      // If we don't have enough products, try to find products with matching tags
+      if (relatedProducts.length < 4 && product.tags?.length > 0) {
         const tagMatches = filteredProducts.filter(p => 
+          p._id !== product._id && // Exclude current product
+          !relatedProducts.some(rp => rp._id === p._id) && // Exclude already selected products
           p.tags?.some(tag => product.tags.includes(tag))
         );
-        if (tagMatches.length >= 4) {
-          setRelatedProducts(tagMatches.slice(0, 4));
-          return;
+        if (tagMatches.length > 0) {
+          // Sort by number of matching tags (most matches first)
+          tagMatches.sort((a, b) => {
+            const aMatches = a.tags.filter(t => product.tags.includes(t)).length;
+            const bMatches = b.tags.filter(t => product.tags.includes(t)).length;
+            return bMatches - aMatches;
+          });
+          relatedProducts = [...relatedProducts, ...tagMatches.slice(0, 4 - relatedProducts.length)];
         }
       }
 
-      // If not enough matches, try to find new arrivals (products with "new arrival" tag)
-      const newArrivals = filteredProducts.filter(p => 
-        p.tags?.includes('new arrival')
-      );
-      if (newArrivals.length >= 4) {
-        setRelatedProducts(newArrivals.slice(0, 4));
-        return;
+      // If we still don't have enough products, add random products
+      if (relatedProducts.length < 4) {
+        const remainingProducts = filteredProducts.filter(p => 
+          !relatedProducts.some(rp => rp._id === p._id)
+        );
+        
+        // Shuffle the remaining products
+        const shuffled = remainingProducts.sort(() => 0.5 - Math.random());
+        relatedProducts = [...relatedProducts, ...shuffled.slice(0, 4 - relatedProducts.length)];
       }
 
-      // If still not enough, get random products from different categories
-      const uniqueCategories = new Set();
-      const randomProducts = filteredProducts.filter(p => {
-        if (p.categories?.length > 0 && !uniqueCategories.has(p.categories[0])) {
-          uniqueCategories.add(p.categories[0]);
-          return true;
-        }
-        return false;
-      });
-
-      if (randomProducts.length > 0) {
-        setRelatedProducts(randomProducts.slice(0, 4));
-        return;
-      }
-
-      // If all else fails, just take the first 4 products (excluding current)
-      setRelatedProducts(filteredProducts.slice(0, 4));
+      setRelatedProducts(relatedProducts);
     } catch (err) {
-      console.error('Failed to fetch products:', err);
+      console.error('Failed to fetch related products:', err);
       setRelatedProducts([]);
     }
   };
@@ -298,7 +297,7 @@ function ProductDetailsPage() {
   }
   
   return (
-    <div className="min-h-screen bg-neutral">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <div className="container mx-auto px-4 py-8 pt-24">
         <div className="font-sans max-w-7xl mx-auto p-5">
@@ -309,7 +308,7 @@ function ProductDetailsPage() {
                   <div 
                     key={index} 
                     className={`w-20 h-20 border cursor-pointer overflow-hidden rounded-[6px] ${
-                      selectedImage === index ? 'border-[#8B4513]' : 'border-gray-200'
+                      selectedImage === index ? 'border-[rgb(165,97,108)]' : 'border-gray-200'
                     }`}
                     onClick={() => setSelectedImage(index)}
                   >
@@ -456,7 +455,7 @@ function ProductDetailsPage() {
                 <button 
                   className={`flex-1 py-3 px-4 rounded-[8px] ${
                     (product?.stock > 0 && product?.isAvailable) 
-                      ? 'bg-[#8B4513] text-white cursor-pointer' 
+                      ? 'bg-[rgb(165,97,108)] text-white cursor-pointer' 
                       : 'bg-gray-300 text-white cursor-not-allowed'
                   } flex items-center justify-center gap-2`}
                   onClick={handleAddToCart}
@@ -471,25 +470,13 @@ function ProductDetailsPage() {
                 </button>
                 <button 
                   className={`py-3 px-4 bg-white ${
-                    isInWishlist ? 'text-pink-500' : 'text-gray-800'
+                    isInWishlist ? 'text-[rgb(165,97,108)]' : 'text-gray-800'
                   } border border-gray-200 rounded-[8px] flex items-center justify-center gap-2 cursor-pointer`}
                   onClick={handleWishlistToggle}
                 >
-                  {isInWishlist ? (
-                    <>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 6L9 17l-5-5" />
-                      </svg>
-                      Wishlisted
-                    </>
-                  ) : (
-                    <>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                      </svg>
-                      Wishlist
-                    </>
-                  )}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill={isInWishlist ? 'rgb(165,97,108)' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
                 </button>
               </div>
 
@@ -542,7 +529,7 @@ function ProductDetailsPage() {
               <h2 className="text-2xl mb-2.5">{product?.rating || '4.5'}</h2>
               <div className="mb-2.5">{renderStars(product?.rating || 4.5)}</div>
               <p className="mb-2.5">33 ratings</p>
-              <button className="py-2 px-4 bg-gray-800 text-white border-none rounded-[8px] cursor-pointer">RATE</button>
+              <button className="py-2 px-4 bg-[rgb(165,97,108)] text-white border-none rounded-[8px] cursor-pointer">RATE</button>
             </div>
             
             <div className="flex-1">

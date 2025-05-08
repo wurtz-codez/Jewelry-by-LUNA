@@ -114,7 +114,10 @@ const ShopProvider = ({ children }) => {
   const addToWishlist = async (product) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        console.error('No token found');
+        return false;
+      }
 
       await axios.post(
         `${API_BASE_URL}/wishlist/items`,
@@ -122,23 +125,44 @@ const ShopProvider = ({ children }) => {
         { headers: { 'x-auth-token': token } }
       );
       await fetchWishlist();
+      return true;
     } catch (error) {
       console.error('Error adding to wishlist:', error);
+      return false;
     }
   };
 
   const removeFromWishlist = async (productId) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        console.error('No token found');
+        return false;
+      }
 
       await axios.delete(
         `${API_BASE_URL}/wishlist/items/${productId}`,
         { headers: { 'x-auth-token': token } }
       );
       await fetchWishlist();
+      return true;
     } catch (error) {
       console.error('Error removing from wishlist:', error);
+      return false;
+    }
+  };
+
+  const toggleWishlist = async (product) => {
+    try {
+      const isInWishlist = wishlist.some(item => item._id === product._id);
+      if (isInWishlist) {
+        return await removeFromWishlist(product._id);
+      } else {
+        return await addToWishlist(product);
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+      return false;
     }
   };
 
@@ -150,6 +174,7 @@ const ShopProvider = ({ children }) => {
     updateCartItemQuantity,
     addToWishlist,
     removeFromWishlist,
+    toggleWishlist,
     fetchCart
   };
 

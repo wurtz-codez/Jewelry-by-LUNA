@@ -5,6 +5,8 @@ import Footer from '../components/Footer';
 import { FiTrash2, FiShoppingCart } from 'react-icons/fi';
 import axios from 'axios';
 import { useShop } from '../contexts/ShopContext';
+import placeholderImage from '../assets/placeholder.png';
+import Toast from '../components/Toast';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -14,6 +16,9 @@ const Wishlist = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { addToCart } = useShop();
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('');
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     fetchWishlist();
@@ -36,6 +41,7 @@ const Wishlist = () => {
       setError('');
     } catch (err) {
       setError('Failed to load wishlist. Please try again later.');
+      console.error('Error fetching wishlist:', err);
     } finally {
       setLoading(false);
     }
@@ -55,13 +61,31 @@ const Wishlist = () => {
 
       // Update local wishlist state
       setWishlist(prev => prev.filter(item => item._id !== productId));
+      setToastMessage('Item removed from wishlist');
+      setToastType('success');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
     } catch (err) {
       setError('Failed to remove item from wishlist. Please try again later.');
+      console.error('Error removing from wishlist:', err);
     }
   };
 
-  const handleAddToCart = (product) => {
-    addToCart(product);
+  const handleAddToCart = async (product) => {
+    try {
+      const success = await addToCart(product);
+      if (success) {
+        setToastMessage('Item added to cart successfully!');
+        setToastType('success');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }
+    } catch (error) {
+      setToastMessage('Failed to add item to cart');
+      setToastType('error');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
   };
 
   const handleProductClick = (productId) => {
@@ -135,27 +159,29 @@ const Wishlist = () => {
                       <div className="flex items-center">
                         <img 
                           src={
-                            item.imageUrl.startsWith('http') 
-                              ? item.imageUrl 
-                              : item.imageUrl.startsWith('/uploads') 
-                                ? `http://localhost:5001${item.imageUrl}` 
-                                : `/src/assets/${item.imageUrl}`
+                            item.imageUrls && item.imageUrls.length > 0
+                              ? item.imageUrls[0]
+                              : item.imageUrl || placeholderImage
                           } 
-                          alt={item.name} 
+                          alt={item.name || 'Product'} 
                           className="w-16 h-16 object-cover rounded mr-4"
                           onClick={() => handleProductClick(item._id)}
                           style={{ cursor: 'pointer' }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = placeholderImage;
+                          }}
                         />
                         <span 
                           className="font-medium"
                           onClick={() => handleProductClick(item._id)}
                           style={{ cursor: 'pointer' }}
                         >
-                          {item.name}
+                          {item.name || 'Unknown Product'}
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 text-right">₹{item.price.toFixed(2)}</td>
+                    <td className="py-4 text-right">₹{(item.sellingPrice || item.price || 0).toFixed(2)}</td>
                     <td className="py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <button
@@ -182,6 +208,13 @@ const Wishlist = () => {
         )}
       </div>
       <Footer />
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 };

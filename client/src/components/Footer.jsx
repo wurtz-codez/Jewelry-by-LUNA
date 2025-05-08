@@ -64,7 +64,7 @@ const Footer = () => {
             <div className="space-y-2 sm:space-y-3">
               <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">19B, Pushp Nagar Colony, Khajrana Road</p>
               <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">Indore, M.P. (452016)</p>
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">info@jewelrybyluna.com</p>
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">jewelrybyluna.official@gmail.com</p>
               <p className="text-sm sm:text-base md:text-lg text-gray-600 font-cormorant">+91 9039348168</p>
             </div>
           </div>
