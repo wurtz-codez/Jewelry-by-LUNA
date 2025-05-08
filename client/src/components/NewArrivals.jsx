@@ -4,7 +4,7 @@ import { useShop } from '../contexts/ShopContext';
 import { useAuth } from '../contexts/AuthContext';
 import ProductCard from '../assets/cards/ProductCard';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 
 const NewArrivals = () => {
   const [products, setProducts] = useState([]);

@@ -8,7 +8,7 @@ import { useShop } from '../contexts/ShopContext';
 import placeholderImage from '../assets/placeholder.png';
 import Toast from '../components/Toast';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 
 const Wishlist = () => {
   const navigate = useNavigate();

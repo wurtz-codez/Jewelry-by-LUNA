@@ -17,7 +17,7 @@ import {
   heartIconAnimation
 } from '../../animations/productCard';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 
 const ProductCard = ({ product, onAddToCart }) => {
   const navigate = useNavigate();

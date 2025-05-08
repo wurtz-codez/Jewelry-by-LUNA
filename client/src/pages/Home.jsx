@@ -10,7 +10,7 @@ import LoadingScreen from '../components/LoadingScreen';
 import axios from 'axios';
 import Toast from '../components/Toast';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 
 const Home = () => {
   const { currentUser } = useAuth();
