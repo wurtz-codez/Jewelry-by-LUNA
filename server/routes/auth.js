@@ -7,7 +7,7 @@ const auth = require('../middleware/auth');
 // Register a new user
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, role } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -19,7 +19,8 @@ router.post('/register', async (req, res) => {
     const user = new User({
       email,
       password,
-      name
+      name,
+      role: role || 'user' // Set role if provided, otherwise default to 'user'
     });
 
     await user.save();
@@ -50,10 +51,14 @@ router.post('/register', async (req, res) => {
 // Login user
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
+  
+  console.log('Login attempt:', { email, passwordLength: password?.length });
 
   try {
     // Check if user exists
     const user = await User.findOne({ email });
+    console.log('User found:', user ? 'Yes' : 'No');
+    
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -69,6 +74,8 @@ router.post('/login', async (req, res) => {
 
     // Check password
     const isMatch = await user.comparePassword(password);
+    console.log('Password match:', isMatch);
+    
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }

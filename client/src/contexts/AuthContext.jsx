@@ -59,11 +59,18 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setError(null);
-      console.log('Attempting login with:', { email });
+      console.log('Attempting login with:', { 
+        email,
+        passwordLength: password?.length,
+        requestData: { email, password }
+      });
+      
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
         password
       });
+      
+      console.log('Login response:', response.data);
       
       const { token, user } = response.data;
       localStorage.setItem('token', token);
@@ -73,7 +80,8 @@ export const AuthProvider = ({ children }) => {
       console.error('Login error details:', {
         status: error.response?.status,
         data: error.response?.data,
-        message: error.message
+        message: error.message,
+        requestData: { email, passwordLength: password?.length }
       });
       
       if (error.response?.status === 403 && error.response?.data?.message === 'Account is banned') {
