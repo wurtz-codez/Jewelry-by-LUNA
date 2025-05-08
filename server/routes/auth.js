@@ -9,18 +9,28 @@ router.post('/register', async (req, res) => {
   try {
     const { email, password, name, role } = req.body;
 
+    // Log the received data
+    console.log('Registration attempt:', { email, name, role });
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Create new user
+    // Create new user with explicit field mapping
     const user = new User({
-      email,
-      password,
-      name,
+      email: email,
+      password: password,
+      name: name,
       role: role || 'user' // Set role if provided, otherwise default to 'user'
+    });
+
+    // Log the user object before saving
+    console.log('User object before save:', {
+      email: user.email,
+      name: user.name,
+      role: user.role
     });
 
     await user.save();
@@ -109,7 +119,17 @@ router.get('/me', auth, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user);
+    
+    // Send a structured response with only the necessary user data
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      address: user.address,
+      role: user.role,
+      status: user.status
+    });
   } catch (error) {
     console.error('Error fetching user data:', error);
     res.status(500).json({ message: 'Server error', error: error.message });

@@ -80,9 +80,13 @@ const Profile = () => {
             headers: { 'x-auth-token': token }
           });
 
+          // Log the response data to verify the structure
+          console.log('User profile response:', response.data);
+
+          // Ensure we're using the correct data structure
           setUser({
-            name: response.data.name,
-            email: response.data.email,
+            name: response.data.name || '',
+            email: response.data.email || '',
             phone: response.data.phone || '(123) 456-7890',
             address: response.data.address || '123 Main St, New York, NY 10001'
           });

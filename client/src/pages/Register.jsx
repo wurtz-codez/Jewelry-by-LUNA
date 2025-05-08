@@ -14,35 +14,43 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: '',
-    confirmPassword: ''
+    password: ''
   });
   const [error, setError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    // Clear error when user starts typing
+    if (error) setError('');
+  };
+
+  const validateForm = () => {
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    
+    // Validate form before submission
+    if (!validateForm()) {
       setIsLoading(false);
       return;
     }
     
     try {
-      const result = await register(formData.email, formData.password, formData.name);
+      const result = await register(formData.name, formData.email, formData.password);
       
       if (result.success) {
         setShowSuccessModal(true);
@@ -53,7 +61,7 @@ const Register = () => {
         setError(result.error || 'Registration failed');
       }
     } catch (err) {
-      setError('An error occurred during registration');
+      setError(err.response?.data?.message || 'An error occurred during registration');
     } finally {
       setIsLoading(false);
     }
@@ -153,8 +161,9 @@ const Register = () => {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     required
+                    minLength={6}
                     className="w-full pl-12 pr-12 py-4 bg-white/80 border border-[#F5E6D3] rounded-xl placeholder-[#8B7355]/60 text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:border-[#2C1810] transition-all duration-200 font-cormorant text-lg"
-                    placeholder="Create a password"
+                    placeholder="Create a password (min. 6 characters)"
                     value={formData.password}
                     onChange={handleChange}
                   />
@@ -170,37 +179,9 @@ const Register = () => {
                     )}
                   </button>
                 </div>
-              </div>
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#8B7355] mb-2 font-cormorant">
-                  Confirm Password
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <FiLock className="h-5 w-5 text-[#8B7355] group-focus-within:text-[#2C1810] transition-colors duration-200" />
-                  </div>
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    required
-                    className="w-full pl-12 pr-12 py-4 bg-white/80 border border-[#F5E6D3] rounded-xl placeholder-[#8B7355]/60 text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:border-[#2C1810] transition-all duration-200 font-cormorant text-lg"
-                    placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-[#8B7355] hover:text-[#2C1810] transition-colors duration-200"
-                  >
-                    {showConfirmPassword ? (
-                      <FiEyeOff className="h-5 w-5" />
-                    ) : (
-                      <FiEye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
+                <p className="mt-1 text-sm text-[#8B7355] font-cormorant">
+                  Password must be at least 6 characters long
+                </p>
               </div>
             </div>
 
