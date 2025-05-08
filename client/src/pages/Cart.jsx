@@ -23,7 +23,7 @@ import {
   removeButtonAnimation
 } from '../animations/cart';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 
 // Available coupon codes
 const availableCoupons = [

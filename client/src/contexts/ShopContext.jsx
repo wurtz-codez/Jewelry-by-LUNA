@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 
 const ShopContext = createContext();
 
@@ -193,4 +193,4 @@ const useShop = () => {
   return context;
 };
 
-export { ShopProvider, useShop }; 
+export { ShopProvider, useShop };
