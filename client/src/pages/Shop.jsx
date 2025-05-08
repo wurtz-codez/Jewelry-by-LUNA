@@ -9,7 +9,7 @@ import ProductCard from '../assets/cards/ProductCard';
 import useDebounce from '../hooks/useDebounce';
 import Toast from '../components/Toast';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 
 const Shop = () => {
   const navigate = useNavigate();

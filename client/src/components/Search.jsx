@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiSearch, FiX } from 'react-icons/fi';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 
 const Search = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -146,7 +146,7 @@ const Search = ({ isOpen, onClose }) => {
                           product.imageUrl.startsWith('http') 
                             ? product.imageUrl 
                             : product.imageUrl.startsWith('/uploads') 
-                              ? `http://localhost:5001${product.imageUrl}` 
+                              ? `https://jewelry-by-luna.onrender.com${product.imageUrl}` 
                               : `/src/assets/${product.imageUrl}`
                         } 
                         alt={product.name} 
