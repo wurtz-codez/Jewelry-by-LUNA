@@ -1,4 +1,5 @@
 import { FiInstagram, FiFacebook, FiTwitter, FiMail, FiYoutube } from 'react-icons/fi'
+import { Link } from 'react-router-dom'
 
 const Footer = () => {
   return (
@@ -35,24 +36,24 @@ const Footer = () => {
             <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-cinzel text-primary">QUICK LINKS</h3>
             <ul className="space-y-2 sm:space-y-3">
               <li>
-                <a href="#" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
+                <Link to="/" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
                   Home
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
+                <Link to="/shop" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
                   Shop
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
+                <Link to="/about" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
                   About
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
+                <Link to="/contact" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
