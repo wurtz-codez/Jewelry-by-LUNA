@@ -3,7 +3,7 @@ import jewelryImage from '../assets/aboutus-jewelry.jpg'
 
 const AboutUs = () => {
   return (
-    <section className="mx-4 sm:mx-8 md:mx-16 lg:mx-32 my-12 md:my-24">
+    <section className="mx-4 sm:mx-8 md:mx-16 lg:mx-32 mt-20 mb-12 md:mb-24">
       <div className="flex flex-col md:flex-row gap-8 sm:gap-16 md:gap-24 lg:gap-32 items-center md:items-start">
         {/* Left Section */}
         <div className="w-full md:flex-[60%]">
@@ -15,9 +15,11 @@ const AboutUs = () => {
             <p className="text-black text-base sm:text-lg md:text-3xl">
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos.
             </p>
+            <a href='/shop'>
             <button className="mt-8 sm:mt-12 md:mt-16 lg:mt-24 px-4 sm:px-6 py-2 bg-accent text-white hover:bg-gray-700 transition-colors">
               SHOP NOW
             </button>
+            </a>
           </div>
         </div>
 
