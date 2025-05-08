@@ -2038,7 +2038,10 @@ const AdminDashboard = () => {
               <h3 className="text-lg font-medium text-gray-900">Order Details</h3>
               <button
                 className="text-gray-400 hover:text-gray-500"
-                onClick={() => setShowOrderModal(false)}
+                onClick={() => {
+                  setShowOrderModal(false);
+                  setSelectedOrder(null);
+                }}
               >
                 <FiX size={20} />
               </button>
