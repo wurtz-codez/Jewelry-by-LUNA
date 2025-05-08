@@ -63,14 +63,22 @@ function ProductDetailsPage() {
         return;
       }
 
-      // Fetch all products
-      const response = await axios.get(`${API_BASE_URL}/jewelry`);
-      if (!response.data || !Array.isArray(response.data)) {
+      // Fetch all products with a cache-busting parameter
+      const response = await axios.get(`${API_BASE_URL}/jewelry?t=${Date.now()}`);
+      if (!response.data || !response.data.products || !Array.isArray(response.data.products)) {
+        console.error('Invalid API response structure:', response.data);
         setRelatedProducts([]);
         return;
       }
 
-      let filteredProducts = response.data.filter(p => p._id !== product._id);
+      let filteredProducts = response.data.products.filter(p => 
+        p._id !== product._id && 
+        p.isAvailable && 
+        p.stock > 0
+      );
+
+      // Shuffle the filtered products to get different results each time
+      filteredProducts = filteredProducts.sort(() => Math.random() - 0.5);
       let relatedProducts = [];
 
       // First try to find products with matching categories
@@ -78,6 +86,7 @@ function ProductDetailsPage() {
         const categoryMatches = filteredProducts.filter(p => 
           p.categories?.some(category => product.categories.includes(category))
         );
+        
         if (categoryMatches.length > 0) {
           // Sort by number of matching categories (most matches first)
           categoryMatches.sort((a, b) => {
@@ -85,17 +94,19 @@ function ProductDetailsPage() {
             const bMatches = b.categories.filter(c => product.categories.includes(c)).length;
             return bMatches - aMatches;
           });
-          relatedProducts = categoryMatches.slice(0, 4);
+          // Take up to 2 products from category matches
+          relatedProducts = categoryMatches.slice(0, 2);
         }
       }
 
-      // If we don't have enough products, try to find products with matching tags
-      if (relatedProducts.length < 4 && product.tags?.length > 0) {
+      // Then try to find products with matching tags
+      if (product.tags?.length > 0) {
         const tagMatches = filteredProducts.filter(p => 
-          p._id !== product._id && // Exclude current product
-          !relatedProducts.some(rp => rp._id === p._id) && // Exclude already selected products
+          p._id !== product._id && 
+          !relatedProducts.some(rp => rp._id === p._id) &&
           p.tags?.some(tag => product.tags.includes(tag))
         );
+        
         if (tagMatches.length > 0) {
           // Sort by number of matching tags (most matches first)
           tagMatches.sort((a, b) => {
@@ -103,24 +114,23 @@ function ProductDetailsPage() {
             const bMatches = b.tags.filter(t => product.tags.includes(t)).length;
             return bMatches - aMatches;
           });
-          relatedProducts = [...relatedProducts, ...tagMatches.slice(0, 4 - relatedProducts.length)];
+          // Take up to 1 product from tag matches
+          relatedProducts = [...relatedProducts, ...tagMatches.slice(0, 1)];
         }
       }
 
-      // If we still don't have enough products, add random products
-      if (relatedProducts.length < 4) {
-        const remainingProducts = filteredProducts.filter(p => 
-          !relatedProducts.some(rp => rp._id === p._id)
-        );
-        
-        // Shuffle the remaining products
-        const shuffled = remainingProducts.sort(() => 0.5 - Math.random());
-        relatedProducts = [...relatedProducts, ...shuffled.slice(0, 4 - relatedProducts.length)];
-      }
+      // Fill remaining slots with random products
+      const remainingProducts = filteredProducts.filter(p => 
+        !relatedProducts.some(rp => rp._id === p._id)
+      );
+      
+      // Shuffle remaining products
+      const shuffled = remainingProducts.sort(() => Math.random() - 0.5);
+      relatedProducts = [...relatedProducts, ...shuffled.slice(0, 4 - relatedProducts.length)];
 
       setRelatedProducts(relatedProducts);
-    } catch (err) {
-      console.error('Failed to fetch related products:', err);
+    } catch (error) {
+      console.error('Error fetching related products:', error);
       setRelatedProducts([]);
     }
   };
@@ -235,17 +245,34 @@ function ProductDetailsPage() {
     }
   ];
   
-  const renderStars = (rating) => {
+  // Function to render rating stars
+  const renderRatingStars = (rating) => {
     const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      if (i <= Math.floor(rating)) {
-        stars.push(<span key={i} style={{ color: '#FFD700', marginRight: '2px' }}>★</span>);
-      } else if (i - 0.5 <= rating) {
-        stars.push(<span key={i} style={{ color: '#FFD700', marginRight: '2px' }}>★</span>);
-      } else {
-        stars.push(<span key={i} style={{ color: '#FFD700', marginRight: '2px' }}>☆</span>);
-      }
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    // Add full stars
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <span key={`full-${i}`} className="text-yellow-400">★</span>
+      );
     }
+
+    // Add half star if needed
+    if (hasHalfStar) {
+      stars.push(
+        <span key="half" className="text-yellow-400">★</span>
+      );
+    }
+
+    // Add empty stars
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <span key={`empty-${i}`} className="text-yellow-400">☆</span>
+      );
+    }
+
     return stars;
   };
 
@@ -507,7 +534,7 @@ function ProductDetailsPage() {
                     <tr>
                       <td className="py-2 font-bold">Rating</td>
                       <td className="py-2 flex items-center">
-                        {renderStars(product?.rating || 0)} 
+                        {renderRatingStars(product?.rating || 0)} 
                         <span className="ml-1.5">({product?.rating || '0'})</span>
                       </td>
                     </tr>
@@ -527,7 +554,7 @@ function ProductDetailsPage() {
           <div className="flex gap-10 mb-10">
             <div className="text-center">
               <h2 className="text-2xl mb-2.5">{product?.rating || '4.5'}</h2>
-              <div className="mb-2.5">{renderStars(product?.rating || 4.5)}</div>
+              <div className="mb-2.5">{renderRatingStars(product?.rating || 4.5)}</div>
               <p className="mb-2.5">33 ratings</p>
               <button className="py-2 px-4 bg-[rgb(165,97,108)] text-white border-none rounded-[8px] cursor-pointer">RATE</button>
             </div>
@@ -570,36 +597,36 @@ function ProductDetailsPage() {
                       : placeholderImage;
                     
                     return (
-                      <div key={relatedProduct._id} className="border border-gray-200 rounded-[12px] overflow-hidden">
-                        <div className="h-50 overflow-hidden">
-                          <img src={productImage} alt={relatedProduct.name} className="w-full h-full object-cover" />
+                      <div 
+                        key={relatedProduct._id} 
+                        className="border border-gray-200 rounded-[12px] overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-300"
+                        onClick={() => window.location.href = `/product/${relatedProduct._id}`}
+                      >
+                        <div className="h-48 overflow-hidden">
+                          <img 
+                            src={productImage} 
+                            alt={relatedProduct.name} 
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                          />
                         </div>
                         <div className="p-4">
-                          <p className="text-gray-600 mb-1">{relatedProduct.categories?.[0] || 'Jewelry'}</p>
-                          <div className="flex items-center gap-1 mb-1">
-                            <span className="text-yellow-400">★</span>
-                            <span>{relatedProduct.rating || '0'}</span>
+                          <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">{relatedProduct.name}</h3>
+                          <div className="flex items-center gap-1 mb-2">
+                            <div className="flex">
+                              {renderRatingStars(relatedProduct.rating || 0)}
+                            </div>
+                            <span className="text-sm text-gray-600 ml-1">({relatedProduct.rating || '0'})</span>
                           </div>
-                          <p className="font-bold mb-2.5">₹{relatedProduct.sellingPrice?.toFixed(2) || '0.00'}</p>
-                          <div className="flex gap-2.5">
-                            <button 
-                              className="bg-transparent border-none cursor-pointer p-1"
-                              onClick={() => addToWishlist(relatedProduct)}
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                              </svg>
-                            </button>
-                            <button 
-                              className="bg-transparent border-none cursor-pointer p-1"
-                              onClick={() => addToCart(relatedProduct)}
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="8" cy="21" r="1" />
-                                <circle cx="19" cy="21" r="1" />
-                                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-                              </svg>
-                            </button>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-gray-900">₹{relatedProduct.sellingPrice?.toFixed(2) || '0.00'}</span>
+                            {relatedProduct.price > relatedProduct.sellingPrice && (
+                              <>
+                                <span className="text-sm text-gray-500 line-through">₹{relatedProduct.price?.toFixed(2)}</span>
+                                <span className="text-sm text-green-600">
+                                  {Math.round(((relatedProduct.price - relatedProduct.sellingPrice) / relatedProduct.price) * 100)}% OFF
+                                </span>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
