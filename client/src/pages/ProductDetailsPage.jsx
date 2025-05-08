@@ -556,7 +556,7 @@ function ProductDetailsPage() {
               <h2 className="text-2xl mb-2.5">{product?.rating || '4.5'}</h2>
               <div className="mb-2.5">{renderRatingStars(product?.rating || 4.5)}</div>
               <p className="mb-2.5">33 ratings</p>
-              <button className="py-2 px-4 bg-[rgb(165,97,108)] text-white border-none rounded-[8px] cursor-pointer">RATE</button>
+              {/* RATE button removed */}
             </div>
             
             <div className="flex-1">
