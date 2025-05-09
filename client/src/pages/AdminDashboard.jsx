@@ -1140,7 +1140,7 @@ const AdminDashboard = () => {
                                 {order._id.slice(-6)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {order.user.name}
+                                {order.user?.name || 'Unknown User'}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 ₹{order.totalAmount.toFixed(2)}
@@ -1814,7 +1814,7 @@ const AdminDashboard = () => {
                                 {order._id.slice(-6)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {order.user.name}
+                                {order.user?.name || 'Unknown User'}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 ₹{order.totalAmount.toFixed(2)}
@@ -1891,7 +1891,7 @@ const AdminDashboard = () => {
                                 {order._id.slice(-6)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {order.user.name}
+                                {order.user?.name || 'Unknown User'}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 ₹{order.totalAmount.toFixed(2)}
@@ -2082,9 +2082,9 @@ const AdminDashboard = () => {
                     <div className="bg-gray-50 rounded-lg p-4">
                       {selectedOrder.user && typeof selectedOrder.user === 'object' ? (
                         <>
-                          <p><span className="font-medium">Name:</span> {selectedOrder.user.name}</p>
-                          <p><span className="font-medium">Email:</span> {selectedOrder.user.email}</p>
-                          <p><span className="font-medium">Phone:</span> {selectedOrder.user.phone || 'Not provided'}</p>
+                          <p><span className="font-medium">Name:</span> {selectedOrder.user?.name || 'Unknown User'}</p>
+                          <p><span className="font-medium">Email:</span> {selectedOrder.user?.email || 'No email available'}</p>
+                          <p><span className="font-medium">Phone:</span> {selectedOrder.user?.phone || 'Not provided'}</p>
                           <p><span className="font-medium">WhatsApp:</span> {selectedOrder.whatsappPhone || 'Not provided'}</p>
 
                           {selectedOrder.shippingAddress && (
