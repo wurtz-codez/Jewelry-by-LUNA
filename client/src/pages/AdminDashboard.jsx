@@ -1975,7 +1975,7 @@ const AdminDashboard = () => {
                           {request._id.slice(-6)}
                         </td>
                         <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${request.deleted ? 'line-through' : ''}`}>
-                          {request.user.name}
+                          {request.user?.name || 'Unknown User'}
                         </td>
                         <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${request.deleted ? 'line-through' : ''}`}>
                           {request.type}
@@ -2229,8 +2229,8 @@ const AdminDashboard = () => {
               <div>
                 <h4 className="font-medium text-gray-700 mb-2">Customer Information</h4>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <p><span className="font-medium">Name:</span> {selectedRequest.user.name}</p>
-                  <p><span className="font-medium">Email:</span> {selectedRequest.user.email}</p>
+                  <p><span className="font-medium">Name:</span> {selectedRequest.user?.name || 'Unknown User'}</p>
+                  <p><span className="font-medium">Email:</span> {selectedRequest.user?.email || 'No email available'}</p>
                 </div>
               </div>
             </div>
@@ -2240,16 +2240,22 @@ const AdminDashboard = () => {
                 <p>{selectedRequest.reason}</p>
               </div>
             </div>
-            <div className="mb-6">
-              <h4 className="font-medium text-gray-700 mb-2">Image</h4>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <img 
-                  src={selectedRequest.imageUrl} 
-                  alt="Request" 
-                  className="max-w-full max-h-[300px] object-contain mx-auto" 
-                />
+            {selectedRequest.imageUrls && selectedRequest.imageUrls.length > 0 && (
+              <div className="mb-6">
+                <h4 className="font-medium text-gray-700 mb-2">Images</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  {selectedRequest.imageUrls.map((imageUrl, index) => (
+                    <div key={index} className="bg-gray-50 rounded-lg p-4">
+                      <img 
+                        src={imageUrl} 
+                        alt={`Request ${index + 1}`} 
+                        className="max-w-full max-h-[200px] object-contain mx-auto" 
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
             {selectedRequest.status === 'pending' && (
               <>
                 <div className="mb-4">
@@ -2282,7 +2288,7 @@ const AdminDashboard = () => {
                 </div>
               </>
             )}
-            {selectedRequest.status !== 'pending' && (
+            {selectedRequest.status !== 'pending' && selectedRequest.adminResponse && (
               <div className="mb-6">
                 <h4 className="font-medium text-gray-700 mb-2">Admin Response</h4>
                 <div className="bg-gray-50 rounded-lg p-4">

@@ -52,8 +52,8 @@ const Profile = () => {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [requestType, setRequestType] = useState('');
   const [requestReason, setRequestReason] = useState('');
-  const [requestImage, setRequestImage] = useState(null);
-  const [requestImagePreview, setRequestImagePreview] = useState(null);
+  const [requestImages, setRequestImages] = useState([]);
+  const [requestImagePreviews, setRequestImagePreviews] = useState([]);
   const [selectedOrderForRequest, setSelectedOrderForRequest] = useState(null);
   const [existingRequests, setExistingRequests] = useState([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -83,13 +83,15 @@ const Profile = () => {
           // Log the response data to verify the structure
           console.log('User profile response:', response.data);
 
-          // Ensure we're using the correct data structure
-          setUser({
-            name: response.data.name || '',
-            email: response.data.email || '',
-            phone: response.data.phone || '(123) 456-7890',
-            address: response.data.address || '123 Main St, New York, NY 10001'
-          });
+          // Ensure we're using the correct data structure and add null checks
+          if (response.data) {
+            setUser({
+              name: response.data.name || '',
+              email: response.data.email || '',
+              phone: response.data.phone || '(123) 456-7890',
+              address: response.data.address || '123 Main St, New York, NY 10001'
+            });
+          }
         } catch (error) {
           console.error('Error fetching user profile:', error);
           setToastMessage('Failed to fetch user profile');
@@ -189,20 +191,42 @@ const Profile = () => {
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('orderId', selectedOrder._id);
-      formData.append('type', requestType);
-      formData.append('reason', requestReason);
-      if (requestImage) {
-        formData.append('image', requestImage);
+      let imageUrls = [];
+      
+      // First upload all images if any are selected
+      if (requestImages.length > 0) {
+        const imageFormData = new FormData();
+        requestImages.forEach(image => {
+          imageFormData.append('images', image);
+        });
+        
+        const uploadResponse = await axios.post(
+          `${API_BASE_URL}/upload`,
+          imageFormData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              'x-auth-token': localStorage.getItem('token')
+            }
+          }
+        );
+        
+        imageUrls = uploadResponse.data.filePaths;
       }
+
+      // Then submit the request with the image URLs
+      const requestData = {
+        orderId: selectedOrder._id,
+        type: requestType,
+        reason: requestReason,
+        imageUrls: imageUrls
+      };
 
       const response = await axios.post(
         `${API_BASE_URL}/request`,
-        formData,
+        requestData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
             'x-auth-token': localStorage.getItem('token')
           }
         }
@@ -214,8 +238,8 @@ const Profile = () => {
       setShowRequestModal(false);
       setRequestType('');
       setRequestReason('');
-      setRequestImage(null);
-      setRequestImagePreview(null);
+      setRequestImages([]);
+      setRequestImagePreviews([]);
       await fetchRequests();
     } catch (error) {
       console.error('Error submitting request:', error);
@@ -233,8 +257,8 @@ const Profile = () => {
           setSelectedOrderForRequest(existingRequest);
           setRequestType('');
           setRequestReason('');
-          setRequestImage(null);
-          setRequestImagePreview(null);
+          setRequestImages([]);
+          setRequestImagePreviews([]);
           setShowRequestStatusModal(true);
         }
       }
@@ -327,11 +351,11 @@ const Profile = () => {
     return <LoadingScreen />;
   }
 
-  return (
-    <div className="min-h-screen bg-white">
-      <Navbar variant="white" />
-      <div className="page-container py-24 sm:py-24 md:py-24 lg:py-32 mx-4 sm:mx-6 md:mx-12 lg:mx-32 max-w-8xl flex-grow">
-        {!currentUser ? (
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar variant="white" />
+        <div className="page-container py-24 sm:py-24 md:py-24 lg:py-32 mx-4 sm:mx-6 md:mx-12 lg:mx-32 max-w-8xl flex-grow">
           <motion.div 
             className="text-center py-16 sm:py-24 bg-white rounded-[16px] shadow-lg max-w-4xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
@@ -350,249 +374,254 @@ const Profile = () => {
               Login
             </motion.button>
           </motion.div>
-        ) : (
-          <div className="max-w-6xl mx-auto">
-            <motion.h1 
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-cinzel-decorative text-secondary text-center mb-8 sm:mb-12 md:mb-16"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              My Profile
-            </motion.h1>
+        </div>
+      </div>
+    );
+  }
 
-            <div className="flex flex-col md:flex-row gap-8">
-              {/* Sidebar */}
-              <motion.div 
-                className="md:w-1/3 lg:w-1/4"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
-                  <div className="flex items-center gap-4 mb-8">
-                    <div className="w-16 h-16 md:w-20 md:h-20 lg:w-20 lg:h-20 bg-neutral rounded-[16px] flex items-center justify-center">
-                      <FiUser size={24} className="md:w-8 md:h-8 lg:w-8 lg:h-8 text-gray-500" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary">{user.name}</h2>
-                      <p className="text-sm md:text-base lg:text-base text-gray-500">{user.email}</p>
-                    </div>
-                  </div>
-                  <nav className="space-y-2">
-                    <motion.button 
-                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-[12px] flex items-center gap-3 transition ${
-                        activeTab === 'profile' 
-                          ? 'bg-primary text-white' 
-                          : 'bg-neutral hover:bg-neutral/80 text-gray-700'
-                      }`}
-                      onClick={() => setActiveTab('profile')}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <FiUser size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Profile
-                    </motion.button>
-                    <motion.button 
-                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-[12px] flex items-center gap-3 transition ${
-                        activeTab === 'orders' 
-                          ? 'bg-primary text-white' 
-                          : 'bg-neutral hover:bg-neutral/80 text-gray-700'
-                      }`}
-                      onClick={() => setActiveTab('orders')}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <FiShoppingBag size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Orders
-                    </motion.button>
-                    <motion.button 
-                      className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-[12px] flex items-center gap-3 transition ${
-                        activeTab === 'wishlist' 
-                          ? 'bg-primary text-white' 
-                          : 'bg-neutral hover:bg-neutral/80 text-gray-700'
-                      }`}
-                      onClick={() => setActiveTab('wishlist')}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <FiHeart size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Wishlist
-                    </motion.button>
-                    <motion.button 
-                      onClick={handleLogout}
-                      className="w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-[12px] flex items-center gap-3 bg-red-50 text-red-500 hover:bg-red-100 transition"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <FiLogOut size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Logout
-                    </motion.button>
-                  </nav>
+  return (
+    <div className="min-h-screen bg-white">
+      <Navbar variant="white" />
+      <div className="page-container py-24 sm:py-24 md:py-24 lg:py-32 mx-4 sm:mx-6 md:mx-12 lg:mx-32 max-w-8xl flex-grow">
+        <motion.h1 
+          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-cinzel-decorative text-secondary text-center mb-8 sm:mb-12 md:mb-16"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          My Profile
+        </motion.h1>
+
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Sidebar */}
+          <motion.div 
+            className="md:w-1/3 lg:w-1/4"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-16 h-16 md:w-20 md:h-20 lg:w-20 lg:h-20 bg-neutral rounded-[16px] flex items-center justify-center">
+                  <FiUser size={24} className="md:w-8 md:h-8 lg:w-8 lg:h-8 text-gray-500" />
                 </div>
-              </motion.div>
-              
-              {/* Main content */}
-              <motion.div 
-                className="md:w-2/3 lg:w-3/4"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                {activeTab === 'profile' && (
-                  <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
-                    <div className="flex justify-between items-center mb-6 md:mb-8">
-                      <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary">Profile Information</h2>
-                      {!isEditing ? (
-                        <motion.button 
-                          onClick={handleEditClick}
-                          className="p-2 md:p-3 lg:p-3 rounded-[12px] bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <FiEdit size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" />
-                        </motion.button>
-                      ) : (
-                        <div className="flex gap-2">
-                          <motion.button 
-                            onClick={handleSaveChanges}
-                            className="p-2 md:p-3 lg:p-3 rounded-[12px] bg-primary hover:bg-primary/90 text-white transition-colors"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <FiCheck size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" />
-                          </motion.button>
-                          <motion.button 
-                            onClick={handleCancelEdit}
-                            className="p-2 md:p-3 lg:p-3 rounded-[12px] bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <FiX size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" />
-                          </motion.button>
-                        </div>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-6">
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-gray-500 mb-2 font-medium">Name</label>
-                          <div className="p-4 bg-neutral/5 rounded-[8px]">
-                            <p className="font-medium text-gray-900">{user.name}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-gray-500 mb-2 font-medium">Email</label>
-                          <div className="p-4 bg-neutral/5 rounded-[8px]">
-                            <p className="font-medium text-gray-900">{user.email}</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-gray-500 mb-2 font-medium">Phone</label>
-                          {isEditing ? (
-                            <input
-                              type="tel"
-                              name="phone"
-                              value={editedUser.phone}
-                              onChange={handleInputChange}
-                              className="w-full p-4 border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-                              placeholder="Enter your phone number"
-                            />
-                          ) : (
-                            <div className="p-4 bg-neutral/5 rounded-[8px]">
-                              <p className="font-medium text-gray-900">{user.phone}</p>
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <label className="block text-gray-500 mb-2 font-medium">Address</label>
-                          {isEditing ? (
-                            <textarea
-                              name="address"
-                              value={editedUser.address}
-                              onChange={handleInputChange}
-                              className="w-full p-4 border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-                              placeholder="Enter your address"
-                              rows="3"
-                            />
-                          ) : (
-                            <div className="p-4 bg-neutral/5 rounded-[8px]">
-                              <p className="font-medium text-gray-900">{user.address}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {activeTab === 'orders' && (
-                  <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
-                    <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary mb-6 md:mb-8">Order History</h2>
-                    
-                    {orders.length > 0 ? (
-                      <div className="space-y-4 md:space-y-6">
-                        {orders.map(order => (
-                          <motion.div 
-                            key={order._id}
-                            className="bg-neutral/5 rounded-[12px] p-4 md:p-6 hover:shadow-md transition-shadow"
-                            whileHover={{ scale: 1.01 }}
-                          >
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4">
-                              <div>
-                                <h3 className="text-base md:text-lg lg:text-lg font-medium text-gray-900">Order #{order._id.slice(-6)}</h3>
-                                <p className="text-sm md:text-base lg:text-base text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
-                              </div>
-                              <div className="flex items-center gap-3 md:gap-4">
-                                <span className={`px-3 md:px-4 py-1 md:py-2 rounded-[8px] text-xs md:text-sm font-medium ${
-                                  order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
-                                  order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
-                                  'bg-yellow-100 text-yellow-800'
-                                }`}>
-                                  {order.requestStatus}
-                                </span>
-                                <span className="text-base md:text-lg lg:text-lg font-medium">₹{order.totalAmount.toFixed(2)}</span>
-                                <motion.button 
-                                  onClick={() => fetchOrderDetails(order._id)}
-                                  className="px-3 md:px-4 py-1 md:py-2 bg-primary text-white rounded-[8px] hover:bg-primary/90 transition-colors text-sm md:text-base"
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                >
-                                  View Details
-                                </motion.button>
-                              </div>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 md:py-16">
-                        <FiShoppingBag className="mx-auto text-gray-400 mb-4 md:mb-6 md:w-12 md:h-12 lg:w-12 lg:h-12" size={40} />
-                        <p className="text-base md:text-lg lg:text-lg text-gray-500">You haven't placed any orders yet.</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {activeTab === 'wishlist' && (
-                  <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
-                    <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary mb-6 md:mb-8">My Wishlist</h2>
-                    <div className="text-center py-12 md:py-16">
-                      <FiHeart className="mx-auto text-gray-400 mb-4 md:mb-6 md:w-12 md:h-12 lg:w-12 lg:h-12" size={40} />
-                      <p className="text-base md:text-lg lg:text-lg text-gray-500 mb-6 md:mb-8">View and manage your saved items in your wishlist.</p>
+                <div>
+                  <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary">{user?.name || 'User'}</h2>
+                  <p className="text-sm md:text-base lg:text-base text-gray-500">{user?.email || ''}</p>
+                </div>
+              </div>
+              <nav className="space-y-2">
+                <motion.button 
+                  className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-[12px] flex items-center gap-3 transition ${
+                    activeTab === 'profile' 
+                      ? 'bg-primary text-white' 
+                      : 'bg-neutral hover:bg-neutral/80 text-gray-700'
+                  }`}
+                  onClick={() => setActiveTab('profile')}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <FiUser size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Profile
+                </motion.button>
+                <motion.button 
+                  className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-[12px] flex items-center gap-3 transition ${
+                    activeTab === 'orders' 
+                      ? 'bg-primary text-white' 
+                      : 'bg-neutral hover:bg-neutral/80 text-gray-700'
+                  }`}
+                  onClick={() => setActiveTab('orders')}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <FiShoppingBag size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Orders
+                </motion.button>
+                <motion.button 
+                  className={`w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-[12px] flex items-center gap-3 transition ${
+                    activeTab === 'wishlist' 
+                      ? 'bg-primary text-white' 
+                      : 'bg-neutral hover:bg-neutral/80 text-gray-700'
+                  }`}
+                  onClick={() => setActiveTab('wishlist')}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <FiHeart size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Wishlist
+                </motion.button>
+                <motion.button 
+                  onClick={handleLogout}
+                  className="w-full text-left py-3 md:py-4 lg:py-4 px-4 md:px-6 lg:px-6 rounded-[12px] flex items-center gap-3 bg-red-50 text-red-500 hover:bg-red-100 transition"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <FiLogOut size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" /> Logout
+                </motion.button>
+              </nav>
+            </div>
+          </motion.div>
+          
+          {/* Main content */}
+          <motion.div 
+            className="md:w-2/3 lg:w-3/4"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            {activeTab === 'profile' && (
+              <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                <div className="flex justify-between items-center mb-6 md:mb-8">
+                  <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary">Profile Information</h2>
+                  {!isEditing ? (
+                    <motion.button 
+                      onClick={handleEditClick}
+                      className="p-2 md:p-3 lg:p-3 rounded-[12px] bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <FiEdit size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" />
+                    </motion.button>
+                  ) : (
+                    <div className="flex gap-2">
                       <motion.button 
-                        onClick={() => navigate('/wishlist')}
-                        className="bg-primary text-white py-3 md:py-4 px-6 md:px-8 rounded-[12px] hover:bg-primary/90 transition-colors inline-flex items-center gap-2 text-base md:text-lg font-medium"
+                        onClick={handleSaveChanges}
+                        className="p-2 md:p-3 lg:p-3 rounded-[12px] bg-primary hover:bg-primary/90 text-white transition-colors"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        Go to Wishlist
+                        <FiCheck size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" />
+                      </motion.button>
+                      <motion.button 
+                        onClick={handleCancelEdit}
+                        className="p-2 md:p-3 lg:p-3 rounded-[12px] bg-neutral hover:bg-neutral/80 text-gray-700 transition-colors"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <FiX size={18} className="md:w-5 md:h-5 lg:w-5 lg:h-5" />
                       </motion.button>
                     </div>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-gray-500 mb-2 font-medium">Name</label>
+                      <div className="p-4 bg-neutral/5 rounded-[8px]">
+                        <p className="font-medium text-gray-900">{user.name}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-gray-500 mb-2 font-medium">Email</label>
+                      <div className="p-4 bg-neutral/5 rounded-[8px]">
+                        <p className="font-medium text-gray-900">{user.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-gray-500 mb-2 font-medium">Phone</label>
+                      {isEditing ? (
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={editedUser.phone}
+                          onChange={handleInputChange}
+                          className="w-full p-4 border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                          placeholder="Enter your phone number"
+                        />
+                      ) : (
+                        <div className="p-4 bg-neutral/5 rounded-[8px]">
+                          <p className="font-medium text-gray-900">{user.phone}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-gray-500 mb-2 font-medium">Address</label>
+                      {isEditing ? (
+                        <textarea
+                          name="address"
+                          value={editedUser.address}
+                          onChange={handleInputChange}
+                          className="w-full p-4 border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                          placeholder="Enter your address"
+                          rows="3"
+                        />
+                      ) : (
+                        <div className="p-4 bg-neutral/5 rounded-[8px]">
+                          <p className="font-medium text-gray-900">{user.address}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {activeTab === 'orders' && (
+              <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary mb-6 md:mb-8">Order History</h2>
+                
+                {orders.length > 0 ? (
+                  <div className="space-y-4 md:space-y-6">
+                    {orders.map(order => (
+                      <motion.div 
+                        key={order._id}
+                        className="bg-neutral/5 rounded-[12px] p-4 md:p-6 hover:shadow-md transition-shadow"
+                        whileHover={{ scale: 1.01 }}
+                      >
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4">
+                          <div>
+                            <h3 className="text-base md:text-lg lg:text-lg font-medium text-gray-900">Order #{order._id.slice(-6)}</h3>
+                            <p className="text-sm md:text-base lg:text-base text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                          </div>
+                          <div className="flex items-center gap-3 md:gap-4">
+                            <span className={`px-3 md:px-4 py-1 md:py-2 rounded-[8px] text-xs md:text-sm font-medium ${
+                              order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                              order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {order.requestStatus}
+                            </span>
+                            <span className="text-base md:text-lg lg:text-lg font-medium">₹{order.totalAmount.toFixed(2)}</span>
+                            <motion.button 
+                              onClick={() => fetchOrderDetails(order._id)}
+                              className="px-3 md:px-4 py-1 md:py-2 bg-primary text-white rounded-[8px] hover:bg-primary/90 transition-colors text-sm md:text-base"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              View Details
+                            </motion.button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 md:py-16">
+                    <FiShoppingBag className="mx-auto text-gray-400 mb-4 md:mb-6 md:w-12 md:h-12 lg:w-12 lg:h-12" size={40} />
+                    <p className="text-base md:text-lg lg:text-lg text-gray-500">You haven't placed any orders yet.</p>
                   </div>
                 )}
-              </motion.div>
-            </div>
-          </div>
-        )}
+              </div>
+            )}
+            
+            {activeTab === 'wishlist' && (
+              <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 md:p-6 lg:p-8">
+                <h2 className="text-xl md:text-2xl lg:text-2xl font-cinzel-decorative text-secondary mb-6 md:mb-8">My Wishlist</h2>
+                <div className="text-center py-12 md:py-16">
+                  <FiHeart className="mx-auto text-gray-400 mb-4 md:mb-6 md:w-12 md:h-12 lg:w-12 lg:h-12" size={40} />
+                  <p className="text-base md:text-lg lg:text-lg text-gray-500 mb-6 md:mb-8">View and manage your saved items in your wishlist.</p>
+                  <motion.button 
+                    onClick={() => navigate('/wishlist')}
+                    className="bg-primary text-white py-3 md:py-4 px-6 md:px-8 rounded-[12px] hover:bg-primary/90 transition-colors inline-flex items-center gap-2 text-base md:text-lg font-medium"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Go to Wishlist
+                  </motion.button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </div>
       </div>
 
       {/* Order Details Modal */}
@@ -852,44 +881,61 @@ const Profile = () => {
                 />
               </div>
               <div className="mb-6">
-                <label className="block text-gray-700 mb-2 font-medium">Upload Image</label>
+                <label className="block text-gray-700 mb-2 font-medium">Upload Images (up to 5)</label>
                 <div className="space-y-4">
-                  {requestImagePreview && (
-                    <div className="relative w-full h-48 rounded-[8px] overflow-hidden">
-                      <img
-                        src={requestImagePreview}
-                        alt="Request preview"
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setRequestImage(null);
-                          setRequestImagePreview(null);
-                        }}
-                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-[8px] hover:bg-red-600 transition-colors"
-                      >
-                        <FiX size={20} />
-                      </button>
+                  {requestImagePreviews.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {requestImagePreviews.map((preview, index) => (
+                        <div key={index} className="relative w-full h-48 rounded-[8px] overflow-hidden">
+                          <img
+                            src={preview}
+                            alt={`Request preview ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRequestImages(prev => prev.filter((_, i) => i !== index));
+                              setRequestImagePreviews(prev => prev.filter((_, i) => i !== index));
+                            }}
+                            className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-[8px] hover:bg-red-600 transition-colors"
+                          >
+                            <FiX size={20} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        setRequestImage(file);
+                      const files = Array.from(e.target.files);
+                      if (files.length + requestImages.length > 5) {
+                        setToastMessage('You can only upload up to 5 images');
+                        setToastType('error');
+                        setShowToast(true);
+                        return;
+                      }
+                      
+                      setRequestImages(prev => [...prev, ...files]);
+                      
+                      // Create previews for new images
+                      files.forEach(file => {
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                          setRequestImagePreview(reader.result);
+                          setRequestImagePreviews(prev => [...prev, reader.result]);
                         };
                         reader.readAsDataURL(file);
-                      }
+                      });
                     }}
                     className="w-full p-4 border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-                    required
+                    required={requestImages.length === 0}
                   />
+                  <p className="text-sm text-gray-500 mt-2">
+                    {requestImages.length}/5 images selected
+                  </p>
                 </div>
               </div>
               <div className="flex justify-end gap-4">
@@ -899,8 +945,8 @@ const Profile = () => {
                     setShowRequestModal(false);
                     setRequestType('');
                     setRequestReason('');
-                    setRequestImage(null);
-                    setRequestImagePreview(null);
+                    setRequestImages([]);
+                    setRequestImagePreviews([]);
                   }}
                   className="px-6 py-3 bg-neutral text-gray-700 rounded-[12px] hover:bg-neutral/80 transition-colors"
                   whileHover={{ scale: 1.05 }}
@@ -910,9 +956,9 @@ const Profile = () => {
                 </motion.button>
                 <motion.button
                   type="submit"
-                  disabled={loading || !requestType || !requestReason || !requestImage}
+                  disabled={loading || !requestType || !requestReason || requestImages.length === 0}
                   className={`px-6 py-3 bg-primary text-white rounded-[12px] ${
-                    loading || !requestType || !requestReason || !requestImage ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90'
+                    loading || !requestType || !requestReason || requestImages.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90'
                   } transition-colors`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

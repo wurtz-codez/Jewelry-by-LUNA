@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const { upload } = require('../config/cloudinary');
+const { upload, cloudinary } = require('../config/cloudinary');
 
 // Route to upload multiple images
 router.post('/', auth, upload.array('images', 5), (req, res) => {
@@ -19,7 +19,30 @@ router.post('/', auth, upload.array('images', 5), (req, res) => {
     });
   } catch (error) {
     console.error('Upload error:', error);
-    return res.status(500).json({ message: 'Server error during upload' });
+    return res.status(500).json({ 
+      message: 'Server error during upload',
+      error: error.message 
+    });
+  }
+});
+
+// Route to upload a single image
+router.post('/single', auth, upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    return res.status(200).json({ 
+      message: 'File uploaded successfully',
+      filePath: req.file.path
+    });
+  } catch (error) {
+    console.error('Single upload error:', error);
+    return res.status(500).json({ 
+      message: 'Server error during upload',
+      error: error.message 
+    });
   }
 });
 
@@ -38,7 +61,10 @@ router.delete('/:publicId', auth, async (req, res) => {
     }
   } catch (error) {
     console.error('Delete error:', error);
-    return res.status(500).json({ message: 'Server error during file deletion' });
+    return res.status(500).json({ 
+      message: 'Server error during file deletion',
+      error: error.message 
+    });
   }
 });
 
