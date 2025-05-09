@@ -8,7 +8,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['https://jewelrybyluna.vercel.app', 'http://localhost:5173'],
+  origin: ['https://www.jewelrybyluna.in', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
