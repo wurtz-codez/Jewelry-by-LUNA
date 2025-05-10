@@ -1,6 +1,6 @@
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { FiMail, FiPhone, FiMapPin, FiClock, FiSend, FiInstagram, FiFacebook, FiTwitter } from 'react-icons/fi';
+import { FiMail, FiPhone, FiMapPin, FiClock, FiSend, FiInstagram, FiFacebook, FiTwitter, FiYoutube } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 
 const Contact = () => {
@@ -133,7 +133,7 @@ const Contact = () => {
               <h2 className="text-xl sm:text-2xl md:text-3xl font-cinzel-decorative text-secondary mb-4 sm:mb-6">Follow Us</h2>
               <div className="flex gap-3 sm:gap-4">
                 <motion.a 
-                  href="https://instagram.com" 
+                  href="https://www.instagram.com/jewellery.by.luna" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 sm:w-12 sm:h-12 rounded-[6px] bg-neutral flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition-colors"
@@ -143,25 +143,16 @@ const Contact = () => {
                   <FiInstagram size={20} className="sm:w-6 sm:h-6" />
                 </motion.a>
                 <motion.a 
-                  href="https://facebook.com" 
+                  href="https://www.youtube.com/@JewelleryByLUNA"
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 sm:w-12 sm:h-12 rounded-[6px] bg-neutral flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition-colors"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <FiFacebook size={20} className="sm:w-6 sm:h-6" />
+                  <FiYoutube size={20} className="sm:w-6 sm:h-6" />
                 </motion.a>
-                <motion.a 
-                  href="https://twitter.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-[6px] bg-neutral flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition-colors"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <FiTwitter size={20} className="sm:w-6 sm:h-6" />
-                </motion.a>
+                
               </div>
             </motion.div>
           </div>

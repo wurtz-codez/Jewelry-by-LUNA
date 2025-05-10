@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import placeholderImage from '../placeholder.png';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import { BiLoaderAlt } from 'react-icons/bi';
 import { motion } from 'framer-motion';
 import Toast from '../../components/Toast';
 import { useShop } from '../../contexts/ShopContext';
@@ -12,51 +13,23 @@ import {
   imageAnimation,
   titleAnimation,
   discountBadgeAnimation,
-  addToCartButtonAnimation,
   wishlistButtonAnimation,
   heartIconAnimation
 } from '../../animations/productCard';
 
 const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 
-const ProductCard = ({ product, onAddToCart }) => {
+const ProductCard = ({ product }) => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { toggleWishlist, wishlist } = useShop();
-  // Get the actual product data, handling both direct and nested cases
   const productData = product?.jewelry || product;
   const isOutOfStock = productData?.stock === 0;
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
+  const [isLoading, setIsLoading] = useState(false);
   const isInWishlist = wishlist.some(item => item._id === productData?._id);
-
-  const handleAddToCart = async (e) => {
-    e.preventDefault();
-    if (!isOutOfStock && onAddToCart) {
-      try {
-        const success = await onAddToCart(productData);
-        if (success) {
-          setToastMessage(`${productData.name} added to cart successfully!`);
-          setToastType('success');
-          setShowToast(true);
-          // Auto-hide toast after 3 seconds
-          setTimeout(() => {
-            setShowToast(false);
-          }, 3000);
-        }
-      } catch (error) {
-        console.error('Error in handleAddToCart:', error);
-        setToastMessage('An error occurred. Please try again.');
-        setToastType('error');
-        setShowToast(true);
-        // Auto-hide toast after 3 seconds
-        setTimeout(() => {
-          setShowToast(false);
-        }, 3000);
-      }
-    }
-  };
 
   const handleWishlistToggle = async (e) => {
     e.preventDefault();
@@ -66,6 +39,7 @@ const ProductCard = ({ product, onAddToCart }) => {
     }
 
     try {
+      setIsLoading(true);
       const success = await toggleWishlist(productData);
       if (success) {
         setToastMessage(
@@ -88,6 +62,8 @@ const ProductCard = ({ product, onAddToCart }) => {
       setToastType('error');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -152,22 +128,20 @@ const ProductCard = ({ product, onAddToCart }) => {
               {productData?.name || "Product Name"}
             </motion.h3>
 
-            {/* Category */}
-            {productData?.categories && productData.categories.length > 0 && (
-              <div className="mt-0.5 sm:mt-1 flex flex-wrap gap-0.5 sm:gap-1">
-                {productData.categories.map((category, index) => (
-                  <span 
-                    key={index}
-                    className="px-1 sm:px-1.5 py-0.5 text-[8px] sm:text-xs md:text-sm bg-neutral/10 text-gray-700 rounded-[3px] sm:rounded-[4px] font-cinzel capitalize"
-                  >
-                    {category}
-                  </span>
-                ))}
+            {/* Description */}
+            {productData?.description && (
+              <div className="mt-0.5 sm:mt-1">
+                <p className="text-[10px] sm:text-xs md:text-sm text-gray-600 line-clamp-2 font-montserrat-alt">
+                  {productData.description}
+                </p>
               </div>
             )}
+          </Link>
 
+          {/* Price and Wishlist Button Row */}
+          <div className="mt-1.5 sm:mt-2 md:mt-3 flex items-center justify-between">
             {/* Price and Discount */}
-            <div className="mt-0.5 sm:mt-1 flex items-center gap-1 sm:gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-1.5">
               {productData?.discount > 0 ? (
                 <>
                   <motion.div 
@@ -191,39 +165,32 @@ const ProductCard = ({ product, onAddToCart }) => {
                 </p>
               )}
             </div>
-          </Link>
 
-          {/* Action Buttons */}
-          <div className="mt-1.5 sm:mt-2 md:mt-3 flex gap-1.5 sm:gap-2 items-center">
+            {/* Wishlist Button */}
             <motion.button
-              whileHover={!isOutOfStock ? addToCartButtonAnimation.whileHover : {}}
-              whileTap={!isOutOfStock ? addToCartButtonAnimation.whileTap : {}}
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-              className={`flex-1 text-[10px] sm:text-xs md:text-sm py-1 sm:py-1.5 md:py-2 rounded-[4px] sm:rounded-[6px] transition-colors ${
-                isOutOfStock 
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                  : 'bg-primary text-white hover:bg-white/0 hover:text-primary border hover:border-primary'
-              }`}
-            >
-              {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-            </motion.button>
-
-            <motion.button
-              whileHover={wishlistButtonAnimation.whileHover}
-              whileTap={wishlistButtonAnimation.whileTap}
-              onClick={handleWishlistToggle}
+              whileHover={!isLoading && wishlistButtonAnimation.whileHover}
+              whileTap={!isLoading && wishlistButtonAnimation.whileTap}
+              onClick={!isLoading ? handleWishlistToggle : undefined}
+              disabled={isLoading}
               className={`text-white hover:text-primary transition-colors text-xs sm:text-sm ${
                 isInWishlist ? 'bg-primary/20 text-primary' : 'bg-primary'
-              } hover:bg-primary/0 border hover:border-primary aspect-square w-[24px] sm:w-[28px] md:w-[32px] rounded-[4px] sm:rounded-[6px] flex-shrink-0 flex items-center justify-center`}
+              } hover:bg-primary/0 border hover:border-primary aspect-square w-[24px] sm:w-[28px] md:w-[32px] rounded-[4px] sm:rounded-[6px] flex-shrink-0 flex items-center justify-center ${
+                isLoading ? 'cursor-not-allowed opacity-70' : ''
+              }`}
               aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
             >
               <motion.div
-                whileHover={heartIconAnimation.whileHover}
-                whileTap={heartIconAnimation.whileTap}
+                whileHover={!isLoading && heartIconAnimation.whileHover}
+                whileTap={!isLoading && heartIconAnimation.whileTap}
                 className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4"
               >
-                {isInWishlist ? <FaHeart className="w-full h-full" /> : <FaRegHeart className="w-full h-full" />}
+                {isLoading ? (
+                  <BiLoaderAlt className="w-full h-full animate-spin" />
+                ) : isInWishlist ? (
+                  <FaHeart className="w-full h-full" />
+                ) : (
+                  <FaRegHeart className="w-full h-full" />
+                )}
               </motion.div>
             </motion.button>
           </div>

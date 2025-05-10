@@ -65,11 +65,11 @@ const Navbar = ({ variant }) => {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 ${variant === 'white' ? 'bg-white' : 'bg-neutral'} shadow-sm font-body`}>
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-32">
-        <div className="flex justify-between items-center h-14 sm:h-16 md:h-20">
+      <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-32">
+        <div className="flex justify-between items-center h-12 sm:h-14 md:h-16">
           {/* Left Section - Navigation Links */}
           <motion.div 
-            className="hidden md:flex items-center space-x-4 lg:space-x-7 w-1/3 justify-start text-base sm:text-lg lg:text-xl"
+            className="hidden md:flex items-center space-x-3 lg:space-x-5 xl:space-x-7 w-1/3 justify-start text-sm lg:text-base xl:text-lg"
             variants={itemVariants}
           >
             <Link 
@@ -153,7 +153,7 @@ const Navbar = ({ variant }) => {
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="scale-90 sm:scale-100"
+              className="scale-75 sm:scale-90 md:scale-100"
             >
               <Logo size="default" />
             </motion.div>
@@ -161,7 +161,7 @@ const Navbar = ({ variant }) => {
 
           {/* Right Section - Icons */}
           <motion.div 
-            className="flex items-center space-x-3 sm:space-x-4 md:space-x-8 lg:space-x-16 w-full md:w-1/3 justify-end"
+            className="flex items-center space-x-2 sm:space-x-3 md:space-x-6 lg:space-x-8 xl:space-x-12 w-full md:w-1/3 justify-end"
             variants={itemVariants}
           >
             <motion.button 
@@ -172,7 +172,7 @@ const Navbar = ({ variant }) => {
               whileHover="hover"
               whileTap="tap"
             >
-              <FiSearch className="w-4 h-4 sm:w-5 sm:h-5" />
+              <FiSearch className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
             </motion.button>
 
             <motion.div
@@ -191,7 +191,7 @@ const Navbar = ({ variant }) => {
                   }
                 }}
               >
-                <FaRegHeart className="w-4 h-4 sm:w-5 sm:h-5" />
+                <FaRegHeart className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
               </Link>
             </motion.div>
 
@@ -211,10 +211,10 @@ const Navbar = ({ variant }) => {
                   }
                 }}
               >
-                <FaBagShopping className="w-4 h-4 sm:w-5 sm:h-5" />
+                <FaBagShopping className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                 {cartItemCount > 0 && (
                   <motion.span 
-                    className="absolute -top-2 -right-2 bg-primary text-white text-[10px] sm:text-xs font-medium rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center"
+                    className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[8px] sm:text-[10px] font-medium rounded-full w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 flex items-center justify-center"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -232,7 +232,7 @@ const Navbar = ({ variant }) => {
               whileHover="hover"
               whileTap="tap"
             >
-              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </motion.button>
