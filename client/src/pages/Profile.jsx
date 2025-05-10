@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { FiEdit, FiUser, FiShoppingBag, FiHeart, FiLogOut, FiX, FiLoader, FiMapPin, FiCreditCard, FiCheck } from 'react-icons/fi';
+import { FiEdit, FiUser, FiShoppingBag, FiHeart, FiLogOut, FiX, FiLoader, FiMapPin, FiCreditCard, FiCheck, FiUpload } from 'react-icons/fi';
 import Toast from '../components/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
@@ -68,6 +68,7 @@ const Profile = () => {
   });
 
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState([]);
 
   useEffect(() => {
     if (currentUser) {
@@ -186,47 +187,71 @@ const Profile = () => {
     }
   };
 
+  const handleImageUpload = async () => {
+    if (requestImages.length === 0) {
+      setToastMessage('Please select at least one image');
+      setToastType('error');
+      setShowToast(true);
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const imageFormData = new FormData();
+      requestImages.forEach(image => {
+        imageFormData.append('images', image);
+      });
+      
+      const uploadResponse = await axios.post(
+        `${API_BASE_URL}/upload`,
+        imageFormData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'x-auth-token': localStorage.getItem('token')
+          }
+        }
+      );
+      
+      setUploadedImageUrls(uploadResponse.data.filePaths);
+      setToastMessage('Images uploaded successfully');
+      setToastType('success');
+      setShowToast(true);
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      setToastMessage('Failed to upload images');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
+    if (requestImages.length === 0) {
+      setToastMessage('Please select at least one image');
+      setToastType('error');
+      setShowToast(true);
+      return;
+    }
+
     setLoading(true);
-
     try {
-      let imageUrls = [];
-      
-      // First upload all images if any are selected
-      if (requestImages.length > 0) {
-        const imageFormData = new FormData();
-        requestImages.forEach(image => {
-          imageFormData.append('images', image);
-        });
-        
-        const uploadResponse = await axios.post(
-          `${API_BASE_URL}/upload`,
-          imageFormData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-              'x-auth-token': localStorage.getItem('token')
-            }
-          }
-        );
-        
-        imageUrls = uploadResponse.data.filePaths;
-      }
-
-      // Then submit the request with the image URLs
-      const requestData = {
-        orderId: selectedOrder._id,
-        type: requestType,
-        reason: requestReason,
-        imageUrls: imageUrls
-      };
+      const formData = new FormData();
+      formData.append('orderId', selectedOrder._id);
+      formData.append('type', requestType);
+      formData.append('reason', requestReason);
+      requestImages.forEach(image => {
+        formData.append('images', image);
+      });
 
       const response = await axios.post(
         `${API_BASE_URL}/request`,
-        requestData,
+        formData,
         {
           headers: {
+            'Content-Type': 'multipart/form-data',
             'x-auth-token': localStorage.getItem('token')
           }
         }
@@ -248,7 +273,6 @@ const Profile = () => {
       setToastType('error');
       setShowToast(true);
       
-      // If the error is about an existing request, show the request status
       if (errorMessage.includes('already have an active request')) {
         const existingRequest = existingRequests.find(req => 
           req.order._id === selectedOrder._id && !req.deleted
@@ -914,36 +938,40 @@ const Profile = () => {
                       ))}
                     </div>
                   )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files);
-                      if (files.length + requestImages.length > 5) {
-                        setToastMessage('You can only upload up to 5 images');
-                        setToastType('error');
-                        setShowToast(true);
-                        return;
-                      }
-                      
-                      setRequestImages(prev => [...prev, ...files]);
-                      
-                      // Create previews for new images
-                      files.forEach(file => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setRequestImagePreviews(prev => [...prev, reader.result]);
-                        };
-                        reader.readAsDataURL(file);
-                      });
-                    }}
-                    className="w-full p-4 border border-neutral-200 rounded-[8px] focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-                    required={requestImages.length === 0}
-                  />
-                  <p className="text-sm text-gray-500 mt-2">
-                    {requestImages.length}/5 images selected
-                  </p>
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <FiUpload className="w-8 h-8 mb-4 text-gray-500" />
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 5 images)</p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files);
+                          if (files.length + requestImages.length > 5) {
+                            setToastMessage('You can only upload up to 5 images');
+                            setToastType('error');
+                            setShowToast(true);
+                            return;
+                          }
+                          setRequestImages(prev => [...prev, ...files]);
+                          files.forEach(file => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setRequestImagePreviews(prev => [...prev, reader.result]);
+                            };
+                            reader.readAsDataURL(file);
+                          });
+                        }}
+                      />
+                    </label>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-4">
