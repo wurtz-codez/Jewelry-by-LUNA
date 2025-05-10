@@ -2,13 +2,29 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { FiTrash2, FiShoppingCart } from 'react-icons/fi';
+import { FiTrash2, FiShoppingCart, FiArrowLeft } from 'react-icons/fi';
 import axios from 'axios';
 import { useShop } from '../contexts/ShopContext';
 import placeholderImage from '../assets/placeholder.png';
 import Toast from '../components/Toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
+
+// Animation variants
+const pageAnimation = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.4 } }
+};
+
+const wishlistItemAnimation = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  exit: { opacity: 0, y: -20, transition: { duration: 0.2 } }
+};
+
+const buttonHoverAnimation = { scale: 1.05 };
+const buttonTapAnimation = { scale: 0.95 };
 
 const Wishlist = () => {
   const navigate = useNavigate();
@@ -19,6 +35,8 @@ const Wishlist = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const [isDeletingItem, setIsDeletingItem] = useState({});
+  const [isAddingToCart, setIsAddingToCart] = useState({});
 
   useEffect(() => {
     fetchWishlist();
@@ -49,6 +67,7 @@ const Wishlist = () => {
 
   const handleRemoveFromWishlist = async (productId) => {
     try {
+      setIsDeletingItem(prev => ({ ...prev, [productId]: true }));
       const token = localStorage.getItem('token');
       if (!token) {
         navigate('/login');
@@ -68,11 +87,18 @@ const Wishlist = () => {
     } catch (err) {
       setError('Failed to remove item from wishlist. Please try again later.');
       console.error('Error removing from wishlist:', err);
+      setToastMessage('Failed to remove item from wishlist');
+      setToastType('error');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } finally {
+      setIsDeletingItem(prev => ({ ...prev, [productId]: false }));
     }
   };
 
   const handleAddToCart = async (product) => {
     try {
+      setIsAddingToCart(prev => ({ ...prev, [product._id]: true }));
       const success = await addToCart(product);
       if (success) {
         setToastMessage('Item added to cart successfully!');
@@ -85,6 +111,8 @@ const Wishlist = () => {
       setToastType('error');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
+    } finally {
+      setIsAddingToCart(prev => ({ ...prev, [product._id]: false }));
     }
   };
 
@@ -92,11 +120,37 @@ const Wishlist = () => {
     navigate(`/product/${productId}`);
   };
 
+  // Helper function to get the best image URL for a product
+  const getImageUrl = (product) => {
+    // Check for imageUrls array first
+    if (product?.imageUrls && product.imageUrls.length > 0) {
+      const mainImage = product.imageUrls[0];
+      if (mainImage.startsWith('http')) {
+        return mainImage;
+      }
+      if (mainImage.startsWith('/uploads')) {
+        return `${API_BASE_URL}${mainImage}`;
+      }
+    }
+    
+    // Fallback to single imageUrl
+    if (product?.imageUrl) {
+      if (product.imageUrl.startsWith('http')) {
+        return product.imageUrl;
+      }
+      if (product.imageUrl.startsWith('/uploads')) {
+        return `${API_BASE_URL}${product.imageUrl}`;
+      }
+    }
+    
+    return placeholderImage;
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-white">
+        <Navbar variant="white" />
+        <div className="container mx-auto px-4 py-16 sm:py-20">
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
           </div>
@@ -108,17 +162,19 @@ const Wishlist = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+      <div className="min-h-screen bg-white">
+        <Navbar variant="white" />
+        <div className="container mx-auto px-4 py-16 sm:py-20">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center max-w-3xl mx-auto">
             <p className="text-red-600">{error}</p>
-            <button
+            <motion.button
               onClick={fetchWishlist}
-              className="mt-4 bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700"
+              className="mt-4 bg-primary text-white px-6 py-3 rounded-md hover:bg-primary/90 transition-colors"
+              whileHover={buttonHoverAnimation}
+              whileTap={buttonTapAnimation}
             >
               Try Again
-            </button>
+            </motion.button>
           </div>
         </div>
         <Footer />
@@ -127,83 +183,199 @@ const Wishlist = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">My Wishlist</h1>
+    <motion.div 
+      className="wishlist-page min-h-screen flex flex-col bg-white"
+      initial="initial"
+      animate="animate"
+      variants={pageAnimation}
+    >
+      <Navbar variant="white" />
+      <div className="page-container py-16 sm:py-20 mx-4 sm:mx-6 lg:mx-8 max-w-7xl flex-grow">
+        <motion.h1 
+          className="text-2xl sm:text-3xl font-cinzel-decorative text-secondary text-center mb-6 sm:mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          My Wishlist
+        </motion.h1>
         
         {wishlist.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <p className="text-gray-600">Your wishlist is empty</p>
-            <button
+          <motion.div 
+            className="text-center py-16 sm:py-24 bg-white rounded-[16px] shadow-lg max-w-4xl mx-auto"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <FiShoppingCart className="mx-auto text-gray-400 mb-6 sm:mb-8 sm:w-20 sm:h-20" size={60} />
+            <h2 className="text-3xl sm:text-4xl font-cinzel-decorative text-secondary mb-4 sm:mb-6">Your wishlist is empty</h2>
+            <p className="text-gray-500 mb-8 sm:mb-10 text-lg sm:text-xl">Looks like you haven't added any jewelry to your wishlist yet.</p>
+            <motion.button 
               onClick={() => navigate('/shop')}
-              className="mt-4 bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700"
+              className="bg-primary text-white py-4 sm:py-5 px-8 sm:px-10 rounded-[12px] hover:bg-primary/90 transition-colors inline-flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-medium"
+              whileHover={buttonHoverAnimation}
+              whileTap={buttonTapAnimation}
             >
-              Continue Shopping
-            </button>
-          </div>
+              <FiArrowLeft size={24} className="sm:w-7 sm:h-7" />
+              Browse Jewelry
+            </motion.button>
+          </motion.div>
         ) : (
           <div className="bg-white rounded-lg shadow-md p-6">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left pb-4">Product</th>
-                  <th className="text-right pb-4">Price</th>
-                  <th className="text-right pb-4">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <AnimatePresence>
+              <div className="space-y-3">
                 {wishlist.map(item => (
-                  <tr key={item._id} className="border-b">
-                    <td className="py-4">
-                      <div className="flex items-center">
-                        <img 
-                          src={
-                            item.imageUrls && item.imageUrls.length > 0
-                              ? item.imageUrls[0]
-                              : item.imageUrl || placeholderImage
-                          } 
-                          alt={item.name || 'Product'} 
-                          className="w-16 h-16 object-cover rounded mr-4"
-                          onClick={() => handleProductClick(item._id)}
-                          style={{ cursor: 'pointer' }}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = placeholderImage;
-                          }}
-                        />
-                        <span 
-                          className="font-medium"
-                          onClick={() => handleProductClick(item._id)}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          {item.name || 'Unknown Product'}
-                        </span>
+                  <motion.div 
+                    key={item._id}
+                    variants={wishlistItemAnimation}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    className="flex flex-col sm:flex-row items-center gap-4 p-3 sm:p-4 rounded-lg bg-white shadow-md transition-colors"
+                  >
+                    <motion.div 
+                      className="w-full sm:w-32 h-32 rounded-lg overflow-hidden flex-shrink-0"
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <img 
+                        src={getImageUrl(item)}
+                        alt={item.name || 'Jewelry'} 
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={() => handleProductClick(item._id)}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = placeholderImage;
+                        }}
+                      />
+                    </motion.div>
+                    
+                    <div className="flex-grow w-full">
+                      <motion.h3 
+                        className="text-lg sm:text-xl font-playfair-display font-medium text-gray-900 cursor-pointer hover:text-primary transition-colors"
+                        onClick={() => handleProductClick(item._id)}
+                        whileHover={buttonHoverAnimation}
+                        whileTap={buttonTapAnimation}
+                      >
+                        {item.name || 'Unknown Product'}
+                        {(item.discount > 0 || (item.price > item.sellingPrice)) && (
+                          <motion.span 
+                            className="ml-2 px-2 py-0.5 text-sm bg-green-100 text-green-700 rounded-md font-cinzel inline-block align-middle"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            {Math.round(((item.price - item.sellingPrice) / item.price) * 100)}% OFF
+                          </motion.span>
+                        )}
+                      </motion.h3>
+                      
+                      {/* Product Description */}
+                      {item.description && (
+                        <p className="text-gray-600 text-sm mt-1 mb-2 line-clamp-2">
+                          {item.description}
+                        </p>
+                      )}
+                      
+                      {/* Categories and Tags */}
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {item.categories?.map((category, index) => (
+                          <motion.span 
+                            key={index}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="px-2 py-1 text-xs bg-neutral/10 text-gray-700 rounded-md font-cinzel hover:bg-neutral/20 transition-colors border"
+                          >
+                            {category}
+                          </motion.span>
+                        ))}
                       </div>
-                    </td>
-                    <td className="py-4 text-right">₹{(item.sellingPrice || item.price || 0).toFixed(2)}</td>
-                    <td className="py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleAddToCart(item)}
-                          className="p-2 text-gray-600 hover:text-gray-900"
-                          title="Add to Cart"
+                      
+                      <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        {/* Price Information */}
+                        <motion.div 
+                          className="text-left w-full sm:w-auto"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.2 }}
                         >
-                          <FiShoppingCart size={20} />
-                        </button>
-                        <button
-                          onClick={() => handleRemoveFromWishlist(item._id)}
-                          className="p-2 text-red-500 hover:text-red-700"
-                          title="Remove from Wishlist"
-                        >
-                          <FiTrash2 size={20} />
-                        </button>
+                          <div className="text-gray-600 text-sm">
+                            {item.discount > 0 || (item.price > item.sellingPrice) ? (
+                              <>
+                                <span className="line-through text-gray-400">₹{item.price?.toLocaleString('en-IN')}</span>
+                                <span className="mx-2">→</span>
+                                <span className="text-green-600">₹{item.sellingPrice?.toLocaleString('en-IN')}</span>
+                              </>
+                            ) : (
+                              <span>₹{item.sellingPrice?.toLocaleString('en-IN') || item.price?.toLocaleString('en-IN')}</span>
+                            )}
+                          </div>
+                        </motion.div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 sm:gap-4">
+                          <motion.button
+                            onClick={() => handleAddToCart(item)}
+                            className="px-4 py-2 rounded-md bg-primary text-white flex items-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            whileHover={buttonHoverAnimation}
+                            whileTap={buttonTapAnimation}
+                            disabled={isAddingToCart[item._id]}
+                          >
+                            {isAddingToCart[item._id] ? (
+                              <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            ) : (
+                              <FiShoppingCart size={18} />
+                            )}
+                            <span className="hidden sm:inline">Add to Cart</span>
+                          </motion.button>
+                          
+                          <motion.button
+                            onClick={() => handleRemoveFromWishlist(item._id)}
+                            className="p-2 rounded-md border border-red-200 text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            disabled={isDeletingItem[item._id]}
+                          >
+                            {isDeletingItem[item._id] ? (
+                              <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            ) : (
+                              <>
+                                <FiTrash2 size={18} />
+                                <span className="hidden sm:inline">Remove</span>
+                              </>
+                            )}
+                          </motion.button>
+                        </div>
                       </div>
-                    </td>
-                  </tr>
+                    </div>
+                  </motion.div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </AnimatePresence>
+            
+            <motion.div 
+              className="mt-8 flex justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <motion.button 
+                onClick={() => navigate('/shop')}
+                className="bg-neutral text-gray-700 py-3 px-8 rounded-[12px] hover:bg-neutral/80 transition-colors flex items-center gap-2 text-base font-medium"
+                whileHover={buttonHoverAnimation}
+                whileTap={buttonTapAnimation}
+              >
+                <FiArrowLeft size={20} />
+                Continue Shopping
+              </motion.button>
+            </motion.div>
           </div>
         )}
       </div>
@@ -215,7 +387,7 @@ const Wishlist = () => {
           onClose={() => setShowToast(false)}
         />
       )}
-    </div>
+    </motion.div>
   );
 };
 

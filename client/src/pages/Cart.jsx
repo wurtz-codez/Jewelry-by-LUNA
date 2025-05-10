@@ -46,6 +46,7 @@ const Cart = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
   const [isUpdating, setIsUpdating] = useState({});
+  const [isDeletingItem, setIsDeletingItem] = useState({});
   
   // State for checkout modal
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
@@ -139,8 +140,22 @@ const Cart = () => {
   };
 
   // Remove item from cart
-  const handleRemoveItem = (id) => {
-    removeFromCart(id);
+  const handleRemoveItem = async (id) => {
+    try {
+      setIsDeletingItem(prev => ({ ...prev, [id]: true }));
+      await removeFromCart(id);
+      setToastMessage('Item removed from cart successfully');
+      setToastType('success');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (error) {
+      setToastMessage('Failed to remove item from cart');
+      setToastType('error');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } finally {
+      setIsDeletingItem(prev => ({ ...prev, [id]: false }));
+    }
   };
   
   // Handle shipping address change
@@ -334,9 +349,9 @@ const Cart = () => {
       variants={pageAnimation}
     >
       <Navbar variant="white" />
-      <div className="page-container py-24 sm:py-24 md:py-32 mx-4 sm:mx-6 lg:mx-32 max-w-8xl flex-grow">
+      <div className="page-container py-16 sm:py-20 mx-4 sm:mx-6 lg:mx-8 max-w-7xl flex-grow">
         <motion.h1 
-          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-cinzel-decorative text-secondary text-center mb-8 sm:mb-12 md:mb-16"
+          className="text-2xl sm:text-3xl font-cinzel-decorative text-secondary text-center mb-6 sm:mb-8"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -345,12 +360,12 @@ const Cart = () => {
         </motion.h1>
         
         {cart?.items?.filter(item => item?.jewelry).length > 0 ? (
-          <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 lg:gap-12">
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
             {/* Cart Items */}
             <div className="lg:w-3/4">
-              <div className="bg-white rounded-[16px]">
+              <div className="bg-white rounded-lg">
                 <AnimatePresence>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {cart?.items?.filter(item => item?.jewelry).map(item => (
                       <motion.div 
                         key={item.jewelry._id}
@@ -358,10 +373,10 @@ const Cart = () => {
                         initial="initial"
                         animate="animate"
                         exit="exit"
-                        className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 lg:gap-12 p-4 rounded-[16px] bg-white shadow-lg transition-colors"
+                        className="flex flex-col sm:flex-row items-center gap-4 p-3 sm:p-4 rounded-lg bg-white shadow-md transition-colors"
                       >
                         <motion.div 
-                          className="w-full sm:w-40 h-40 sm:h-48 rounded-[14px] overflow-hidden flex-shrink-0"
+                          className="w-full sm:w-32 h-32 rounded-lg overflow-hidden flex-shrink-0"
                           whileHover={{ scale: 1.02 }}
                           transition={{ duration: 0.2 }}
                         >
@@ -379,7 +394,7 @@ const Cart = () => {
                         
                         <div className="flex-grow w-full">
                           <motion.h3 
-                            className="text-xl sm:text-2xl lg:text-3xl font-playfair-display font-medium text-gray-900 cursor-pointer hover:text-primary transition-colors"
+                            className="text-lg sm:text-xl font-playfair-display font-medium text-gray-900 cursor-pointer hover:text-primary transition-colors"
                             onClick={() => navigate(`/product/${item.jewelry._id}`)}
                             whileHover={buttonHoverAnimation}
                             whileTap={buttonTapAnimation}
@@ -387,7 +402,7 @@ const Cart = () => {
                             {item.jewelry.name}
                             {item.jewelry.discount > 0 && (
                               <motion.span 
-                                className="ml-2 sm:ml-3 px-2 sm:px-3 py-0.5 sm:py-1 text-sm sm:text-base bg-green-100 text-green-700 rounded-[8px] font-cinzel inline-block align-middle"
+                                className="ml-2 px-2 py-0.5 text-sm bg-green-100 text-green-700 rounded-md font-cinzel inline-block align-middle"
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.3 }}
@@ -397,30 +412,34 @@ const Cart = () => {
                             )}
                           </motion.h3>
                           
-                          {/* Product Details */}
-                          <div className="mt-2 sm:mt-4 space-y-2">
-                            {/* Categories and Tags */}
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              {item.jewelry.categories?.map((category, index) => (
-                                <motion.span 
-                                  key={index}
-                                  variants={categoryTagAnimation}
-                                  initial="initial"
-                                  animate="animate"
-                                  whileHover="hover"
-                                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-neutral/10 text-gray-700 rounded-[8px] font-cinzel hover:bg-neutral/20 transition-colors border"
-                                >
-                                  {category}
-                                </motion.span>
-                              ))}
-                            </div>
+                          {/* Product Description */}
+                          {item.jewelry.description && (
+                            <p className="text-gray-600 text-sm mt-1 mb-2 line-clamp-2">
+                              {item.jewelry.description}
+                            </p>
+                          )}
+                          
+                          {/* Categories and Tags */}
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {item.jewelry.categories?.map((category, index) => (
+                              <motion.span 
+                                key={index}
+                                variants={categoryTagAnimation}
+                                initial="initial"
+                                animate="animate"
+                                whileHover="hover"
+                                className="px-2 py-1 text-xs bg-neutral/10 text-gray-700 rounded-md font-cinzel hover:bg-neutral/20 transition-colors border"
+                              >
+                                {category}
+                              </motion.span>
+                            ))}
                           </div>
                           
-                          <div className="mt-4 sm:mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+                          <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                             {/* Quantity Controls */}
-                            <div className="flex items-center gap-4 sm:gap-6">
+                            <div className="flex items-center gap-4">
                               <motion.span 
-                                className="text-xl sm:text-2xl font-montserrat-alt px-6 sm:px-10 py-2 sm:py-4 rounded-[12px] bg-neutral/5"
+                                className="text-lg font-montserrat-alt px-6 py-2 rounded-lg bg-neutral/5"
                                 variants={priceUpdateAnimation}
                                 initial="initial"
                                 animate="animate"
@@ -438,7 +457,7 @@ const Cart = () => {
                               animate="animate"
                               key={`${item.jewelry._id}-${item.quantity}`}
                             >
-                              <div className="text-gray-600 text-base sm:text-lg">
+                              <div className="text-gray-600 text-sm">
                                 {item.jewelry.discount > 0 ? (
                                   <>
                                     <span className="line-through text-gray-400">₹{item.jewelry.price?.toLocaleString('en-IN')}</span>
@@ -449,7 +468,7 @@ const Cart = () => {
                                   <span>₹{item.jewelry.sellingPrice?.toLocaleString('en-IN')}</span>
                                 )} × {item.quantity}
                               </div>
-                              <div className="text-2xl sm:text-3xl font-montserrat-alt text-gray-900 mt-1">
+                              <div className="text-xl font-montserrat-alt text-gray-900 mt-1">
                                 ₹{((item.jewelry.sellingPrice || item.jewelry.price || 0) * item.quantity).toLocaleString('en-IN')}
                               </div>
                             </motion.div>
@@ -458,13 +477,21 @@ const Cart = () => {
                         
                         <motion.button 
                           onClick={() => handleRemoveItem(item.jewelry._id)}
-                          className="p-3 sm:p-5 rounded-[8px] hover:bg-red-50 text-red-500 hover:text-red-600 transition-colors self-start sm:self-center"
+                          className="p-2 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-600 transition-colors self-start sm:self-center disabled:opacity-50 disabled:cursor-not-allowed"
                           variants={removeButtonAnimation}
                           initial="initial"
                           animate="animate"
                           whileHover="hover"
+                          disabled={isDeletingItem[item.jewelry._id]}
                         >
-                          <FiTrash2 size={24} className="sm:w-8 sm:h-8" />
+                          {isDeletingItem[item.jewelry._id] ? (
+                            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          ) : (
+                            <FiTrash2 size={20} />
+                          )}
                         </motion.button>
                       </motion.div>
                     ))}
@@ -480,8 +507,8 @@ const Cart = () => {
               initial="initial"
               animate="animate"
             >
-              <div className="bg-white rounded-[16px] shadow-lg p-6 sm:p-8 lg:p-12 sticky top-24">
-                <h2 className="text-2xl sm:text-3xl font-cinzel-decorative text-secondary mb-6 sm:mb-8">Order Summary</h2>
+              <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 sticky top-24">
+                <h2 className="text-xl font-cinzel-decorative text-secondary mb-4">Order Summary</h2>
                 
                 <div className="space-y-4 sm:space-y-6">
                   <div className="flex justify-between text-gray-600 text-base sm:text-lg">
@@ -529,21 +556,21 @@ const Cart = () => {
                 
                 <motion.button 
                   onClick={openCheckoutModal}
-                  className="w-full mt-6 sm:mt-10 bg-primary text-white py-4 sm:py-5 px-6 sm:px-8 rounded-[12px] hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 sm:gap-3 text-lg sm:text-xl font-medium"
+                  className="w-full mt-6 sm:mt-8 bg-primary text-white py-3 sm:py-4 px-5 sm:px-6 rounded-[12px] hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 text-base sm:text-lg font-medium"
                   whileHover={buttonHoverAnimation}
                   whileTap={buttonTapAnimation}
                 >
-                  <FiShoppingBag size={24} className="sm:w-7 sm:h-7" />
+                  <FiShoppingBag size={20} className="sm:w-6 sm:h-6" />
                   Proceed to Checkout
                 </motion.button>
                 
                 <motion.button 
                   onClick={() => navigate('/shop')}
-                  className="w-full mt-4 sm:mt-6 bg-neutral text-gray-700 py-4 sm:py-5 px-6 sm:px-8 rounded-[12px] hover:bg-neutral/80 transition-colors flex items-center justify-center gap-2 sm:gap-3 text-lg sm:text-xl font-medium"
+                  className="w-full mt-3 sm:mt-4 bg-neutral text-gray-700 py-3 sm:py-4 px-5 sm:px-6 rounded-[12px] hover:bg-neutral/80 transition-colors flex items-center justify-center gap-2 text-base sm:text-lg font-medium"
                   whileHover={buttonHoverAnimation}
                   whileTap={buttonTapAnimation}
                 >
-                  <FiArrowLeft size={24} className="sm:w-7 sm:h-7" />
+                  <FiArrowLeft size={20} className="sm:w-6 sm:h-6" />
                   Continue Shopping
                 </motion.button>
               </div>
