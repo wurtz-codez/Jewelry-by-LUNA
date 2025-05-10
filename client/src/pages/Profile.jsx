@@ -30,8 +30,8 @@ const Profile = () => {
   const [user, setUser] = useState({
     name: '',
     email: '',
-    phone: '(123) 456-7890',
-    address: '123 Main St, New York, NY 10001'
+    phone: '',
+    address: ''
   });
   
   const [loading, setLoading] = useState(false);
@@ -88,8 +88,8 @@ const Profile = () => {
             setUser({
               name: response.data.name || '',
               email: response.data.email || '',
-              phone: response.data.phone || '(123) 456-7890',
-              address: response.data.address || '123 Main St, New York, NY 10001'
+              phone: response.data.phone || '',
+              address: response.data.address || ''
             });
           }
         } catch (error) {
@@ -529,7 +529,11 @@ const Profile = () => {
                         />
                       ) : (
                         <div className="p-4 bg-neutral/5 rounded-[8px]">
-                          <p className="font-medium text-gray-900">{user.phone}</p>
+                          <p className="font-medium text-gray-900">
+                            {user.phone ? user.phone : (
+                              <span className="text-gray-500 italic">Add your phone number</span>
+                            )}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -546,7 +550,11 @@ const Profile = () => {
                         />
                       ) : (
                         <div className="p-4 bg-neutral/5 rounded-[8px]">
-                          <p className="font-medium text-gray-900">{user.address}</p>
+                          <p className="font-medium text-gray-900">
+                            {user.address ? user.address : (
+                              <span className="text-gray-500 italic">Add your address</span>
+                            )}
+                          </p>
                         </div>
                       )}
                     </div>
