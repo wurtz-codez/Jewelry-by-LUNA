@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { FiSearch, FiUser, FiLogOut, FiPackage } from 'react-icons/fi'
+import { FiUser, FiLogOut, FiPackage } from 'react-icons/fi'
 import { FaBagShopping, FaRegHeart, FaRegUser } from 'react-icons/fa6'
 import { useAuth } from '../contexts/AuthContext'
 import { useShop } from '../contexts/ShopContext'
 import Logo from './Logo'
-import Search from './Search'
 import { motion, AnimatePresence } from 'framer-motion'
 import { itemVariants, iconVariants, mobileMenuVariants, mobileMenuItemVariants } from '../animations/navbar'
 
@@ -15,7 +14,6 @@ const Navbar = ({ variant }) => {
   const [activeLink, setActiveLink] = useState('');
   const { currentUser, logout } = useAuth();
   const { cart } = useShop();
-  const [showSearch, setShowSearch] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
@@ -164,17 +162,6 @@ const Navbar = ({ variant }) => {
             className="flex items-center space-x-2 sm:space-x-3 md:space-x-6 lg:space-x-8 xl:space-x-12 w-full md:w-1/3 justify-end"
             variants={itemVariants}
           >
-            <motion.button 
-              aria-label="Search" 
-              className="text-black hover:text-primary transition-colors duration-200"
-              onClick={() => setShowSearch(true)}
-              variants={iconVariants}
-              whileHover="hover"
-              whileTap="tap"
-            >
-              <FiSearch className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-            </motion.button>
-
             <motion.div
               variants={iconVariants}
               whileHover="hover"
@@ -409,8 +396,6 @@ const Navbar = ({ variant }) => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <Search isOpen={showSearch} onClose={() => setShowSearch(false)} />
     </nav>
   )
 }
