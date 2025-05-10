@@ -63,16 +63,18 @@ const NewArrivals = () => {
     <section className="py-8 sm:py-12 md:py-16 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-4xl sm:text-5xl md:text-6xl font-cinzel text-center mb-8 sm:mb-12 md:mb-16">New Arrivals</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-          {products.map((product) => (
-            <ProductCard 
-              key={product._id}
-              product={product}
-              onAddToCart={handleAddToCart}
-              onWishlistToggle={handleWishlistToggle}
-              isInWishlist={wishlist.some(item => item._id === product._id)}
-            />
-          ))}
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+            {products.map((product) => (
+              <ProductCard 
+                key={product._id}
+                product={product}
+                onAddToCart={handleAddToCart}
+                onWishlistToggle={handleWishlistToggle}
+                isInWishlist={wishlist.some(item => item._id === product._id)}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
