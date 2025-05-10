@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { FiUser, FiLogOut, FiPackage } from 'react-icons/fi'
 import { FaBagShopping, FaRegHeart, FaRegUser } from 'react-icons/fa6'
@@ -16,6 +16,8 @@ const Navbar = ({ variant }) => {
   const { cart } = useShop();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const profileDropdownRef = useRef(null);
+  const profileButtonRef = useRef(null);
 
   // Calculate total items in cart
   const cartItemCount = cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
@@ -37,14 +39,23 @@ const Navbar = ({ variant }) => {
     }
   }, [location]);
 
-  const handleUserClick = () => {
+  const handleUserClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     setShowProfileDropdown(!showProfileDropdown);
   };
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showProfileDropdown && !event.target.closest('.profile-dropdown')) {
+    const handleClickOutside = (e) => {
+      // Only close if clicking outside both the dropdown and the button
+      if (
+        showProfileDropdown &&
+        profileDropdownRef.current && 
+        !profileDropdownRef.current.contains(e.target) &&
+        profileButtonRef.current &&
+        !profileButtonRef.current.contains(e.target)
+      ) {
         setShowProfileDropdown(false);
       }
     };
@@ -56,13 +67,15 @@ const Navbar = ({ variant }) => {
   }, [showProfileDropdown]);
 
   const handleLogout = (e) => {
+    e.preventDefault();
     e.stopPropagation();
     logout();
+    setShowProfileDropdown(false);
     navigate('/');
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 ${variant === 'white' ? 'bg-white' : 'bg-neutral'} shadow-sm font-body`}>
+    <nav className={`fixed top-0 left-0 right-0 z-[1000] ${variant === 'white' ? 'bg-white' : 'bg-neutral'} shadow-sm font-body`}>
       <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-32">
         <div className="flex justify-between items-center h-12 sm:h-14 md:h-16">
           {/* Mobile Menu Button - Now on the left */}
@@ -224,82 +237,74 @@ const Navbar = ({ variant }) => {
               </Link>
             </motion.div>
 
-            {/* Profile Dropdown - Now visible on all screen sizes */}
-            <motion.div 
-              className="relative profile-dropdown"
-              variants={iconVariants}
-              whileHover="hover"
-              whileTap="tap"
-            >
+            {/* Profile Dropdown - Completely rewritten */}
+            <div className="relative">
               <button 
+                ref={profileButtonRef}
+                className="p-2 text-black hover:text-primary transition-colors duration-200 rounded-full"
                 onClick={handleUserClick}
                 aria-label={currentUser ? "Profile" : "Login"}
-                className="text-black hover:text-primary transition-colors duration-200"
+                aria-expanded={showProfileDropdown}
+                aria-haspopup="true"
               >
                 <FaRegUser className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
               </button>
-              <AnimatePresence>
-                {showProfileDropdown && (
-                  <motion.div 
-                    className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 border border-neutral/20"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {currentUser ? (
-                      <>
-                        <div className="px-4 py-3 border-b border-neutral/20">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-12 h-12 rounded-full bg-primary-washed/20 flex items-center justify-center ring-2 ring-primary-washed/30">
-                              {currentUser?.photoURL ? (
-                                <img src={currentUser.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
-                              ) : (
-                                <FiUser className="w-6 h-6 text-primary" />
-                              )}
-                            </div>
-                            <div>
-                              <p className="font-medium text-accent text-lg">{currentUser?.name || 'User'}</p>
-                              <p className="text-sm text-gray-500">{currentUser?.email || ''}</p>
-                            </div>
+              
+              {showProfileDropdown && (
+                <div 
+                  ref={profileDropdownRef}
+                  className="absolute right-0 mt-1 w-64 bg-white rounded-lg shadow-lg py-2 border border-gray-200 z-[1001]"
+                  style={{filter: 'drop-shadow(0 0 8px rgba(0, 0, 0, 0.1))'}}
+                >
+                  {currentUser ? (
+                    <>
+                      <div className="px-4 py-3 border-b border-gray-200">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-12 h-12 rounded-full bg-primary-washed/20 flex items-center justify-center ring-2 ring-primary-washed/30">
+                            {currentUser?.photoURL ? (
+                              <img src={currentUser.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                              <FiUser className="w-6 h-6 text-primary" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-accent text-lg">{currentUser?.name || 'User'}</p>
+                            <p className="text-sm text-gray-500">{currentUser?.email || ''}</p>
                           </div>
                         </div>
-                        <div className="py-1">
-                          <Link
-                            to="/profile"
-                            className="flex items-center px-4 py-2.5 text-base text-black hover:bg-neutral/50 transition-colors duration-200"
-                            onClick={() => setShowProfileDropdown(false)}
-                          >
-                            <FiUser className="w-5 h-5 mr-3 text-primary/70" />
-                            Profile
-                          </Link>
-                          <button
-                            onClick={(e) => {
-                              handleLogout(e);
-                              setShowProfileDropdown(false);
-                            }}
-                            className="flex items-center w-full px-4 py-2.5 text-base text-black hover:bg-neutral/50 transition-colors duration-200"
-                          >
-                            <FiLogOut className="w-5 h-5 mr-3 text-primary/70" />
-                            Logout
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="px-4 py-3">
+                      </div>
+                      <div className="py-1">
                         <Link
-                          to="/login"
-                          className="block w-full text-center px-4 py-2.5 text-lg text-white bg-primary hover:bg-primary-washed rounded-full transition-colors duration-200"
+                          to="/profile"
+                          className="flex items-center px-4 py-3 hover:bg-gray-100 text-base text-black transition-colors duration-200"
                           onClick={() => setShowProfileDropdown(false)}
                         >
-                          Login / Signup
+                          <FiUser className="w-5 h-5 mr-3 text-primary/70" />
+                          Profile
                         </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center w-full px-4 py-3 text-left hover:bg-gray-100 text-base text-black transition-colors duration-200"
+                        >
+                          <FiLogOut className="w-5 h-5 mr-3 text-primary/70" />
+                          Logout
+                        </button>
                       </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+                    </>
+                  ) : (
+                    <div className="px-4 py-3">
+                      <Link
+                        to="/login"
+                        className="block w-full text-center px-4 py-2.5 text-lg text-white bg-primary hover:bg-primary-washed rounded-full transition-colors duration-200"
+                        onClick={() => setShowProfileDropdown(false)}
+                      >
+                        Login / Signup
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </motion.div>
         </div>
       </div>
