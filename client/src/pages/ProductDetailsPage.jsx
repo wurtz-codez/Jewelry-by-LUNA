@@ -338,32 +338,16 @@ function ProductDetailsPage() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      <div className="container mx-auto px-4 py-8 pt-24">
-        <div className="font-sans max-w-7xl mx-auto p-5">
-          <div className="flex gap-10 mb-10">
-            <div className="flex gap-5 flex-1">
-              <div className="flex flex-col gap-2.5 max-h-[400px] overflow-y-auto">
-                {productImages.map((image, index) => (
-                  <div 
-                    key={index} 
-                    className={`w-20 h-20 border cursor-pointer overflow-hidden rounded-[6px] ${
-                      selectedImage === index ? 'border-[rgb(165,97,108)]' : 'border-gray-200'
-                    }`}
-                    onClick={() => setSelectedImage(index)}
-                  >
-                    <img 
-                      src={image} 
-                      alt={`Product thumbnail ${index + 1}`} 
-                      className="w-full h-full object-cover" 
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="flex-1 max-w-[400px] relative">
+      <div className="container mx-auto px-4 py-8 pt-16">
+        <div className="font-sans max-w-7xl mx-auto p-2 sm:p-5">
+          <div className="flex flex-col md:flex-row md:gap-10 mb-10">
+            <div className="flex flex-col gap-5 flex-1">
+              {/* Main Image */}
+              <div className="flex-1 max-w-full md:max-w-[600px] relative h-[250px] md:h-[180px]">
                 <img 
                   src={productImages[selectedImage]} 
                   alt="Main product" 
-                  className="w-full h-auto object-cover rounded-[8px]" 
+                  className="w-full h-full object-contain md:object-cover rounded-[8px]" 
                 />
                 {productImages.length > 1 && (
                   <>
@@ -392,10 +376,29 @@ function ProductDetailsPage() {
                   </>
                 )}
               </div>
+
+              {/* Thumbnails */}
+              <div className="flex gap-2.5 overflow-x-auto md:max-w-[600px] mt-2">
+                {productImages.map((image, index) => (
+                  <div 
+                    key={index} 
+                    className={`min-w-[80px] w-20 h-20 border cursor-pointer overflow-hidden rounded-[6px] ${
+                      selectedImage === index ? 'border-[rgb(165,97,108)]' : 'border-gray-200'
+                    }`}
+                    onClick={() => setSelectedImage(index)}
+                  >
+                    <img 
+                      src={image} 
+                      alt={`Product thumbnail ${index + 1}`} 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
             
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold mb-1">{product?.name || 'Product Name'}</h1>
+            <div className="flex-1 mt-8 md:mt-0">
+              <h1 className="text-xl md:text-2xl font-bold mb-1">{product?.name || 'Product Name'}</h1>
               <p className="text-gray-600 mb-4">{product?.description || 'Product description'}</p>
               
               <div className="inline-flex items-center bg-gray-800 text-white px-2.5 py-1.5 rounded-[6px] mb-4">
@@ -578,7 +581,7 @@ function ProductDetailsPage() {
             </div>
           </div>
           
-          <div className="flex gap-10 mb-10">
+          <div className="flex flex-col md:flex-row gap-5 md:gap-10 mb-10">
             <div className="text-center">
               <h2 className="text-2xl mb-2.5">{(product?.rating || 0).toFixed(1)}</h2>
               <div className="mb-2.5">{renderRatingStars(product?.rating || 0)}</div>
@@ -601,69 +604,103 @@ function ProductDetailsPage() {
             </div>
           </div>
           
-          <div>
-            <h2 className="mb-5">You May Also Like</h2>
-            
-            {relatedProducts.length > 0 ? (
-              <div className="relative">
-                <button className="absolute -left-8 top-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-[8px] w-10 h-10 flex items-center justify-center cursor-pointer">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m15 18-6-6 6-6" />
-                  </svg>
-                </button>
-                
-                <div className="grid grid-cols-4 gap-5">
-                  {relatedProducts.map(relatedProduct => {
-                    const productImage = relatedProduct.imageUrls && relatedProduct.imageUrls.length > 0
-                      ? (relatedProduct.imageUrls[0].startsWith('http') 
-                          ? relatedProduct.imageUrls[0] 
-                          : relatedProduct.imageUrls[0].startsWith('/uploads') 
-                            ? `${API_BASE_URL}${relatedProduct.imageUrls[0]}`
-                            : placeholderImage)
-                      : placeholderImage;
-                    
-                    return (
-                      <div 
-                        key={relatedProduct._id} 
-                        className="border border-gray-200 rounded-[12px] overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-300"
-                        onClick={() => window.location.href = `/product/${relatedProduct._id}`}
-                      >
-                        <div className="h-48 overflow-hidden">
-                          <img 
-                            src={productImage} 
-                            alt={relatedProduct.name} 
-                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
-                          />
-                        </div>
-                        <div className="p-4">
-                          <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">{relatedProduct.name}</h3>
-                          <div className="flex items-center gap-1 mb-2">
-                            <div className="flex">
-                              {renderRatingStars(relatedProduct.rating || 0)}
+          {/* Related Products Section */}
+            <div>
+              <h2 className="mb-5">You May Also Like</h2>
+              
+              {relatedProducts.length > 0 ? (
+                <div className="relative">
+                  <button 
+                    className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 shadow-md border border-gray-200 rounded-full w-8 h-8 flex items-center justify-center cursor-pointer z-10"
+                    onClick={() => {
+                      const container = document.getElementById('related-products-container');
+                      container.scrollBy({ left: -200, behavior: 'smooth' });
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m15 18-6-6 6-6" />
+                    </svg>
+                  </button>
+                  
+                  <div 
+                    id="related-products-container"
+                    className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory hide-scrollbar"
+                    style={{
+                      scrollbarWidth: 'none',
+                      msOverflowStyle: 'none',
+                      WebkitOverflowScrolling: 'touch'
+                    }}
+                  >
+                    {relatedProducts.map(relatedProduct => {
+                      const productImage = relatedProduct.imageUrls && relatedProduct.imageUrls.length > 0
+                        ? (relatedProduct.imageUrls[0].startsWith('http') 
+                            ? relatedProduct.imageUrls[0] 
+                            : relatedProduct.imageUrls[0].startsWith('/uploads') 
+                              ? `${API_BASE_URL}${relatedProduct.imageUrls[0]}`
+                              : placeholderImage)
+                        : placeholderImage;
+                      
+                      return (
+                        <div 
+                          key={relatedProduct._id} 
+                          className="flex-none w-[160px] sm:w-[200px] snap-start border border-gray-200 rounded-[12px] overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-300"
+                          onClick={() => window.location.href = `/product/${relatedProduct._id}`}
+                        >
+                          <div className="h-36 overflow-hidden">
+                            <img 
+                              src={productImage} 
+                              alt={relatedProduct.name} 
+                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                            />
+                          </div>
+                          <div className="p-3">
+                            <h3 className="font-medium text-gray-900 mb-2 text-sm line-clamp-2">{relatedProduct.name}</h3>
+                            <div className="flex items-center gap-1 mb-2">
+                              <div className="flex text-sm">
+                                {renderRatingStars(relatedProduct.rating || 0)}
+                              </div>
+                              <span className="text-xs text-gray-600 ml-1">({(relatedProduct.rating || 0).toFixed(1)})</span>
                             </div>
-                            <span className="text-sm text-gray-600 ml-1">({(relatedProduct.rating || 0).toFixed(1)})</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-gray-900">₹{relatedProduct.sellingPrice?.toFixed(2) || '0.00'}</span>
-                            {relatedProduct.price > relatedProduct.sellingPrice && (
-                              <>
-                                <span className="text-sm text-gray-500 line-through">₹{relatedProduct.price?.toFixed(2)}</span>
-                                <span className="text-sm text-green-600">
-                                  {Math.round(((relatedProduct.price - relatedProduct.sellingPrice) / relatedProduct.price) * 100)}% OFF
-                                </span>
-                              </>
-                            )}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-gray-900 text-sm">₹{relatedProduct.sellingPrice?.toFixed(2) || '0.00'}</span>
+                              {relatedProduct.price > relatedProduct.sellingPrice && (
+                                <>
+                                  <span className="text-xs text-gray-500 line-through">₹{relatedProduct.price?.toFixed(2)}</span>
+                                  <span className="text-xs text-green-600">
+                                    {Math.round(((relatedProduct.price - relatedProduct.sellingPrice) / relatedProduct.price) * 100)}% OFF
+                                  </span>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
+
+                  <button 
+                    className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 shadow-md border border-gray-200 rounded-full w-8 h-8 flex items-center justify-center cursor-pointer z-10"
+                    onClick={() => {
+                      const container = document.getElementById('related-products-container');
+                      container.scrollBy({ left: 200, behavior: 'smooth' });
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </button>
                 </div>
-              </div>
-            ) : (
-              <p className="text-center text-gray-600">No related products found.</p>
-            )}
-          </div>
+              ) : (
+                <p className="text-center text-gray-600">No related products found.</p>
+              )}
+            </div>
+
+            {/* Add this CSS to hide scrollbar but keep functionality */}
+            <style>{`
+              .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
         </div>
       </div>
       <Footer />
