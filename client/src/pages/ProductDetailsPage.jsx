@@ -402,7 +402,7 @@ function ProductDetailsPage() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
-                <span className="ml-1.5">{product?.rating || '4.5'}</span>
+                <span className="ml-1.5">{(product?.rating || 0).toFixed(1)}</span>
               </div>
               
               <div className="flex items-center gap-2.5 mb-1">
@@ -562,7 +562,7 @@ function ProductDetailsPage() {
                       <td className="py-2 font-bold">Rating</td>
                       <td className="py-2 flex items-center">
                         {renderRatingStars(product?.rating || 0)} 
-                        <span className="ml-1.5">({product?.rating || '0'})</span>
+                        <span className="ml-1.5">({(product?.rating || 0).toFixed(1)})</span>
                       </td>
                     </tr>
                   </tbody>
@@ -580,10 +580,9 @@ function ProductDetailsPage() {
           
           <div className="flex gap-10 mb-10">
             <div className="text-center">
-              <h2 className="text-2xl mb-2.5">{product?.rating || '4.5'}</h2>
-              <div className="mb-2.5">{renderRatingStars(product?.rating || 4.5)}</div>
-              <p className="mb-2.5">33 ratings</p>
-              {/* RATE button removed */}
+              <h2 className="text-2xl mb-2.5">{(product?.rating || 0).toFixed(1)}</h2>
+              <div className="mb-2.5">{renderRatingStars(product?.rating || 0)}</div>
+              <p className="mb-2.5">({ratingData.reduce((total, item) => total + item.count, 0)} ratings)</p>
             </div>
             
             <div className="flex-1">
@@ -642,7 +641,7 @@ function ProductDetailsPage() {
                             <div className="flex">
                               {renderRatingStars(relatedProduct.rating || 0)}
                             </div>
-                            <span className="text-sm text-gray-600 ml-1">({relatedProduct.rating || '0'})</span>
+                            <span className="text-sm text-gray-600 ml-1">({(relatedProduct.rating || 0).toFixed(1)})</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-gray-900">₹{relatedProduct.sellingPrice?.toFixed(2) || '0.00'}</span>
