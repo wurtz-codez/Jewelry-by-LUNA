@@ -20,7 +20,7 @@ const isAdmin = async (req, res, next) => {
 };
 
 // Create a new request
-router.post('/', auth, upload.single('image'), async (req, res) => {
+router.post('/', auth, upload.array('images', 5), async (req, res) => {
   try {
     const { orderId, type, reason } = req.body;
     
@@ -43,13 +43,18 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
       });
     }
 
-    // Create the request
+    // Check if images were uploaded
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: 'At least one image is required' });
+    }
+
+    // Create the request with the first image URL
     const request = new Request({
       user: req.user.id,
       order: orderId,
       type,
       reason,
-      imageUrl: req.file ? req.file.path : null,
+      imageUrl: req.files[0].path, // Use the first image as the main image
       deleted: false // Explicitly set deleted to false
     });
 
