@@ -3,14 +3,12 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { generateOTP, sendOTPEmail, storeOTP, verifyOTP } = require('../utils/otpUtils');
 
-// Register a new user
-router.post('/register', async (req, res) => {
+// Send OTP for registration
+router.post('/send-otp', async (req, res) => {
   try {
-    const { email, password, name, role } = req.body;
-
-    // Log the received data
-    console.log('Registration attempt:', { email, name, role });
+    const { email } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -18,19 +16,62 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Create new user with explicit field mapping
+    const otp = generateOTP();
+    const emailResult = await sendOTPEmail(email, otp);
+
+    if (!emailResult.success) {
+      return res.status(500).json({ message: 'Failed to send OTP' });
+    }
+
+    storeOTP(email, otp);
+    res.json({ message: 'OTP sent successfully' });
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    res.status(500).json({ message: 'Error sending OTP' });
+  }
+});
+
+// Verify OTP for registration
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const verificationResult = verifyOTP(email, otp);
+
+    if (!verificationResult.valid) {
+      return res.status(400).json({ message: verificationResult.message });
+    }
+
+    res.json({ message: 'OTP verified successfully' });
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ message: 'Error verifying OTP' });
+  }
+});
+
+// Register a new user
+router.post('/register', async (req, res) => {
+  try {
+    const { email, password, name, role, otp } = req.body;
+
+    // Verify OTP first
+    const verificationResult = verifyOTP(email, otp);
+    if (!verificationResult.valid) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Create new user
     const user = new User({
       email: email,
       password: password,
       name: name,
-      role: role || 'user' // Set role if provided, otherwise default to 'user'
-    });
-
-    // Log the user object before saving
-    console.log('User object before save:', {
-      email: user.email,
-      name: user.name,
-      role: user.role
+      role: role || 'user',
+      isEmailVerified: true // Set email as verified since OTP is verified
     });
 
     await user.save();
@@ -58,17 +99,39 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Login user
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  
-  console.log('Login attempt:', { email, passwordLength: password?.length });
+// Send OTP for login
+router.post('/send-login-otp', async (req, res) => {
+  try {
+    const { email } = req.body;
 
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    const otp = generateOTP();
+    const emailResult = await sendOTPEmail(email, otp);
+
+    if (!emailResult.success) {
+      return res.status(500).json({ message: 'Failed to send OTP' });
+    }
+
+    storeOTP(email, otp);
+    res.json({ message: 'OTP sent successfully' });
+  } catch (error) {
+    console.error('Error sending login OTP:', error);
+    res.status(500).json({ message: 'Error sending OTP' });
+  }
+});
+
+// Login user with OTP
+router.post('/login', async (req, res) => {
+  const { email, otp } = req.body;
+  
   try {
     // Check if user exists
     const user = await User.findOne({ email });
-    console.log('User found:', user ? 'Yes' : 'No');
-    
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -82,12 +145,10 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Check password
-    const isMatch = await user.comparePassword(password);
-    console.log('Password match:', isMatch);
-    
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+    // Verify OTP
+    const verificationResult = verifyOTP(email, otp);
+    if (!verificationResult.valid) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
 
     // Create and return JWT token

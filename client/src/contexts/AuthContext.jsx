@@ -56,12 +56,12 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  const login = async (email, password) => {
+  const login = async (email, otp) => {
     try {
       setError(null);
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
-        password
+        otp
       });
       
       const { token, user } = response.data;
@@ -78,13 +78,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, otp) => {
     try {
       setError(null);
       const response = await axios.post(`${API_BASE_URL}/auth/register`, {
         name,
         email,
-        password
+        password,
+        otp
       });
       
       const { token, user } = response.data;

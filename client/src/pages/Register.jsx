@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { FiMail, FiLock, FiUser, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiMail, FiLock, FiUser, FiEye, FiEyeOff, FiKey } from 'react-icons/fi';
 import Logo from '../components/Logo';
 import registerBg from '../assets/login-bg3.png';
 import { backgroundAnimation, overlayAnimation, errorAnimation, successModalAnimation } from '../animations/registerAnimation';
+import axios from 'axios';
 
 const Register = () => {
   const { register, error: authError } = useAuth();
@@ -14,12 +15,15 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    otp: ''
   });
   const [error, setError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [countdown, setCountdown] = useState(0);
 
   const handleChange = (e) => {
     setFormData({
@@ -30,9 +34,55 @@ const Register = () => {
     if (error) setError('');
   };
 
+  const startCountdown = () => {
+    setCountdown(60);
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleSendOTP = async () => {
+    if (!formData.email) {
+      setError('Please enter your email address');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await axios.post('/api/auth/send-otp', {
+        email: formData.email
+      });
+
+      if (response.data.message === 'OTP sent successfully') {
+        setOtpSent(true);
+        startCountdown();
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to send OTP');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const validateForm = () => {
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long');
+      return false;
+    }
+    if (!otpSent) {
+      setError('Please verify your email with OTP first');
+      return false;
+    }
+    if (!formData.otp) {
+      setError('Please enter the OTP');
       return false;
     }
     return true;
@@ -50,7 +100,7 @@ const Register = () => {
     }
     
     try {
-      const result = await register(formData.name, formData.email, formData.password);
+      const result = await register(formData.name, formData.email, formData.password, formData.otp);
       
       if (result.success) {
         setShowSuccessModal(true);
@@ -145,9 +195,35 @@ const Register = () => {
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleChange}
+                    disabled={otpSent}
                   />
                 </div>
               </div>
+
+              {otpSent && (
+                <div>
+                  <label htmlFor="otp" className="block text-sm font-medium text-[#8B7355] mb-2 font-cormorant">
+                    Enter OTP
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <FiKey className="h-5 w-5 text-[#8B7355] group-focus-within:text-[#2C1810] transition-colors duration-200" />
+                    </div>
+                    <input
+                      id="otp"
+                      name="otp"
+                      type="text"
+                      required
+                      maxLength="6"
+                      className="w-full pl-12 pr-4 py-4 bg-white/80 border border-[#F5E6D3] rounded-xl placeholder-[#8B7355]/60 text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:border-[#2C1810] transition-all duration-200 font-cormorant text-lg"
+                      placeholder="Enter OTP"
+                      value={formData.otp}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-[#8B7355] mb-2 font-cormorant">
                   Password
@@ -195,23 +271,46 @@ const Register = () => {
             )}
 
             <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex justify-center py-4 px-6 border border-transparent rounded-xl text-lg font-medium text-white bg-primary hover:bg-[#2C1810]/90 focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed font-cormorant tracking-wide"
-              >
-                {isLoading ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Creating account...
-                  </span>
-                ) : (
-                  'Create Account'
-                )}
-              </button>
+              {!otpSent ? (
+                <button
+                  type="button"
+                  onClick={handleSendOTP}
+                  disabled={isLoading || countdown > 0}
+                  className="w-full flex justify-center py-4 px-6 border border-transparent rounded-xl text-lg font-medium text-white bg-primary hover:bg-[#2C1810]/90 focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed font-cormorant tracking-wide"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Sending OTP...
+                    </span>
+                  ) : countdown > 0 ? (
+                    `Resend OTP in ${countdown}s`
+                  ) : (
+                    'Send OTP'
+                  )}
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full flex justify-center py-4 px-6 border border-transparent rounded-xl text-lg font-medium text-white bg-primary hover:bg-[#2C1810]/90 focus:outline-none focus:ring-2 focus:ring-[#2C1810]/20 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed font-cormorant tracking-wide"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Creating account...
+                    </span>
+                  ) : (
+                    'Create Account'
+                  )}
+                </button>
+              )}
             </div>
 
             <div className="text-center pt-4">
