@@ -8,7 +8,7 @@ import registerBg from '../assets/login-bg3.png';
 import { backgroundAnimation, overlayAnimation, errorAnimation, successModalAnimation } from '../animations/registerAnimation';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://www.jewelrybyluna.in/api';
+const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 
 const Register = () => {
   const { register, error: authError } = useAuth();

@@ -1,7 +1,7 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://www.jewelrybyluna.in/api';
+const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);

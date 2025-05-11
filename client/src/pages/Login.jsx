@@ -9,7 +9,7 @@ import loginBg from '../assets/login-bg2.png';
 import { backgroundAnimation, overlayAnimation, errorAnimation, banModalAnimation } from '../animations/loginAnimation';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://www.jewelrybyluna.in/api';
+const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 
 const Login = () => {
   const { login, error: authError } = useAuth();
