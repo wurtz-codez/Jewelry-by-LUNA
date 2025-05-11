@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const { generateOTP, sendOTPEmail, storeOTP, verifyOTP } = require('../utils/otpUtils');
+const bcrypt = require('bcryptjs');
 
 // Send OTP for registration
 router.post('/send-otp', async (req, res) => {
@@ -125,15 +126,15 @@ router.post('/send-login-otp', async (req, res) => {
   }
 });
 
-// Login user with OTP
+// Login user with password
 router.post('/login', async (req, res) => {
-  const { email, otp } = req.body;
+  const { email, password } = req.body;
   
   try {
     // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Invalid email or password' });
     }
 
     // Check if user is banned
@@ -145,10 +146,10 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Verify OTP
-    const verificationResult = verifyOTP(email, otp);
-    if (!verificationResult.valid) {
-      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    // Verify password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid email or password' });
     }
 
     // Create and return JWT token
