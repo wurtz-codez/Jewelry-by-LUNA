@@ -59,15 +59,28 @@ const Register = () => {
     setError('');
 
     try {
+      console.log('Sending OTP request to:', `${API_BASE_URL}/auth/send-otp`);
       const response = await axios.post(`${API_BASE_URL}/auth/send-otp`, {
         email: formData.email
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
+
+      console.log('OTP response:', response.data);
 
       if (response.data.message === 'OTP sent successfully') {
         setOtpSent(true);
         startCountdown();
       }
     } catch (err) {
+      console.error('OTP request error:', err);
+      console.error('Error details:', {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data
+      });
       setError(err.response?.data?.message || 'Failed to send OTP');
     } finally {
       setIsLoading(false);

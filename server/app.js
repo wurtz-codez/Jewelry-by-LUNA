@@ -19,13 +19,26 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['https://www.jewelrybyluna.in', 'http://localhost:5173'],
+  origin: [
+    'https://www.jewelrybyluna.in',
+    'https://jewelry-by-luna.onrender.com',
+    'http://localhost:5173'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
 }));
+
+// Handle OPTIONS requests
+app.options('*', cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({ message: 'Jewelry by LUNA API is running' });
+});
 
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
