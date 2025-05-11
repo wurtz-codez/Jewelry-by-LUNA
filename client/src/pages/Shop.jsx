@@ -165,7 +165,7 @@ const Shop = () => {
       <Navbar variant="white" />
       
       {/* Shop Heading */}
-      <div className="text-center mt-16 sm:mt-20 md:mt-24 mb-4 sm:mb-6 px-4">
+      <div className="text-center mt-[68px] sm:mt-[72px] md:mt-[76px] mb-4 sm:mb-6 px-4">
         <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-cinzel-decorative text-secondary">Explore our collection</h1>
       </div>
       

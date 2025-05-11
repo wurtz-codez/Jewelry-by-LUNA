@@ -349,30 +349,30 @@ const Cart = () => {
       variants={pageAnimation}
     >
       <Navbar variant="white" />
-      <div className="page-container pt-16 pb-8 sm:py-16 md:py-20 mx-3 sm:mx-4 lg:mx-8 max-w-7xl flex-grow">
-        <motion.h1 
-          className="text-xl sm:text-2xl md:text-3xl font-cinzel-decorative text-secondary text-center mb-4 sm:mb-6 md:mb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          Your Shopping Cart
-        </motion.h1>
-        
-        {cart?.items?.filter(item => item?.jewelry).length > 0 ? (
-          <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 md:gap-6">
-            {/* Cart Items */}
-            <div className="lg:w-3/4">
-              <div className="bg-white rounded-lg">
-                <AnimatePresence>
-                  <div className="space-y-2 sm:space-y-3">
-                    {cart?.items?.filter(item => item?.jewelry).map(item => (
-                      <motion.div 
-                        key={item.jewelry._id}
-                        variants={cartItemAnimation}
-                        initial="initial"
-                        animate="animate"
-                        exit="exit"
+      <div className="flex justify-center w-full">
+        <div className="page-container pt-16 pb-8 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 max-w-[92rem] w-full flex-grow mt-2 mx-auto">
+          <motion.h1 
+            className="text-xl sm:text-2xl md:text-3xl font-cinzel-decorative text-secondary text-center mb-4 sm:mb-6 md:mb-8 mx-auto"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            Your Shopping Cart
+          </motion.h1>
+          
+          {cart?.items?.filter(item => item?.jewelry).length > 0 ? (
+            <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 md:gap-6 w-full justify-center items-center lg:items-start">
+              {/* Cart Items */}
+              <div className="w-full lg:w-[68%] max-w-2xl">
+                <div className="bg-white rounded-lg">
+                  <AnimatePresence>
+                    <div className="space-y-2 sm:space-y-3">
+                      {cart?.items?.filter(item => item?.jewelry).map(item => (
+                        <motion.div 
+                          key={item.jewelry._id}
+                          variants={cartItemAnimation}
+                          initial="initial"
+                          animate="animate"
                         className="flex flex-row items-center gap-2 sm:gap-4 p-2 sm:p-3 md:p-4 rounded-lg bg-white shadow-md transition-colors"
                       >
                         <motion.div 
@@ -507,7 +507,7 @@ const Cart = () => {
             
             {/* Order Summary */}
             <motion.div 
-              className="lg:w-1/4 mt-4 lg:mt-0"
+              className="w-full lg:w-[28%] mt-4 lg:mt-0 max-w-md"
               variants={orderSummaryAnimation}
               initial="initial"
               animate="animate"
@@ -602,117 +602,120 @@ const Cart = () => {
             </motion.button>
           </motion.div>
         )}
+        </div>
       </div>
       
       {/* Checkout Modal */}
       {showCheckoutModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-[16px] p-4 sm:p-6 md:p-10 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4 sm:mb-6 md:mb-10 border-b pb-4 sm:pb-6 md:pb-8">
-              <h2 className="text-xl sm:text-2xl md:text-4xl font-cinzel-decorative text-secondary">Complete Your Order</h2>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2">
+          <div className="bg-white rounded-[16px] p-2 sm:p-4 md:p-6 w-[95%] sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-2 sm:mb-4 border-b pb-2 sm:pb-4 sticky top-0 bg-white z-10">
+              <h2 className="text-base sm:text-xl md:text-2xl font-cinzel-decorative text-secondary">Complete Your Order</h2>
               <button
                 onClick={closeCheckoutModal}
-                className="p-2 sm:p-3 rounded-[8px] hover:bg-neutral/10 transition-colors"
+                className="p-1 sm:p-2 rounded-[8px] hover:bg-neutral/10 transition-colors"
               >
-                <FiX size={window.innerWidth < 640 ? 20 : 28} />
+                <FiX size={window.innerWidth < 640 ? 16 : 20} />
               </button>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4">
               {/* Left column - Shipping & Payment */}
               <div>
-                <h3 className="text-lg sm:text-xl md:text-2xl font-cinzel-decorative text-secondary mb-4 sm:mb-6 md:mb-8">Shipping Information</h3>
+                <h3 className="text-sm sm:text-lg font-cinzel-decorative text-secondary mb-2 sm:mb-4">Shipping Information</h3>
                 
-                <div className="space-y-4 sm:space-y-6 md:space-y-8">
+                <div className="space-y-2 sm:space-y-4">
                   <div>
-                    <label className="block text-gray-700 mb-2 sm:mb-3 font-medium text-sm sm:text-base md:text-lg">Street Address*</label>
+                    <label className="block text-gray-700 mb-1 font-medium text-xs sm:text-sm">Street Address*</label>
                     <input 
                       type="text" 
                       name="street" 
                       value={shippingAddress.street}
                       onChange={handleShippingChange}
                       placeholder="123 Main Street"
-                      className={`w-full border ${errors.street ? 'border-red-500' : 'border-neutral-200'} rounded-[8px] px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
+                      className={`w-full border ${errors.street ? 'border-red-500' : 'border-neutral-200'} rounded-[8px] px-2.5 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
                     />
-                    {errors.street && <p className="text-red-500 text-xs sm:text-sm mt-1 sm:mt-2">{errors.street}</p>}
+                    {errors.street && <p className="text-red-500 text-xs mt-0.5">{errors.street}</p>}
                   </div>
                   
                   <div>
-                    <label className="block text-gray-700 mb-2 sm:mb-3 font-medium text-sm sm:text-base md:text-lg">Landmark (Optional)</label>
+                    <label className="block text-gray-700 mb-1 font-medium text-xs sm:text-sm">Landmark (Optional)</label>
                     <input 
                       type="text" 
                       name="landmark" 
                       value={shippingAddress.landmark}
                       onChange={handleShippingChange}
                       placeholder="Near Bank, Behind Mall, etc."
-                      className="w-full border border-neutral-200 rounded-[8px] px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                      className="w-full border border-neutral-200 rounded-[8px] px-2.5 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                     />
                   </div>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+                  {/* City and State in single row on mobile */}
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
                     <div>
-                      <label className="block text-gray-700 mb-2 sm:mb-3 font-medium text-sm sm:text-base md:text-lg">City*</label>
+                      <label className="block text-gray-700 mb-1 font-medium text-xs sm:text-sm">City*</label>
                       <input 
                         type="text" 
                         name="city" 
                         value={shippingAddress.city}
                         onChange={handleShippingChange}
                         placeholder="Mumbai"
-                        className={`w-full border ${errors.city ? 'border-red-500' : 'border-neutral-200'} rounded-[8px] px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
+                        className={`w-full border ${errors.city ? 'border-red-500' : 'border-neutral-200'} rounded-[8px] px-2.5 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
                       />
-                      {errors.city && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.city}</p>}
+                      {errors.city && <p className="text-red-500 text-xs mt-0.5">{errors.city}</p>}
                     </div>
                     
                     <div>
-                      <label className="block text-gray-700 mb-2 font-medium text-sm sm:text-base md:text-lg">State*</label>
+                      <label className="block text-gray-700 mb-1 font-medium text-xs sm:text-sm">State*</label>
                       <input 
                         type="text" 
                         name="state" 
                         value={shippingAddress.state}
                         onChange={handleShippingChange}
                         placeholder="Maharashtra"
-                        className={`w-full border ${errors.state ? 'border-red-500' : 'border-neutral-200'} rounded-[8px] px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
+                        className={`w-full border ${errors.state ? 'border-red-500' : 'border-neutral-200'} rounded-[8px] px-2.5 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
                       />
-                      {errors.state && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.state}</p>}
+                      {errors.state && <p className="text-red-500 text-xs mt-0.5">{errors.state}</p>}
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  {/* Postal Code and Country in single row on mobile */}
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
                     <div>
-                      <label className="block text-gray-700 mb-2 font-medium text-sm sm:text-base md:text-lg">Postal Code*</label>
+                      <label className="block text-gray-700 mb-1 font-medium text-xs sm:text-sm">Postal Code*</label>
                       <input 
                         type="text" 
                         name="zipCode" 
                         value={shippingAddress.zipCode}
                         onChange={handleShippingChange}
                         placeholder="400001"
-                        className={`w-full border ${errors.zipCode ? 'border-red-500' : 'border-neutral-200'} rounded-[8px] px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
+                        className={`w-full border ${errors.zipCode ? 'border-red-500' : 'border-neutral-200'} rounded-[8px] px-2.5 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
                       />
-                      {errors.zipCode && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.zipCode}</p>}
+                      {errors.zipCode && <p className="text-red-500 text-xs mt-0.5">{errors.zipCode}</p>}
                     </div>
                     
                     <div>
-                      <label className="block text-gray-700 mb-2 font-medium text-sm sm:text-base md:text-lg">Country</label>
+                      <label className="block text-gray-700 mb-1 font-medium text-xs sm:text-sm">Country</label>
                       <input 
                         type="text" 
                         name="country" 
                         value={shippingAddress.country}
                         onChange={handleShippingChange}
                         readOnly
-                        className="w-full border border-neutral-200 rounded-[8px] px-3 sm:px-4 py-2 sm:py-3 bg-neutral/5"
+                        className="w-full border border-neutral-200 rounded-[8px] px-2.5 py-2 text-xs sm:text-sm bg-neutral/5"
                       />
                     </div>
                   </div>
                 </div>
               </div>
               
-              {/* Right column - Order Summary */}
+              {/* Order Summary */}
               <div>
-                <h3 className="text-lg sm:text-xl font-cinzel-decorative text-secondary mb-4 sm:mb-6">Order Summary</h3>
-                <div className="bg-neutral/5 rounded-[14px] p-3 sm:p-4 md:p-6">
+                <h3 className="text-sm sm:text-lg font-cinzel-decorative text-secondary mb-2 sm:mb-4">Order Summary</h3>
+                <div className="bg-neutral/5 rounded-[14px] p-2 sm:p-4">
                   {cart?.items?.filter(item => item?.jewelry).map(item => (
-                    <div key={item.jewelry._id} className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-4 pb-2 sm:pb-4 border-b border-neutral-200 last:border-0">
-                      <div className="w-10 h-10 sm:w-16 sm:h-16 rounded-[8px] sm:rounded-[10px] overflow-hidden">
+                    <div key={item.jewelry._id} className="flex items-center gap-2 mb-2 pb-2 border-b border-neutral-200 last:border-0 last:mb-0 last:pb-0">
+                      <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-[6px] overflow-hidden">
                         <img 
                           src={getImageUrl(item.jewelry)}
                           alt={item.jewelry.name} 
@@ -724,40 +727,40 @@ const Cart = () => {
                         />
                       </div>
                       <div className="flex-grow">
-                        <p className="font-medium text-sm sm:text-base line-clamp-1">{item.jewelry.name}</p>
-                        <p className="text-xs sm:text-sm text-gray-500">Qty: {item.quantity}</p>
+                        <p className="font-medium text-xs sm:text-sm line-clamp-1">{item.jewelry.name}</p>
+                        <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                       </div>
-                      <p className="font-medium text-sm sm:text-base">₹{((item.jewelry.sellingPrice || item.jewelry.price || 0) * item.quantity).toLocaleString('en-IN')}</p>
+                      <p className="font-medium text-xs sm:text-sm">₹{((item.jewelry.sellingPrice || item.jewelry.price || 0) * item.quantity).toLocaleString('en-IN')}</p>
                     </div>
                   ))}
                   
-                  <div className="space-y-2 sm:space-y-4 pt-2 sm:pt-4">
-                    <div className="flex justify-between text-gray-600 text-sm sm:text-base">
+                  <div className="space-y-1 sm:space-y-2 pt-2 border-t border-neutral-200 mt-2">
+                    <div className="flex justify-between text-xs sm:text-sm text-gray-600">
                       <span>Subtotal</span>
                       <span>₹{subtotal.toLocaleString('en-IN')}</span>
                     </div>
-                    <div className="flex justify-between text-gray-600 text-sm sm:text-base">
+                    <div className="flex justify-between text-xs sm:text-sm text-gray-600">
                       <span>Shipping</span>
                       <span>₹{shipping.toLocaleString('en-IN')}</span>
                     </div>
                     {discount > 0 && (
-                      <div className="flex justify-between text-green-600 text-sm sm:text-base">
+                      <div className="flex justify-between text-xs sm:text-sm text-green-600">
                         <span>Discount</span>
                         <span>-₹{discount.toLocaleString('en-IN')}</span>
                       </div>
                     )}
-                    <div className="flex justify-between font-medium text-base sm:text-lg pt-2 sm:pt-4 border-t border-neutral-200">
+                    <div className="flex justify-between font-medium text-sm sm:text-base pt-1 sm:pt-2 border-t border-neutral-200 mt-1 sm:mt-2">
                       <span>Total</span>
                       <span>₹{total.toLocaleString('en-IN')}</span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="mt-4 sm:mt-6 md:mt-8 space-y-3 sm:space-y-4">
+                <div className="mt-3 sm:mt-4 space-y-2">
                   <button
                     onClick={handleCheckout}
                     disabled={isProcessing}
-                    className={`w-full py-2 sm:py-3 md:py-4 rounded-[8px] flex items-center justify-center gap-2 text-sm sm:text-base md:text-lg font-medium ${
+                    className={`w-full py-2.5 sm:py-3 rounded-[8px] flex items-center justify-center gap-1.5 text-sm font-medium ${
                       isProcessing 
                         ? 'bg-neutral/50 text-gray-500 cursor-not-allowed' 
                         : 'bg-primary text-white hover:bg-primary/90'
@@ -765,7 +768,7 @@ const Cart = () => {
                   >
                     {isProcessing ? (
                       <>
-                        <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <svg className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
@@ -773,7 +776,7 @@ const Cart = () => {
                       </>
                     ) : (
                       <>
-                        <FiCheck size={window.innerWidth < 640 ? 18 : 24} />
+                        <FiCheck size={window.innerWidth < 640 ? 14 : 16} />
                         Confirm Order
                       </>
                     )}
@@ -781,7 +784,7 @@ const Cart = () => {
                   
                   <button
                     onClick={closeCheckoutModal}
-                    className="w-full py-2 sm:py-3 md:py-4 bg-neutral text-gray-700 rounded-[8px] hover:bg-neutral/80 transition-colors text-sm sm:text-base md:text-lg font-medium"
+                    className="w-full py-1.5 sm:py-2 bg-neutral text-gray-700 rounded-[8px] hover:bg-neutral/80 transition-colors text-xs sm:text-sm font-medium"
                   >
                     Cancel
                   </button>

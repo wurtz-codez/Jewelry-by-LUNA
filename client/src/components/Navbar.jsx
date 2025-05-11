@@ -76,23 +76,23 @@ const Navbar = ({ variant }) => {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-[1000] ${variant === 'white' ? 'bg-white' : 'bg-neutral'} shadow-sm font-body`}>
-      <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-32">
-        <div className="flex justify-between items-center h-12 sm:h-14 md:h-16">
+      <div className="max-w-8xl mx-auto px-4 sm:px-5 md:px-6 lg:px-8 xl:px-32 pt-[2px]">
+        <div className="flex items-center justify-between h-14 sm:h-16 md:h-18">
           {/* Mobile Menu Button - Now on the left */}
           <motion.button 
-            className="md:hidden text-black hover:text-primary transition-colors duration-200"
+            className="md:hidden text-black hover:text-primary transition-colors duration-200 p-2"
             onClick={() => setShowMobileMenu(!showMobileMenu)}
             whileHover="hover"
             whileTap="tap"
           >
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </motion.button>
 
           {/* Left Section - Navigation Links (hidden on mobile) */}
           <motion.div 
-            className="hidden md:flex items-center space-x-3 lg:space-x-5 xl:space-x-7 w-1/3 justify-start text-sm lg:text-base xl:text-lg"
+            className="hidden md:flex items-center space-x-3 lg:space-x-5 xl:space-x-7 flex-1 justify-start text-sm lg:text-base xl:text-xl"
             variants={itemVariants}
           >
             <Link 
@@ -170,7 +170,7 @@ const Navbar = ({ variant }) => {
 
           {/* Center Section - Logo */}
           <motion.div 
-            className="w-full md:w-1/3 flex justify-center"
+            className="flex justify-center items-center mx-auto"
             variants={itemVariants}
           >
             <motion.div
@@ -184,7 +184,7 @@ const Navbar = ({ variant }) => {
 
           {/* Right Section - Icons */}
           <motion.div 
-            className="flex items-center space-x-2 sm:space-x-3 md:space-x-6 lg:space-x-8 xl:space-x-12 justify-end"
+            className="flex items-center space-x-2 sm:space-x-3 md:space-x-6 lg:space-x-8 xl:space-x-12 flex-1 justify-end"
             variants={itemVariants}
           >
             <motion.div
@@ -203,7 +203,7 @@ const Navbar = ({ variant }) => {
                   }
                 }}
               >
-                <FaRegHeart className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                <FaRegHeart className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-6 md:h-6" />
               </Link>
             </motion.div>
 
@@ -223,10 +223,10 @@ const Navbar = ({ variant }) => {
                   }
                 }}
               >
-                <FaBagShopping className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                <FaBagShopping className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-6 md:h-6" />
                 {cartItemCount > 0 && (
                   <motion.span 
-                    className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[8px] sm:text-[10px] font-medium rounded-full w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 flex items-center justify-center"
+                    className="absolute -top-2 -right-2 bg-primary text-white text-[10px] sm:text-[11px] font-medium rounded-full w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 flex items-center justify-center"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -247,7 +247,7 @@ const Navbar = ({ variant }) => {
                 aria-expanded={showProfileDropdown}
                 aria-haspopup="true"
               >
-                <FaRegUser className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                <FaRegUser className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-6 md:h-6" />
               </button>
               
               {showProfileDropdown && (
@@ -313,17 +313,17 @@ const Navbar = ({ variant }) => {
       <AnimatePresence>
         {showMobileMenu && (
           <motion.div
-            className="md:hidden bg-white border-t border-gray-200"
+            className="md:hidden bg-white border-t border-gray-200 shadow-md"
             initial="closed"
             animate="open"
             exit="closed"
             variants={mobileMenuVariants}
           >
-            <div className="px-4 py-3 space-y-3">
+            <div className="px-5 py-4 space-y-4">
               <motion.div variants={mobileMenuItemVariants}>
                 <Link 
                   to="/" 
-                  className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                  className="block text-lg py-2.5 text-black hover:text-primary transition-colors duration-200"
                   onClick={() => setShowMobileMenu(false)}
                 >
                   Home
@@ -332,7 +332,7 @@ const Navbar = ({ variant }) => {
               <motion.div variants={mobileMenuItemVariants}>
                 <Link 
                   to="/shop" 
-                  className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                  className="block text-lg py-2.5 text-black hover:text-primary transition-colors duration-200"
                   onClick={() => setShowMobileMenu(false)}
                 >
                   Shop
@@ -343,7 +343,7 @@ const Navbar = ({ variant }) => {
                   <motion.div variants={mobileMenuItemVariants}>
                     <Link 
                       to="/about" 
-                      className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                      className="block text-lg py-2.5 text-black hover:text-primary transition-colors duration-200"
                       onClick={() => setShowMobileMenu(false)}
                     >
                       About
@@ -352,7 +352,7 @@ const Navbar = ({ variant }) => {
                   <motion.div variants={mobileMenuItemVariants}>
                     <Link 
                       to="/contact" 
-                      className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                      className="block text-lg py-2.5 text-black hover:text-primary transition-colors duration-200"
                       onClick={() => setShowMobileMenu(false)}
                     >
                       Contact
@@ -364,7 +364,7 @@ const Navbar = ({ variant }) => {
                 <motion.div variants={mobileMenuItemVariants}>
                   <Link 
                     to="/admin" 
-                    className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                    className="block text-lg py-2.5 text-black hover:text-primary transition-colors duration-200"
                     onClick={() => setShowMobileMenu(false)}
                   >
                     Dashboard
@@ -375,7 +375,7 @@ const Navbar = ({ variant }) => {
                 <motion.div variants={mobileMenuItemVariants}>
                   <button 
                     onClick={handleLogout}
-                    className="block w-full text-left text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                    className="block w-full text-left text-lg py-2.5 text-black hover:text-primary transition-colors duration-200"
                   >
                     Logout
                   </button>
@@ -384,7 +384,7 @@ const Navbar = ({ variant }) => {
                 <motion.div variants={mobileMenuItemVariants}>
                   <Link 
                     to="/login" 
-                    className="block text-base py-2 text-black hover:text-primary transition-colors duration-200"
+                    className="block text-lg py-2.5 text-black hover:text-primary transition-colors duration-200"
                     onClick={() => setShowMobileMenu(false)}
                   >
                     Login

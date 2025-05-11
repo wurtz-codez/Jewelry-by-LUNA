@@ -3,7 +3,7 @@ import jewelryImage from '../assets/aboutus-jewelry.jpg'
 
 const AboutUs = () => {
   return (
-    <section className="mx-4 sm:mx-8 md:mx-16 lg:mx-32 mt-20 mb-12 md:mb-24">
+    <section className="mx-4 sm:mx-8 md:mx-16 lg:mx-32 pt-[82px] mb-12 md:mb-24">
       <div className="flex flex-col md:flex-row gap-8 sm:gap-16 md:gap-24 lg:gap-32 items-center md:items-start">
         {/* Left Section */}
         <div className="w-full md:flex-[60%]">
