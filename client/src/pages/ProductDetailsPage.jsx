@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import placeholderImage from '../assets/placeholder.png';
 import { useShop } from '../contexts/ShopContext';
+import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { debounce } from 'lodash';
 import Toast from '../components/Toast';
+import { FiLock } from 'react-icons/fi';
 
 const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
 
 function ProductDetailsPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedTab, setSelectedTab] = useState('Most Helpful');
   const [product, setProduct] = useState(null);
@@ -183,6 +187,11 @@ function ProductDetailsPage() {
 
   // Handle adding to cart
   const handleAddToCart = async () => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
     if (product && product.stock > 0 && product.isAvailable) {
       try {
         setIsAddingToCart(true);
@@ -508,14 +517,21 @@ function ProductDetailsPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
+                  ) : !currentUser ? (
+                    <>
+                      <FiLock className="w-5 h-5" />
+                      Login to use cart
+                    </>
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="8" cy="21" r="1" />
-                      <circle cx="19" cy="21" r="1" />
-                      <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-                    </svg>
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="8" cy="21" r="1" />
+                        <circle cx="19" cy="21" r="1" />
+                        <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+                      </svg>
+                      Add to Cart
+                    </>
                   )}
-                  {(product?.stock > 0 && product?.isAvailable) ? (isAddingToCart ? 'Adding...' : 'Add to Cart') : 'Out of Stock'}
                 </button>
                 <button 
                   className={`py-3 px-4 bg-white ${
