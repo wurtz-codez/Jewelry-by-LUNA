@@ -3,8 +3,7 @@ const crypto = require('crypto');
 
 // Initialize Brevo API client
 const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-const apiKey = apiInstance.authentications['api-key'];
-apiKey.apiKey = process.env.BREVO_API_KEY;
+apiInstance.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
 
 // Store OTPs temporarily (in production, use Redis or similar)
 const otpStore = new Map();
