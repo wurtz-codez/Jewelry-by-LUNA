@@ -8,6 +8,8 @@ import registerBg from '../assets/login-bg3.png';
 import { backgroundAnimation, overlayAnimation, errorAnimation, successModalAnimation } from '../animations/registerAnimation';
 import axios from 'axios';
 
+const API_BASE_URL = 'https://www.jewelrybyluna.in/api';
+
 const Register = () => {
   const { register, error: authError } = useAuth();
   const navigate = useNavigate();
@@ -57,7 +59,7 @@ const Register = () => {
     setError('');
 
     try {
-      const response = await axios.post('/api/auth/send-otp', {
+      const response = await axios.post(`${API_BASE_URL}/auth/send-otp`, {
         email: formData.email
       });
 

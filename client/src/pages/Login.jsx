@@ -9,6 +9,8 @@ import loginBg from '../assets/login-bg2.png';
 import { backgroundAnimation, overlayAnimation, errorAnimation, banModalAnimation } from '../animations/loginAnimation';
 import axios from 'axios';
 
+const API_BASE_URL = 'https://www.jewelrybyluna.in/api';
+
 const Login = () => {
   const { login, error: authError } = useAuth();
   const navigate = useNavigate();
@@ -57,7 +59,7 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await axios.post('/api/auth/send-login-otp', {
+      const response = await axios.post(`${API_BASE_URL}/auth/send-login-otp`, {
         email: formData.email
       });
 
