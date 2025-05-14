@@ -66,13 +66,13 @@ const RefundAndReturnPolicies = () => {
               <div>
                 <h3 className="text-2xl font-cinzel text-primary mb-2">5. Important Note – Because no one likes drama</h3>
                 <p>Received a damaged, wrong, or incomplete order?</p>
-                <p>We're here for you – just tell us within <strong className="text-accent">48 hours</strong> and send us an unboxing video (yes, we love videos!) showing:</p>
+                <p>We're here for you – just tell us within <strong className="text-accent">48 hours</strong> and send us an <strong>unboxing video</strong> (yes, we love videos!) showing:</p>
                 <ul className="list-disc pl-6 space-y-1">
                   <li>Original sealed packaging</li>
                   <li>Tags & labels intact</li>
                   <li>The issue clearly visible</li>
                 </ul>
-                <p className="text-sm italic">No video = No magic. So please help us help you better.</p>
+                <p className="text-sm italic"> <strong>No video = No magic.</strong> So please help us help you better.</p>
               </div>
 
               <div>
