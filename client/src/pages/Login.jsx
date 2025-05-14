@@ -194,7 +194,7 @@ const Login = () => {
                 to="/LoginOTP" 
                 className="text-[#8B7355] hover:text-[#2C1810] transition-colors duration-200 font-cormorant"
               >
-                Forgot password? Login using OTP.
+                Login using OTP
               </Link>
               <Link 
                 to="/register" 
