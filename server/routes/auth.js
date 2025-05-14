@@ -126,6 +126,59 @@ router.post('/send-login-otp', async (req, res) => {
   }
 });
 
+// Verify OTP for login
+router.post('/verify-login-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    
+    // First verify the OTP
+    const verificationResult = verifyOTP(email, otp);
+    if (!verificationResult.valid) {
+      return res.status(400).json({ message: verificationResult.message });
+    }
+
+    // Find the user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    // Check if user is banned
+    if (user.isBanned) {
+      const banDetails = {
+        reason: user.banReason,
+        expiry: user.banExpiry
+      };
+      return res.status(403).json({ 
+        message: 'Account is banned',
+        details: banDetails
+      });
+    }
+
+    // Generate token
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    // Return success with user data and token
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Error verifying login OTP:', error);
+    res.status(500).json({ message: 'Error verifying login OTP' });
+  }
+});
+
 // Login user with password
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;

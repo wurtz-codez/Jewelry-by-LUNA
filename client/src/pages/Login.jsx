@@ -191,10 +191,10 @@ const Login = () => {
 
             <div className="flex items-center justify-between pt-4">
               <Link 
-                to="/forgot-password" 
+                to="/LoginOTP" 
                 className="text-[#8B7355] hover:text-[#2C1810] transition-colors duration-200 font-cormorant"
               >
-                Forgot password?
+                Login using OTP.
               </Link>
               <Link 
                 to="/register" 

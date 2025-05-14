@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
+import LoginOTP from './pages/LoginOTP';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
@@ -23,6 +24,7 @@ const App = () => {
         <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/loginOTP" element={<LoginOTP />} />
             <Route path="/register" element={<Register />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/product/:id" element={<ProductDetailsPage />} />

@@ -56,13 +56,13 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, isOTPLogin = false) => {
     try {
       setError(null);
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        email,
-        password
-      });
+      let endpoint = isOTPLogin ? 'verify-login-otp' : 'login';
+      let data = isOTPLogin ? { email, otp: password } : { email, password };
+      
+      const response = await axios.post(`${API_BASE_URL}/auth/${endpoint}`, data);
       
       const { token, user } = response.data;
       localStorage.setItem('token', token);
