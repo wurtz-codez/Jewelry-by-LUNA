@@ -16,12 +16,14 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ShopProvider } from './contexts/ShopContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+import ScrollToTop from './components/ScrollToTop';
 
 const App = () => {
   return (
     <AuthProvider>
       <ShopProvider>
         <Router>
+          <ScrollToTop />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/loginOTP" element={<LoginOTP />} />

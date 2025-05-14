@@ -15,7 +15,10 @@ const Shop = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('category') || 'all';
+  });
   const [selectedTag, setSelectedTag] = useState('all');
   const [priceRange, setPriceRange] = useState([0, Infinity]);
   const [products, setProducts] = useState([]);
@@ -32,6 +35,7 @@ const Shop = () => {
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
   
   // Add debounced values
   const debouncedSearchTerm = useDebounce(searchTerm, 500); // 500ms delay
@@ -42,8 +46,10 @@ const Shop = () => {
     clearFilters();
   }, []);
   
-  // Parse URL search parameters
+  // Parse URL search parameters only on initial load
   useEffect(() => {
+    if (!initialLoad) return;
+    
     const queryParams = new URLSearchParams(location.search);
     const searchParam = queryParams.get('search');
     const productParam = queryParams.get('product');
@@ -56,12 +62,17 @@ const Shop = () => {
     if (pageParam) setCurrentPage(Number(pageParam));
     if (categoryParam) setSelectedCategory(categoryParam);
     if (tagParam) setSelectedTag(tagParam);
-  }, [location]);
+    
+    setInitialLoad(false);
+  }, [location, initialLoad]);
   
   // Fetch products with filters
-  const fetchProducts = async () => {
+  const fetchProducts = async (isInitialFetch = false) => {
     try {
-      setLoading(true);
+      if (!isInitialFetch) {
+        setLoading(true);
+      }
+      
       const queryParams = new URLSearchParams({
         page: currentPage,
         limit: 20,
@@ -90,8 +101,10 @@ const Shop = () => {
     }
   };
 
-  // Update URL with current filters
+  // Update URL with current filters - only if not initial load
   const updateURL = () => {
+    if (initialLoad) return;
+    
     const queryParams = new URLSearchParams();
     if (debouncedSearchTerm) queryParams.set('search', debouncedSearchTerm);
     if (currentPage > 1) queryParams.set('page', currentPage);
@@ -102,10 +115,17 @@ const Shop = () => {
     navigate(`/shop?${queryParams.toString()}`);
   };
 
-  // Update the useEffect to use debounced values
+  // Initial fetch and filter parsing
   useEffect(() => {
-    fetchProducts();
-    updateURL();
+    fetchProducts(true);
+  }, []);
+
+  // Update products when filters change
+  useEffect(() => {
+    if (!initialLoad) {
+      fetchProducts();
+      updateURL();
+    }
   }, [currentPage, debouncedSearchTerm, selectedCategory, selectedTag, debouncedPriceRange, sortBy, sortOrder]);
 
   // Handle adding to cart
