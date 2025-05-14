@@ -144,20 +144,17 @@ router.post('/verify-login-otp', async (req, res) => {
     }
 
     // Check if user is banned
-    if (user.isBanned) {
-      const banDetails = {
-        reason: user.banReason,
-        expiry: user.banExpiry
-      };
+    if (user.status === 'banned') {
       return res.status(403).json({ 
         message: 'Account is banned',
-        details: banDetails
+        banReason: user.banReason,
+        banExpiry: user.banExpiry
       });
     }
 
     // Generate token
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { user: { id: user._id, role: user.role } },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
