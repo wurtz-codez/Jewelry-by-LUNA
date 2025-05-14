@@ -55,6 +55,11 @@ const Footer = () => {
                   Contact
                 </Link>
               </li>
+              <li>
+                <Link to="/refund-and-return-policies" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
+                  Returns & Refunds
+                </Link>
+              </li>
             </ul>
           </div>
           

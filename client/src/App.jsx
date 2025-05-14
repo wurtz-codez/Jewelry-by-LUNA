@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Shop from './pages/Shop';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import RefundAndReturnPolicies from './pages/Refund&ReturnPolicies';
 import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
 import Profile from './pages/Profile';
@@ -35,6 +36,7 @@ const App = () => {
             <Route path="/product/:id" element={<ProductDetailsPage />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/refund-and-return-policies" element={<RefundAndReturnPolicies />} />
             <Route path="/cart" element={
               <ProtectedRoute>
                 <Cart />
