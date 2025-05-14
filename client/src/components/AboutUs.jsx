@@ -20,7 +20,7 @@ const AboutUs = () => {
     
             </p>
             <a href='/shop'>
-            <button className="mt-8 sm:mt-12 md:mt-16 lg:mt-24 px-4 sm:px-6 py-2 bg-accent text-white hover:bg-gray-700 transition-colors">
+            <button className="mt-8 sm:mt-12 md:mt-16 lg:mt-24 px-4 sm:</a>px-6 py-2 bg-accent text-white hover:bg-gray-700 transition-colors">
               SHOP NOW
             </button>
             </a>
@@ -39,8 +39,8 @@ const AboutUs = () => {
 
       <div className="mt-10 sm:mt-16 md:mt-16 lg:mt-0 flex flex-col md:flex-row-reverse gap-6 sm:gap-10 md:gap-16 lg:gap-32 items-center">
         <div className="w-full md:flex-[70%] mb-6 md:mb-0">
-          <p className="text-xl sm:text-2xl md:text-3xl font-cormorant italic mx-4 sm:mx-6 md:mx-10">
-            "Welcome to Luna—where your jewelry gets you better than your ex ever did."
+          <p className="text-xl sm:text-2xl md:text-3xl font-cormorant </div>italic mx-4 sm:mx-6 md:mx-10">
+            "Welcome to Luna — jewelry that hypes you more than your bestie ever did."
           </p>
           <span className="block mt-2 sm:mt-3 md:mt-4 text-gray-600 mx-6 sm:mx-12 md:mx-20">This isn’t just a brand. It’s a vibe.</span>
         </div>
