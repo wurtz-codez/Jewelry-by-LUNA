@@ -16,21 +16,20 @@ export const pageAnimation = {
 export const cartItemAnimation = {
   initial: { 
     opacity: 0,
-    y: 20
+    y: 10
   },
   animate: { 
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.4,
+      duration: 0.2,
       ease: "easeOut"
     }
   },
   exit: {
     opacity: 0,
-    y: -20,
     transition: {
-      duration: 0.3,
+      duration: 0.2,
       ease: "easeIn"
     }
   }
@@ -54,10 +53,10 @@ export const orderSummaryAnimation = {
 
 // Button hover animations
 export const buttonHoverAnimation = {
-  scale: 1.02,
+  scale: 1.01,
   transition: {
-    duration: 0.2,
-    ease: "easeInOut"
+    duration: 0.1,
+    ease: "easeOut"
   }
 };
 

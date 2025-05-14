@@ -17,8 +17,11 @@ import { ShopProvider } from './contexts/ShopContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import ScrollToTop from './components/ScrollToTop';
+import { useScrollOptimization } from './hooks/useScrollOptimization';
 
 const App = () => {
+  useScrollOptimization();
+  
   return (
     <AuthProvider>
       <ShopProvider>

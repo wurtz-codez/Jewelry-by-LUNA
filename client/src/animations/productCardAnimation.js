@@ -10,16 +10,15 @@ export const cardVariants = {
     y: 0, 
     scale: 1,
     transition: { 
-      duration: 0.5,
+      duration: 0.3,
       ease: "easeOut"
     }
   },
   hover: {
     y: -5,
-    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
     transition: { 
-      duration: 0.3, 
-      ease: "easeInOut"
+      duration: 0.2, 
+      ease: "easeOut"
     }
   }
 };
@@ -27,10 +26,10 @@ export const cardVariants = {
 // Animation for image hover effect
 export const imageVariants = {
   hover: {
-    scale: 1.05,
+    scale: 1.02,
     transition: {
-      duration: 0.4,
-      ease: "easeInOut"
+      duration: 0.2,
+      ease: "easeOut"
     }
   }
 };
