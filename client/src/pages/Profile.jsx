@@ -1011,118 +1011,115 @@ const Profile = () => {
                   required
                 />
               </div>
-              <div className="mb-6">
-                <label className="block text-gray-700 mb-2 font-medium">Upload Images (up to 5)</label>
-                <div className="space-y-4">
-                  {requestImagePreviews.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {requestImagePreviews.map((preview, index) => (
-                        <div key={index} className="relative w-full h-48 rounded-[8px] overflow-hidden">
-                          <img
-                            src={preview}
-                            alt={`Request preview ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setRequestImages(prev => prev.filter((_, i) => i !== index));
-                              setRequestImagePreviews(prev => prev.filter((_, i) => i !== index));
-                            }}
-                            className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-[8px] hover:bg-red-600 transition-colors"
-                          >
-                            <FiX size={20} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex items-center justify-center w-full">
-                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <FiUpload className="w-8 h-8 mb-4 text-gray-500" />
-                        <p className="mb-2 text-sm text-gray-500">
-                          <span className="font-semibold">Click to upload</span> or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 5 images)</p>
+              
+              {/* Combined Image and Video Upload Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Image Upload Section */}
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">Upload Images (up to 5)</label>
+                  <div className="space-y-4">
+                    {requestImagePreviews.length > 0 && (
+                      <div className="grid grid-cols-2 gap-2">
+                        {requestImagePreviews.map((preview, index) => (
+                          <div key={index} className="relative w-full h-32 rounded-[8px] overflow-hidden">
+                            <img
+                              src={preview}
+                              alt={`Request preview ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRequestImages(prev => prev.filter((_, i) => i !== index));
+                                setRequestImagePreviews(prev => prev.filter((_, i) => i !== index));
+                              }}
+                              className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-[4px] hover:bg-red-600 transition-colors"
+                            >
+                              <FiX size={16} />
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                      <input
-                        type="file"
-                        className="hidden"
-                        multiple
-                        accept="image/*"
-                        onChange={(e) => {
-                          const files = Array.from(e.target.files);
-                          if (files.length + requestImages.length > 5) {
-                            setToastMessage('You can only upload up to 5 images');
-                            setToastType('error');
-                            setShowToast(true);
-                            return;
-                          }
-                          setRequestImages(prev => [...prev, ...files]);
-                          files.forEach(file => {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setRequestImagePreviews(prev => [...prev, reader.result]);
-                            };
-                            reader.readAsDataURL(file);
-                          });
-                        }}
-                      />
-                    </label>
+                    )}
+                    <div className="flex items-center justify-center w-full">
+                      <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                        <div className="flex flex-col items-center justify-center pt-3 pb-4">
+                          <FiUpload className="w-6 h-6 mb-2 text-gray-500" />
+                          <p className="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 5)</p>
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          multiple
+                          accept="image/*"
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files);
+                            if (files.length + requestImages.length > 5) {
+                              setToastMessage('You can only upload up to 5 images');
+                              setToastType('error');
+                              setShowToast(true);
+                              return;
+                            }
+                            setRequestImages(prev => [...prev, ...files]);
+                            files.forEach(file => {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setRequestImagePreviews(prev => [...prev, reader.result]);
+                              };
+                              reader.readAsDataURL(file);
+                            });
+                          }}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="mb-6">
-                <label className="block text-gray-700 mb-2 font-medium">Upload Videos (optional, up to 2)</label>
-                <div className="space-y-4">
-                  {requestVideoPreviews.length > 0 && (
-                    <div className="grid grid-cols-2 gap-4">
-                      {requestVideoPreviews.map((preview, index) => (
-                        <div key={index} className="relative w-full h-48 rounded-[8px] overflow-hidden">
-                          <video
-                            src={preview.url}
-                            controls
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setRequestVideos(prev => prev.filter((_, i) => i !== index));
-                              setRequestVideoPreviews(prev => prev.filter((_, i) => i !== index));
-                            }}
-                            className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-[8px] hover:bg-red-600 transition-colors"
-                          >
-                            <FiX size={20} />
-                          </button>
-                          <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                            {preview.size || 'Unknown size'}
+
+                {/* Video Upload Section */}
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">Upload Videos (optional, up to 2)</label>
+                  <div className="space-y-4">
+                    {requestVideoPreviews.length > 0 && (
+                      <div className="grid grid-cols-1 gap-2">
+                        {requestVideoPreviews.map((preview, index) => (
+                          <div key={index} className="relative w-full h-32 rounded-[8px] overflow-hidden">
+                            <video
+                              src={preview.url}
+                              controls
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRequestVideos(prev => prev.filter((_, i) => i !== index));
+                                setRequestVideoPreviews(prev => prev.filter((_, i) => i !== index));
+                              }}
+                              className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-[4px] hover:bg-red-600 transition-colors"
+                            >
+                              <FiX size={16} />
+                            </button>
+                            <div className="absolute top-1 left-1 bg-black/50 text-white text-xs px-1 py-0.5 rounded">
+                              {preview.size}
+                            </div>
                           </div>
-                          <p className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate text-center">
-                            {preview.name}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex items-center justify-center w-full">
-                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <FiUpload className="w-8 h-8 mb-4 text-gray-500" />
-                        <p className="mb-2 text-sm text-gray-500">
-                          <span className="font-semibold">Click to upload video</span> or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500">MP4, MOV, AVI or WEBM (MAX. 2 videos)</p>
+                        ))}
                       </div>
-                      <input
-                        type="file"
-                        className="hidden"
-                        multiple
-                        accept="video/*"
-                        onChange={handleVideoFileChange}
-                      />
-                    </label>
+                    )}
+                    <div className="flex items-center justify-center w-full">
+                      <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                        <div className="flex flex-col items-center justify-center pt-3 pb-4">
+                          <FiUpload className="w-6 h-6 mb-2 text-gray-500" />
+                          <p className="text-xs text-gray-500">MP4, MOV, AVI or WEBM (MAX. 2)</p>
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          multiple
+                          accept="video/*"
+                          onChange={handleVideoFileChange}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1139,7 +1136,7 @@ const Profile = () => {
                     setRequestVideos([]);
                     setRequestVideoPreviews([]);
                   }}
-                  className="px-6 py-3 bg-neutral text-gray-700 rounded-[12px] hover:bg-neutral/80 transition-colors"
+                  className="px-4 py-2 bg-neutral text-gray-700 rounded-[8px] hover:bg-neutral/80 transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -1148,7 +1145,7 @@ const Profile = () => {
                 <motion.button
                   type="submit"
                   disabled={loading || !requestType || !requestReason || requestImages.length === 0}
-                  className={`px-6 py-3 bg-primary text-white rounded-[12px] ${
+                  className={`px-4 py-2 bg-primary text-white rounded-[8px] ${
                     loading || !requestType || !requestReason || requestImages.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90'
                   } transition-colors`}
                   whileHover={{ scale: 1.05 }}

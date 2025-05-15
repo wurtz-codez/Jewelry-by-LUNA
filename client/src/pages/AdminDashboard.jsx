@@ -19,6 +19,7 @@ import Toast from '../components/Toast';
 import Navbar from '../components/Navbar';
 import LoadingScreen from '../components/LoadingScreen';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 // Register ChartJS components
 ChartJS.register(
@@ -2495,92 +2496,83 @@ const AdminDashboard = () => {
                 <p>{selectedRequest.reason}</p>
               </div>
             </div>
-            {selectedRequest.imageUrls && selectedRequest.imageUrls.length > 0 && (
-              <div className="mb-6">
-                <h4 className="font-medium text-gray-700 mb-2">Images</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  {selectedRequest.imageUrls.map((imageUrl, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-4">
-                      <img 
-                        src={imageUrl} 
-                        alt={`Request ${index + 1}`} 
-                        className="max-w-full max-h-[200px] object-contain mx-auto" 
-                      />
-                    </div>
-                  ))}
+
+            {/* Combined Image and Video Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              {/* Images Section */}
+              {selectedRequest.imageUrls && selectedRequest.imageUrls.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">Images</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedRequest.imageUrls.map((imageUrl, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-2">
+                        <img 
+                          src={imageUrl} 
+                          alt={`Request ${index + 1}`} 
+                          className="w-full h-32 object-cover rounded" 
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-            
-            {selectedRequest.videoUrls && selectedRequest.videoUrls.length > 0 && (
-              <div className="mb-6">
-                <h4 className="font-medium text-gray-700 mb-2">Videos</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {selectedRequest.videoUrls.map((videoUrl, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-4">
-                      <video 
-                        src={videoUrl} 
-                        controls
-                        className="max-w-full max-h-[200px] mx-auto" 
-                      >
-                        Your browser does not support the video tag.
-                      </video>
-                    </div>
-                  ))}
+              )}
+              
+              {/* Videos Section */}
+              {selectedRequest.videoUrls && selectedRequest.videoUrls.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">Videos</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {selectedRequest.videoUrls.map((videoUrl, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-2">
+                        <video 
+                          src={videoUrl} 
+                          controls
+                          className="w-full h-32 object-cover rounded" 
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-            {selectedRequest.status === 'pending' && (
-              <>
-                <div className="mb-4">
-                  <label className="block text-gray-700 mb-2">Admin Response</label>
-                  <textarea
-                    value={adminResponse}
-                    onChange={(e) => setAdminResponse(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg"
-                    rows="4"
-                    placeholder="Enter your response here..."
-                  />
-                </div>
-                <div className="flex space-x-4 justify-end">
-                  <button
-                    onClick={() => {
-                      handleRequestStatusUpdate(selectedRequest._id, 'rejected');
-                    }}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                  >
-                    Reject Request
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleRequestStatusUpdate(selectedRequest._id, 'approved');
-                    }}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                  >
-                    Approve Request
-                  </button>
-                </div>
-              </>
-            )}
-            {selectedRequest.status !== 'pending' && selectedRequest.adminResponse && (
-              <div className="mb-6">
-                <h4 className="font-medium text-gray-700 mb-2">Admin Response</h4>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p>{selectedRequest.adminResponse}</p>
-                </div>
-              </div>
-            )}
-            <div className="flex justify-end mt-4">
-              <button
+              )}
+            </div>
+
+            <div className="mb-6">
+              <h4 className="font-medium text-gray-700 mb-2">Response</h4>
+              <textarea
+                value={adminResponse}
+                onChange={(e) => setAdminResponse(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                rows="3"
+                placeholder="Enter your response..."
+              />
+            </div>
+
+            <div className="flex justify-end gap-4">
+              <motion.button
                 onClick={() => {
                   setShowRequestModal(false);
                   setSelectedRequest(null);
                   setAdminResponse('');
                 }}
-                className="px-4 py-2 border rounded-lg"
+                className="px-4 py-2 bg-neutral text-gray-700 rounded-lg hover:bg-neutral/80 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                Close
-              </button>
+                Cancel
+              </motion.button>
+              <motion.button
+                onClick={handleRequestStatusUpdate}
+                disabled={!adminResponse.trim()}
+                className={`px-4 py-2 bg-primary text-white rounded-lg ${
+                  !adminResponse.trim() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90'
+                } transition-colors`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Update Status
+              </motion.button>
             </div>
           </div>
         </div>
