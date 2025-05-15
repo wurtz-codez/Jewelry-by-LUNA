@@ -49,11 +49,11 @@ const upload = multer({
     fileSize: 50 * 1024 * 1024, // 50MB file size limit
   },
   fileFilter: (req, file, cb) => {
-    // Accept only video files
-    if (file.mimetype.startsWith('video/')) {
+    // Accept both image and video files
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
       cb(null, true);
     } else {
-      cb(new Error('Only video files are allowed!'), false);
+      cb(new Error('Only image and video files are allowed!'), false);
     }
   }
 });

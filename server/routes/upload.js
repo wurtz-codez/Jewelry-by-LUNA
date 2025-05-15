@@ -6,22 +6,46 @@ const { upload, cloudinary } = require('../config/cloudinary');
 // Route to upload multiple images
 router.post('/', auth, upload.array('images', 5), (req, res) => {
   try {
+    console.log('Upload request received');
+    console.log('Request headers:', req.headers);
+    console.log('Request body:', req.body);
+    console.log('Request files:', req.files);
+
     if (!req.files || req.files.length === 0) {
+      console.log('No files uploaded');
       return res.status(400).json({ message: 'No files uploaded' });
     }
 
+    // Validate file types
+    const invalidFiles = req.files.filter(file => 
+      !file.mimetype.startsWith('image/') && !file.mimetype.startsWith('video/')
+    );
+    if (invalidFiles.length > 0) {
+      console.log('Invalid file types detected:', invalidFiles.map(f => f.mimetype));
+      return res.status(400).json({ 
+        message: 'Invalid file types detected',
+        invalidTypes: invalidFiles.map(f => f.mimetype)
+      });
+    }
+
     // Return the Cloudinary URLs of the uploaded files
-    const filePaths = req.files.map(file => file.path);
+    const filePaths = req.files.map(file => {
+      console.log(`File uploaded successfully: ${file.originalname} (${file.size} bytes) -> ${file.path}`);
+      return file.path;
+    });
     
+    console.log('All files uploaded successfully');
     return res.status(200).json({ 
       message: 'Files uploaded successfully',
       filePaths
     });
   } catch (error) {
     console.error('Upload error:', error);
+    console.error('Error stack:', error.stack);
     return res.status(500).json({ 
       message: 'Server error during upload',
-      error: error.message 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
