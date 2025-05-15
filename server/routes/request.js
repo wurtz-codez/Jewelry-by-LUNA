@@ -20,7 +20,10 @@ const isAdmin = async (req, res, next) => {
 };
 
 // Create a new request
-router.post('/', auth, upload.array('images', 5), async (req, res) => {
+router.post('/', auth, upload.fields([
+  { name: 'images', maxCount: 5 },
+  { name: 'videos', maxCount: 2 }
+]), async (req, res) => {
   try {
     const { orderId, type, reason } = req.body;
     
@@ -44,17 +47,29 @@ router.post('/', auth, upload.array('images', 5), async (req, res) => {
     }
 
     // Check if images were uploaded
-    if (!req.files || req.files.length === 0) {
+    if (!req.files || !req.files.images || req.files.images.length === 0) {
       return res.status(400).json({ message: 'At least one image is required' });
     }
+    
+    // Check if any invalid video files were uploaded
+    if (req.files.videos) {
+      const invalidVideos = req.files.videos.filter(file => !file.mimetype.startsWith('video/'));
+      if (invalidVideos.length > 0) {
+        return res.status(400).json({ message: 'Please upload valid video files' });
+      }
+    }
 
-    // Create the request with the first image URL
+    // Extract video paths if available
+    const videoUrls = req.files.videos ? req.files.videos.map(video => video.path) : [];
+
+    // Create the request with all image URLs and any videos
     const request = new Request({
       user: req.user.id,
       order: orderId,
       type,
       reason,
-      imageUrl: req.files[0].path, // Use the first image as the main image
+      imageUrls: req.files.images.map(image => image.path), // Use all uploaded images
+      videoUrls: videoUrls, // Add videos if available
       deleted: false // Explicitly set deleted to false
     });
 

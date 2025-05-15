@@ -46,6 +46,49 @@ router.post('/single', auth, upload.single('image'), (req, res) => {
   }
 });
 
+// Route to upload videos
+router.post('/videos', auth, upload.array('videos', 2), (req, res) => {
+  try {
+    console.log('Video upload request received');
+    console.log('Request headers:', req.headers);
+    console.log('Request body:', req.body);
+    console.log('Request files:', req.files);
+    
+    if (!req.files || req.files.length === 0) {
+      console.log('No video files found in request');
+      return res.status(400).json({ message: 'No files uploaded' });
+    }
+
+    console.log(`Processing ${req.files.length} video files`);
+    
+    // Validate file types
+    const invalidFiles = req.files.filter(file => !file.mimetype.startsWith('video/'));
+    if (invalidFiles.length > 0) {
+      console.log('Invalid video file types detected:', invalidFiles.map(f => f.mimetype));
+      return res.status(400).json({ message: 'Please upload valid video files' });
+    }
+
+    // Return the Cloudinary URLs of the uploaded videos
+    const filePaths = req.files.map(file => {
+      console.log(`Video uploaded successfully: ${file.originalname} (${file.size} bytes) -> ${file.path}`);
+      return file.path;
+    });
+    
+    console.log('All videos uploaded successfully');
+    return res.status(200).json({ 
+      message: 'Videos uploaded successfully',
+      filePaths
+    });
+  } catch (error) {
+    console.error('Video upload error:', error);
+    console.error('Error stack:', error.stack);
+    return res.status(500).json({ 
+      message: 'Server error during video upload',
+      error: error.message 
+    });
+  }
+});
+
 // Route to delete image
 router.delete('/:publicId', auth, async (req, res) => {
   try {

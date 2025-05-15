@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "build": "echo 'No build step required'",
     "test": "jest --testTimeout=10000",
     "test:watch": "jest --watch",
     "test:db": "jest tests/db.test.js",

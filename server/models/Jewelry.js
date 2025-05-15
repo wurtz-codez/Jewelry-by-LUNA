@@ -41,6 +41,10 @@ const jewelrySchema = new mongoose.Schema({
     type: String,
     required: true
   }],
+  videoUrls: [{
+    type: String,
+    required: false
+  }],
   stock: {
     type: Number,
     required: true,

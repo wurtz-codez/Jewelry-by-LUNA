@@ -20,10 +20,14 @@ const requestSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  imageUrl: {
+  imageUrls: [{
     type: String,
-    required: true
-  },
+    required: false
+  }],
+  videoUrls: [{
+    type: String,
+    required: false
+  }],
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected', 'deleted'],

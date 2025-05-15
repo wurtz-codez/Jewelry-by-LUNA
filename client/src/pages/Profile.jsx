@@ -54,6 +54,8 @@ const Profile = () => {
   const [requestReason, setRequestReason] = useState('');
   const [requestImages, setRequestImages] = useState([]);
   const [requestImagePreviews, setRequestImagePreviews] = useState([]);
+  const [requestVideos, setRequestVideos] = useState([]);
+  const [requestVideoPreviews, setRequestVideoPreviews] = useState([]);
   const [selectedOrderForRequest, setSelectedOrderForRequest] = useState(null);
   const [existingRequests, setExistingRequests] = useState([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -237,6 +239,20 @@ const Profile = () => {
     }
 
     setLoading(true);
+    
+    // Check if videos are being uploaded, show an informative message
+    if (requestVideos.length > 0) {
+      const totalVideoSizeMB = requestVideos.reduce(
+        (size, file) => size + file.size / (1024 * 1024), 0
+      ).toFixed(2);
+      
+      if (totalVideoSizeMB > 10) {
+        setToastMessage(`Uploading ${totalVideoSizeMB}MB of videos. This may take a while...`);
+        setToastType('info');
+        setShowToast(true);
+      }
+    }
+    
     try {
       const formData = new FormData();
       formData.append('orderId', selectedOrder._id);
@@ -244,6 +260,11 @@ const Profile = () => {
       formData.append('reason', requestReason);
       requestImages.forEach(image => {
         formData.append('images', image);
+      });
+      
+      // Append videos if any
+      requestVideos.forEach(video => {
+        formData.append('videos', video);
       });
 
       const response = await axios.post(
@@ -253,7 +274,19 @@ const Profile = () => {
           headers: {
             'Content-Type': 'multipart/form-data',
             'x-auth-token': localStorage.getItem('token')
-          }
+          },
+          onUploadProgress: (progressEvent) => {
+            if (requestVideos.length > 0) {
+              const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              if (percentCompleted % 20 === 0) { // Update every 20% to avoid too many toasts
+                setToastMessage(`Uploading: ${percentCompleted}% complete`);
+                setToastType('info');
+                setShowToast(true);
+              }
+            }
+          },
+          // Extend timeout for large uploads
+          timeout: 300000 // 5 minutes
         }
       );
 
@@ -265,10 +298,23 @@ const Profile = () => {
       setRequestReason('');
       setRequestImages([]);
       setRequestImagePreviews([]);
-      await fetchRequests();
+      setRequestVideos([]);
+      setRequestVideoPreviews([]);
+      await fetchUserRequests();
     } catch (error) {
       console.error('Error submitting request:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to submit request';
+      let errorMessage;
+      
+      if (error.code === 'ECONNABORTED') {
+        errorMessage = 'Request timed out. Your videos may be too large.';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Server endpoint not found. Please try again later.';
+      } else if (error.response?.status === 413) {
+        errorMessage = 'Files too large. Please use smaller videos (under 50MB).';
+      } else {
+        errorMessage = error.response?.data?.message || 'Failed to submit request';
+      }
+      
       setToastMessage(errorMessage);
       setToastType('error');
       setShowToast(true);
@@ -369,6 +415,59 @@ const Profile = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  // Function to handle video uploads with enhanced validation
+  const handleVideoFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
+    // Check if files are valid videos
+    const invalidFiles = files.filter(file => !file.type.startsWith('video/'));
+    if (invalidFiles.length > 0) {
+      setToastMessage('Please select valid video files only');
+      setToastType('error');
+      setShowToast(true);
+      return;
+    }
+
+    // Check file count limit
+    if (files.length + requestVideos.length > 2) {
+      setToastMessage('You can only upload up to 2 videos');
+      setToastType('error');
+      setShowToast(true);
+      return;
+    }
+    
+    // Check file sizes - large files may cause issues
+    const MAX_SIZE_MB = 50; // 50MB
+    const oversizedFiles = files.filter(file => file.size > MAX_SIZE_MB * 1024 * 1024);
+    
+    if (oversizedFiles.length > 0) {
+      setToastMessage(`Some videos exceed ${MAX_SIZE_MB}MB. Upload may fail or be slow.`);
+      setToastType('warning');
+      setShowToast(true);
+    }
+    
+    // Add files to state
+    setRequestVideos(prev => [...prev, ...files]);
+    
+    // Create previews
+    files.forEach(file => {
+      // Calculate file size in MB
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setRequestVideoPreviews(prev => [...prev, {
+          url: reader.result,
+          name: file.name,
+          type: file.type,
+          size: fileSizeMB + ' MB'
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   if (isInitialLoading) {
@@ -974,6 +1073,60 @@ const Profile = () => {
                   </div>
                 </div>
               </div>
+              
+              <div className="mb-6">
+                <label className="block text-gray-700 mb-2 font-medium">Upload Videos (optional, up to 2)</label>
+                <div className="space-y-4">
+                  {requestVideoPreviews.length > 0 && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {requestVideoPreviews.map((preview, index) => (
+                        <div key={index} className="relative w-full h-48 rounded-[8px] overflow-hidden">
+                          <video
+                            src={preview.url}
+                            controls
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRequestVideos(prev => prev.filter((_, i) => i !== index));
+                              setRequestVideoPreviews(prev => prev.filter((_, i) => i !== index));
+                            }}
+                            className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-[8px] hover:bg-red-600 transition-colors"
+                          >
+                            <FiX size={20} />
+                          </button>
+                          <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                            {preview.size || 'Unknown size'}
+                          </div>
+                          <p className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate text-center">
+                            {preview.name}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <FiUpload className="w-8 h-8 mb-4 text-gray-500" />
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Click to upload video</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">MP4, MOV, AVI or WEBM (MAX. 2 videos)</p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        multiple
+                        accept="video/*"
+                        onChange={handleVideoFileChange}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
               <div className="flex justify-end gap-4">
                 <motion.button
                   type="button"
@@ -983,6 +1136,8 @@ const Profile = () => {
                     setRequestReason('');
                     setRequestImages([]);
                     setRequestImagePreviews([]);
+                    setRequestVideos([]);
+                    setRequestVideoPreviews([]);
                   }}
                   className="px-6 py-3 bg-neutral text-gray-700 rounded-[12px] hover:bg-neutral/80 transition-colors"
                   whileHover={{ scale: 1.05 }}
@@ -1021,8 +1176,47 @@ const Profile = () => {
               <div className="bg-neutral/5 rounded-[12px] p-6">
                 <p className="font-medium text-lg mb-2">Type: {selectedOrderForRequest.type}</p>
                 <p className="mb-4">Status: {selectedOrderForRequest.status}</p>
+                <p className="mb-4">Reason: {selectedOrderForRequest.reason}</p>
                 {selectedOrderForRequest.adminResponse && (
-                  <p className="text-gray-600">Admin Response: {selectedOrderForRequest.adminResponse}</p>
+                  <p className="text-gray-600 mb-4">Admin Response: {selectedOrderForRequest.adminResponse}</p>
+                )}
+                
+                {/* Display uploaded images */}
+                {selectedOrderForRequest.imageUrls && selectedOrderForRequest.imageUrls.length > 0 && (
+                  <div className="mb-4">
+                    <p className="font-medium mb-2">Uploaded Images:</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {selectedOrderForRequest.imageUrls.map((url, index) => (
+                        <div key={index} className="relative w-full h-40 rounded-[8px] overflow-hidden">
+                          <img
+                            src={url}
+                            alt={`Request image ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Display uploaded videos */}
+                {selectedOrderForRequest.videoUrls && selectedOrderForRequest.videoUrls.length > 0 && (
+                  <div>
+                    <p className="font-medium mb-2">Uploaded Videos:</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {selectedOrderForRequest.videoUrls.map((url, index) => (
+                        <div key={index} className="relative w-full h-48 rounded-[8px] overflow-hidden">
+                          <video
+                            src={url}
+                            controls
+                            className="w-full h-full object-cover"
+                          >
+                            Your browser does not support the video tag.
+                          </video>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
               <div className="flex justify-end">

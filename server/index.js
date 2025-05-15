@@ -8,12 +8,14 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['https://www.jewelrybyluna.in', 'http://localhost:5173'],
+  origin: ['https://www.jewelrybyluna.in', 'https://jewelry-by-luna.onrender.com', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
 }));
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from the uploads directory
 app.use('/uploads', express.static('uploads'));
@@ -45,6 +47,21 @@ mongoose.connect(process.env.MONGO_URI)
 // Basic route
 app.get('/', (req, res) => {
   res.send('Jewelry by LUNA API is running');
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({ 
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  console.log('404 Not Found:', req.method, req.url);
+  res.status(404).json({ message: 'Route not found' });
 });
 
 const PORT = process.env.PORT || 5001;

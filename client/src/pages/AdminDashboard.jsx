@@ -45,8 +45,11 @@ const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [imagePreview, setImagePreview] = useState([]);
+  const [videoPreview, setVideoPreview] = useState([]);
   const fileInputRef = useRef(null);
+  const videoInputRef = useRef(null);
 
   // Dashboard stats state
   const [dashboardStats, setDashboardStats] = useState({
@@ -68,6 +71,7 @@ const AdminDashboard = () => {
     categories: ['necklace'],
     tags: ['new arrival'],
     imageUrls: [],
+    videoUrls: [],
     stock: 1,
     detailedDescription: '',
     rating: 0,
@@ -318,6 +322,154 @@ const AdminDashboard = () => {
     }));
   };
 
+  // Handle file input change for video upload with validation
+  const handleVideoFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    // Check if files are valid videos
+    const invalidFiles = files.filter(file => !file.type.startsWith('video/'));
+    if (invalidFiles.length > 0) {
+      setToastMessage('Please select valid video files only');
+      setToastType('error');
+      setShowToast(true);
+      return;
+    }
+
+    // Check file sizes - large files may cause issues
+    const MAX_SIZE_MB = 50; // 50MB
+    const oversizedFiles = files.filter(file => file.size > MAX_SIZE_MB * 1024 * 1024);
+    
+    if (oversizedFiles.length > 0) {
+      setToastMessage(`Some videos exceed ${MAX_SIZE_MB}MB. Upload may fail or be slow.`);
+      setToastType('warning');
+      setShowToast(true);
+    }
+    
+    // Check if total count will exceed limit
+    if (files.length + videoPreview.length + formData.videoUrls.length > 2) {
+      setToastMessage('You can upload a maximum of 2 videos per product');
+      setToastType('error');
+      setShowToast(true);
+      return;
+    }
+    
+    // Create previews of the selected videos
+    files.forEach(file => {
+      // Calculate file size in MB
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setVideoPreview(prev => [...prev, {
+          url: reader.result,
+          name: file.name,
+          type: file.type,
+          size: fileSizeMB + ' MB'
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Upload videos to server with progress tracking
+  const handleVideoUpload = async (e) => {
+    e.preventDefault();
+    const videoInput = videoInputRef.current;
+    
+    if (!videoInput.files || videoInput.files.length === 0) {
+      setToastMessage('Please select videos to upload');
+      setToastType('error');
+      setShowToast(true);
+      return;
+    }
+    
+    const files = Array.from(videoInput.files);
+    
+    // Validate file types
+    const invalidFiles = files.filter(file => !file.type.startsWith('video/'));
+    if (invalidFiles.length > 0) {
+      setToastMessage('Please select valid video files');
+      setToastType('error');
+      setShowToast(true);
+      return;
+    }
+    
+    // Check file sizes - warn if large files may take time
+    const totalSizeMB = files.reduce((size, file) => size + file.size / (1024 * 1024), 0).toFixed(2);
+    if (totalSizeMB > 20) {
+      setToastMessage(`Large video files (${totalSizeMB}MB) may take some time to upload`);
+      setToastType('info');
+      setShowToast(true);
+    }
+    
+    try {
+      setUploadingVideo(true);
+      setToastMessage('Starting video upload, please wait...');
+      setToastType('info');
+      setShowToast(true);
+      
+      const formData = new FormData();
+      files.forEach(file => {
+        // Compress or validate video files if needed
+        formData.append('videos', file);
+      });
+      
+      // Add upload progress tracking
+      const response = await axios.post(
+        `${API_BASE_URL}/upload/videos`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'x-auth-token': localStorage.getItem('token')
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setToastMessage(`Uploading videos: ${percentCompleted}% complete`);
+            setToastType('info');
+            setShowToast(true);
+          },
+          // Set longer timeout for large files
+          timeout: 300000 // 5 minutes
+        }
+      );
+      
+      // Update form data with the Cloudinary URLs
+      setFormData(prev => ({
+        ...prev,
+        videoUrls: [...prev.videoUrls, ...response.data.filePaths]
+      }));
+      
+      setToastMessage('Videos uploaded successfully');
+      setToastType('success');
+      setShowToast(true);
+      
+      // Clear the file input and preview
+      videoInput.value = '';
+      setVideoPreview([]);
+      
+    } catch (error) {
+      console.error('Error uploading videos:', error);
+      const errorMsg = error.response?.data?.message || 
+                      (error.code === 'ECONNABORTED' ? 'Upload timed out. Try with smaller files.' : 
+                      'Failed to upload videos. Check your internet connection.');
+      setToastMessage(errorMsg);
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
+  // Remove a video
+  const handleRemoveVideo = (indexToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      videoUrls: prev.videoUrls.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
   // Validate form data
   const validateForm = () => {
     const errors = {};
@@ -444,6 +596,7 @@ const AdminDashboard = () => {
       categories: product.categories || ['necklace'],
       tags: product.tags || ['new arrival'],
       imageUrls: product.imageUrls || [],
+      videoUrls: product.videoUrls || [],
       stock: product.stock,
       detailedDescription: product.detailedDescription || '',
       rating: product.rating || 0,
@@ -491,6 +644,7 @@ const AdminDashboard = () => {
       categories: ['necklace'],
       tags: ['new arrival'],
       imageUrls: [],
+      videoUrls: [],
       stock: 1,
       detailedDescription: '',
       rating: 0,
@@ -1579,6 +1733,107 @@ const AdminDashboard = () => {
                       <p className="mt-1 text-sm text-red-500">{formErrors.imageUrls}</p>
                     )}
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Product Videos (Optional)
+                    </label>
+                    <div className="border rounded-md p-3 border-gray-300">
+                      {/* Video previews */}
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                        {formData.videoUrls.map((url, index) => (
+                          <div key={index} className="relative group">
+                            <video 
+                              src={url} 
+                              controls
+                              className="h-40 w-full object-cover rounded-md"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveVideo(index)}
+                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <FiX size={16} />
+                            </button>
+                          </div>
+                        ))}
+                        {videoPreview.map((preview, index) => (
+                          <div key={`preview-${index}`} className="relative">
+                            <video 
+                              src={preview.url} 
+                              controls
+                              className="h-40 w-full object-cover rounded-md"
+                            />
+                            <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                              {preview.size}
+                            </div>
+                            <p className="text-xs mt-1 text-center truncate">{preview.name}</p>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* File input */}
+                      <div className="flex items-center justify-center">
+                        <input
+                          type="file"
+                          ref={videoInputRef}
+                          accept="video/*"
+                          onChange={handleVideoFileChange}
+                          multiple
+                          className="hidden"
+                          id="product-videos"
+                        />
+                        <label 
+                          htmlFor="product-videos" 
+                          className="cursor-pointer flex items-center justify-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                        >
+                          <FiImage className="mr-2" />
+                          Select Videos
+                        </label>
+                        
+                        {videoPreview.length > 0 && (
+                          <button
+                            onClick={handleVideoUpload}
+                            disabled={uploadingVideo}
+                            className="ml-3 flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
+                          >
+                            {uploadingVideo ? (
+                              <>
+                                <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Uploading...
+                              </>
+                            ) : (
+                              <>
+                                <FiUpload className="mr-2" />
+                                Upload
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                      
+                      {uploadingVideo && (
+                        <div className="mt-2">
+                          <p className="text-sm text-blue-600">
+                            Uploading videos, please wait... This may take a few minutes for larger files.
+                          </p>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                            <div className="bg-blue-600 h-2.5 rounded-full animate-pulse w-full"></div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {formData.videoUrls.length > 0 && (
+                        <p className="mt-2 text-sm text-green-600">
+                          {formData.videoUrls.length} video(s) uploaded successfully
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Add videos to showcase your product from different angles (optional)</p>
+                  </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2251,6 +2506,25 @@ const AdminDashboard = () => {
                         alt={`Request ${index + 1}`} 
                         className="max-w-full max-h-[200px] object-contain mx-auto" 
                       />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {selectedRequest.videoUrls && selectedRequest.videoUrls.length > 0 && (
+              <div className="mb-6">
+                <h4 className="font-medium text-gray-700 mb-2">Videos</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {selectedRequest.videoUrls.map((videoUrl, index) => (
+                    <div key={index} className="bg-gray-50 rounded-lg p-4">
+                      <video 
+                        src={videoUrl} 
+                        controls
+                        className="max-w-full max-h-[200px] mx-auto" 
+                      >
+                        Your browser does not support the video tag.
+                      </video>
                     </div>
                   ))}
                 </div>
