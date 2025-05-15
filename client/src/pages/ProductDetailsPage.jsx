@@ -49,17 +49,34 @@ function ProductDetailsPage() {
     }
   }, [product, cart]);
   
-  // Get the product's images
+  // Get the product's images and videos
   const getProductImages = () => {
-    if (!product?.imageUrls || product.imageUrls.length === 0) {
-      return [placeholderImage];
+    const media = [];
+    
+    // Add images
+    if (product?.imageUrls && product.imageUrls.length > 0) {
+      product.imageUrls.forEach(url => {
+        media.push({
+          type: 'image',
+          url: url.startsWith('http') ? url : url.startsWith('/uploads') ? `${API_BASE_URL}${url}` : placeholderImage
+        });
+      });
     }
-    return product.imageUrls.map(url => 
-      url.startsWith('http') ? url : url.startsWith('/uploads') ? `${API_BASE_URL}${url}` : placeholderImage
-    );
+    
+    // Add videos
+    if (product?.videoUrls && product.videoUrls.length > 0) {
+      product.videoUrls.forEach(url => {
+        media.push({
+          type: 'video',
+          url: url.startsWith('http') ? url : url.startsWith('/uploads') ? `${API_BASE_URL}${url}` : null
+        });
+      });
+    }
+    
+    return media.length > 0 ? media : [{ type: 'image', url: placeholderImage }];
   };
 
-  const productImages = getProductImages();
+  const productMedia = getProductImages();
   
   // Function to fetch related products
   const fetchRelatedProducts = async (product) => {
@@ -351,14 +368,22 @@ function ProductDetailsPage() {
         <div className="font-sans max-w-7xl mx-auto p-2 sm:p-5">
           <div className="flex flex-col md:flex-row md:gap-10 mb-10">
             <div className="flex flex-col gap-5 flex-1">
-              {/* Main Image */}
+              {/* Main Image/Video */}
               <div className="flex-1 max-w-full md:max-w-[600px] relative h-[250px] md:h-[180px]">
-                <img 
-                  src={productImages[selectedImage]} 
-                  alt="Main product" 
-                  className="w-full h-full object-contain md:object-cover rounded-[8px]" 
-                />
-                {productImages.length > 1 && (
+                {productMedia[selectedImage].type === 'video' ? (
+                  <video 
+                    src={productMedia[selectedImage].url} 
+                    controls
+                    className="w-full h-full object-contain md:object-cover rounded-[8px]" 
+                  />
+                ) : (
+                  <img 
+                    src={productMedia[selectedImage].url} 
+                    alt="Main product" 
+                    className="w-full h-full object-contain md:object-cover rounded-[8px]" 
+                  />
+                )}
+                {productMedia.length > 1 && (
                   <>
                     <button 
                       className={`absolute left-2.5 top-1/2 -translate-y-1/2 bg-white/80 border-none rounded-[6px] w-10 h-10 flex items-center justify-center cursor-pointer ${
@@ -373,10 +398,10 @@ function ProductDetailsPage() {
                     </button>
                     <button 
                       className={`absolute right-2.5 top-1/2 -translate-y-1/2 bg-white/80 border-none rounded-[6px] w-10 h-10 flex items-center justify-center cursor-pointer ${
-                        selectedImage === productImages.length - 1 ? 'opacity-50' : 'opacity-100'
+                        selectedImage === productMedia.length - 1 ? 'opacity-50' : 'opacity-100'
                       }`}
-                      onClick={() => setSelectedImage(prev => Math.min(productImages.length - 1, prev + 1))}
-                      disabled={selectedImage === productImages.length - 1}
+                      onClick={() => setSelectedImage(prev => Math.min(productMedia.length - 1, prev + 1))}
+                      disabled={selectedImage === productMedia.length - 1}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M9 18l6-6-6-6" />
@@ -388,7 +413,7 @@ function ProductDetailsPage() {
 
               {/* Thumbnails */}
               <div className="flex gap-2.5 overflow-x-auto md:max-w-[600px] mt-2">
-                {productImages.map((image, index) => (
+                {productMedia.map((media, index) => (
                   <div 
                     key={index} 
                     className={`min-w-[80px] w-20 h-20 border cursor-pointer overflow-hidden rounded-[6px] ${
@@ -396,11 +421,25 @@ function ProductDetailsPage() {
                     }`}
                     onClick={() => setSelectedImage(index)}
                   >
-                    <img 
-                      src={image} 
-                      alt={`Product thumbnail ${index + 1}`} 
-                      className="w-full h-full object-cover" 
-                    />
+                    {media.type === 'video' ? (
+                      <div className="relative w-full h-full">
+                        <video 
+                          src={media.url} 
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
+                        </div>
+                      </div>
+                    ) : (
+                      <img 
+                        src={media.url} 
+                        alt={`Product thumbnail ${index + 1}`} 
+                        className="w-full h-full object-cover" 
+                      />
+                    )}
                   </div>
                 ))}
               </div>
