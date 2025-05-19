@@ -10,19 +10,34 @@ const ReviewSection = ({ productId }) => {
   };
 
   return (
-    <div className="mt-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Customer Reviews</h2>
+    <section className="mt-6 mb-8">
+      <div className="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
+        <h2 className="text-xl font-bold text-gray-900">Customer Reviews</h2>
         <button
           onClick={() => setShowReviewForm(!showReviewForm)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="inline-flex items-center px-3 py-1.5 border border-[rgb(165,97,108)] text-sm font-medium rounded-md shadow-sm text-[rgb(165,97,108)] bg-white hover:bg-[rgb(250,240,242)] focus:outline-none transition-colors"
         >
-          {showReviewForm ? 'Cancel Review' : 'Write a Review'}
+          {showReviewForm ? (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Cancel
+            </>
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Write a Review
+            </>
+          )}
         </button>
       </div>
 
       {showReviewForm && (
-        <div className="mb-8">
+        <div className="mb-6">
+          <h3 className="text-base font-medium text-gray-900 mb-3">Share Your Experience</h3>
           <ReviewForm
             productId={productId}
             onReviewSubmitted={handleReviewSubmitted}
@@ -31,7 +46,7 @@ const ReviewSection = ({ productId }) => {
       )}
 
       <ReviewList productId={productId} />
-    </div>
+    </section>
   );
 };
 
