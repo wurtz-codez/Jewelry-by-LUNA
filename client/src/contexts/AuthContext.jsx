@@ -8,18 +8,18 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     // Check if user is logged in on mount
-    const token = localStorage.getItem('token');
     if (token) {
       validateToken(token);
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   const validateToken = async (token) => {
     try {
@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         // Clear invalid token
         localStorage.removeItem('token');
+        setToken(null);
         setCurrentUser(null);
       }
     } finally {
@@ -64,8 +65,9 @@ export const AuthProvider = ({ children }) => {
       
       const response = await axios.post(`${API_BASE_URL}/auth/${endpoint}`, data);
       
-      const { token, user } = response.data;
-      localStorage.setItem('token', token);
+      const { token: newToken, user } = response.data;
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
       setCurrentUser(user);
       return { success: true, user };
     } catch (error) {
@@ -88,8 +90,9 @@ export const AuthProvider = ({ children }) => {
         otp
       });
       
-      const { token, user } = response.data;
-      localStorage.setItem('token', token);
+      const { token: newToken, user } = response.data;
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
       setCurrentUser(user);
       return { success: true, user };
     } catch (error) {
@@ -100,12 +103,14 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    setToken(null);
     setCurrentUser(null);
     setError(null);
   };
 
   const value = {
     currentUser,
+    token,
     loading,
     error,
     login,

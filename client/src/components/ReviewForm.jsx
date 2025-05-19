@@ -9,7 +9,7 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { token } = useAuth();
+  const { token, currentUser } = useAuth();
   const navigate = useNavigate();
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://jewelry-by-luna.onrender.com/api';
@@ -17,8 +17,14 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!token) {
+    if (!currentUser) {
       toast.error('Please login to submit a review');
+      navigate('/login');
+      return;
+    }
+
+    if (!token) {
+      toast.error('Authentication issue. Please login again.');
       navigate('/login');
       return;
     }
@@ -36,12 +42,15 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
     setIsSubmitting(true);
 
     try {
+      console.log('Submitting review for product:', productId);
+      
       const response = await axios.post(
         `${API_BASE_URL}/reviews/${productId}`,
         { rating, title, content },
         {
           headers: {
-            Authorization: `Bearer ${token}`
+            'Content-Type': 'application/json',
+            'x-auth-token': token
           }
         }
       );
@@ -55,8 +64,16 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
       }
     } catch (error) {
       console.error('Error submitting review:', error);
-      const message = error.response?.data?.message || 'Error submitting review';
-      toast.error(message);
+      
+      if (error.response?.status === 401) {
+        toast.error('Your session has expired. Please login again.');
+        navigate('/login');
+      } else if (error.response?.status === 403 && error.response?.data?.message === 'You can only review products you have purchased') {
+        toast.error('You can only review products you have purchased');
+      } else {
+        const message = error.response?.data?.message || 'Error submitting review';
+        toast.error(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
