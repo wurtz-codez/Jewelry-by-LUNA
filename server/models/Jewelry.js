@@ -90,27 +90,51 @@ jewelrySchema.pre('save', function(next) {
 
 // Method to update rating and review count
 jewelrySchema.methods.updateRatingStats = async function() {
-  const Review = mongoose.model('Review');
-  const stats = await Review.aggregate([
-    { $match: { product: this._id } },
-    {
-      $group: {
-        _id: null,
-        averageRating: { $avg: '$rating' },
-        count: { $sum: 1 }
-      }
+  try {
+    const Review = mongoose.model('Review');
+    const ObjectId = mongoose.Types.ObjectId;
+    
+    // Ensure we have a valid ObjectId
+    if (!this._id) {
+      console.error('Product ID is undefined');
+      return;
     }
-  ]);
+    
+    console.log('Aggregating reviews for product:', this._id);
+    
+    const stats = await Review.aggregate([
+      { $match: { product: new ObjectId(this._id) } },
+      {
+        $group: {
+          _id: null,
+          averageRating: { $avg: '$rating' },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
 
-  if (stats.length > 0) {
-    this.rating = Math.round(stats[0].averageRating * 10) / 10;
-    this.reviewCount = stats[0].count;
-  } else {
-    this.rating = 0;
-    this.reviewCount = 0;
+    console.log('Aggregation results:', stats);
+
+    if (stats.length > 0) {
+      this.rating = Math.round(stats[0].averageRating * 10) / 10;
+      this.reviewCount = stats[0].count;
+      console.log(`Updated rating to ${this.rating} with ${this.reviewCount} reviews`);
+    } else {
+      this.rating = 0;
+      this.reviewCount = 0;
+      console.log('No reviews found, resetting rating to 0');
+    }
+    
+    // Also update the reviews array
+    const reviews = await Review.find({ product: this._id }).select('_id');
+    this.reviews = reviews.map(review => review._id);
+    
+    await this.save();
+    console.log('Product saved with updated rating stats');
+  } catch (error) {
+    console.error('Error updating rating stats:', error);
+    throw error;
   }
-  
-  await this.save();
 };
 
 const Jewelry = mongoose.model('Jewelry', jewelrySchema);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
@@ -14,8 +14,24 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://jewelry-by-luna.onrender.com/api';
 
+  // Validate productId when component mounts or productId changes
+  useEffect(() => {
+    if (!productId) {
+      console.error('ProductID is missing or undefined');
+    } else {
+      console.log('ReviewForm initialized with productId:', productId);
+    }
+  }, [productId]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate product ID
+    if (!productId) {
+      toast.error('Product information is missing. Please try again.');
+      console.error('Missing productId in ReviewForm');
+      return;
+    }
     
     if (!currentUser) {
       toast.error('Please login to submit a review');
@@ -43,18 +59,22 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
 
     try {
       console.log('Submitting review for product:', productId);
+      console.log('Review data:', { rating, title, content });
       
+      // Create a review submission request with both auth header formats
       const response = await axios.post(
         `${API_BASE_URL}/reviews/${productId}`,
         { rating, title, content },
         {
           headers: {
             'Content-Type': 'application/json',
-            'x-auth-token': token
+            'x-auth-token': token,
+            'Authorization': `Bearer ${token}`
           }
         }
       );
 
+      console.log('Review submission successful:', response.data);
       toast.success('Review submitted successfully');
       setRating(0);
       setTitle('');
@@ -64,10 +84,13 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
       }
     } catch (error) {
       console.error('Error submitting review:', error);
+      console.error('Error details:', error.response?.data);
       
       if (error.response?.status === 401) {
         toast.error('Your session has expired. Please login again.');
         navigate('/login');
+      } else if (error.response?.status === 400) {
+        toast.error(error.response.data.message || 'Please check your review information');
       } else {
         const message = error.response?.data?.message || 'Error submitting review';
         toast.error(message);

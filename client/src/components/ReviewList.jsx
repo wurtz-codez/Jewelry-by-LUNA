@@ -56,7 +56,8 @@ const ReviewList = ({ productId }) => {
         {
           headers: {
             'Content-Type': 'application/json',
-            'x-auth-token': token
+            'x-auth-token': token,
+            'Authorization': `Bearer ${token}`
           }
         }
       );
@@ -82,7 +83,8 @@ const ReviewList = ({ productId }) => {
         {
           headers: {
             'Content-Type': 'application/json',
-            'x-auth-token': token
+            'x-auth-token': token,
+            'Authorization': `Bearer ${token}`
           }
         }
       );
@@ -104,7 +106,8 @@ const ReviewList = ({ productId }) => {
         {
           headers: {
             'Content-Type': 'application/json',
-            'x-auth-token': token
+            'x-auth-token': token,
+            'Authorization': `Bearer ${token}`
           }
         }
       );
@@ -125,7 +128,8 @@ const ReviewList = ({ productId }) => {
         `${API_BASE_URL}/reviews/${reviewId}/comments/${commentId}`,
         {
           headers: {
-            'x-auth-token': token
+            'x-auth-token': token,
+            'Authorization': `Bearer ${token}`
           }
         }
       );

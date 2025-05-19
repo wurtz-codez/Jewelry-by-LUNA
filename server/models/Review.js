@@ -79,7 +79,8 @@ reviewSchema.pre('save', function(next) {
 
 // Add indexes for better query performance
 reviewSchema.index({ product: 1, createdAt: -1 });
-reviewSchema.index({ user: 1, product: 1 }, { unique: true });
+// Removing the unique constraint to allow multiple reviews from the same user
+// reviewSchema.index({ user: 1, product: 1 }, { unique: true });
 
 const Review = mongoose.model('Review', reviewSchema);
 

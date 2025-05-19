@@ -4,6 +4,7 @@ const Review = require('../models/Review');
 const Jewelry = require('../models/Jewelry');
 const Order = require('../models/Order');
 const auth = require('../middleware/auth');
+const mongoose = require('mongoose');
 
 // Middleware to verify purchase
 const verifyPurchase = async (req, res, next) => {
@@ -26,8 +27,55 @@ const verifyPurchase = async (req, res, next) => {
 // Create a review
 router.post('/:productId', auth, async (req, res) => {
   try {
+    console.log('Review creation request received');
+    console.log('User ID:', req.user?._id);
+    console.log('Product ID:', req.params.productId);
+    console.log('Request body:', req.body);
+
+    // Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      console.log('User not authenticated or missing ID');
+      return res.status(401).json({ 
+        message: 'User authentication failed. Please login again.' 
+      });
+    }
+
     const { rating, title, content } = req.body;
     const productId = req.params.productId;
+
+    // Validate required fields
+    if (!rating || !title || !content) {
+      console.log('Missing required fields');
+      return res.status(400).json({ 
+        message: 'Please provide all required fields: rating, title, and content' 
+      });
+    }
+
+    // Validate rating range
+    if (rating < 1 || rating > 5) {
+      console.log('Invalid rating value:', rating);
+      return res.status(400).json({ 
+        message: 'Rating must be between 1 and 5' 
+      });
+    }
+
+    // Ensure productId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      console.log('Invalid product ID format:', productId);
+      return res.status(400).json({ 
+        message: 'Invalid product ID format' 
+      });
+    }
+
+    // Check if product exists
+    const product = await Jewelry.findById(productId);
+    if (!product) {
+      console.log('Product not found with ID:', productId);
+      return res.status(404).json({ 
+        message: 'Product not found' 
+      });
+    }
+    console.log('Product found:', product.name);
 
     // Check if user has already reviewed this product
     const existingReview = await Review.findOne({
@@ -36,27 +84,57 @@ router.post('/:productId', auth, async (req, res) => {
     });
 
     if (existingReview) {
-      return res.status(400).json({ message: 'You have already reviewed this product' });
+      console.log('User already reviewed this product');
+      return res.status(400).json({ 
+        message: 'You have already reviewed this product' 
+      });
     }
 
+    // Create new review
     const review = new Review({
       product: productId,
       user: req.user._id,
-      rating,
+      rating: Number(rating),  // Ensure rating is a number
       title,
       content,
-      verifiedPurchase: false // Set to false since we're not verifying purchases
+      verifiedPurchase: false
     });
+    console.log('Review object created with user ID:', req.user._id);
 
-    await review.save();
+    // Save the review
+    try {
+      const savedReview = await review.save();
+      console.log('Review saved successfully:', savedReview._id);
+      
+      // Populate user information before sending response
+      await savedReview.populate('user', 'name');
+      console.log('User information populated');
 
-    // Update product's review count and rating
-    const product = await Jewelry.findById(productId);
-    await product.updateRatingStats();
+      // Update product's review count and rating
+      try {
+        console.log('Updating product rating stats');
+        await product.updateRatingStats();
+        console.log('Product rating stats updated');
+      } catch (ratingError) {
+        console.error('Error updating product rating:', ratingError);
+        // Continue sending response even if rating update fails
+      }
 
-    res.status(201).json(review);
+      res.status(201).json(savedReview);
+    } catch (saveError) {
+      console.error('Error saving review:', saveError);
+      return res.status(500).json({ 
+        message: 'Error saving review', 
+        error: saveError.message 
+      });
+    }
   } catch (error) {
-    res.status(500).json({ message: 'Error creating review', error: error.message });
+    console.error('Error in review creation route:', error);
+    res.status(500).json({ 
+      message: 'Error creating review', 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
