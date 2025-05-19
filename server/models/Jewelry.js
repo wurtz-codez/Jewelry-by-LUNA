@@ -57,6 +57,14 @@ const jewelrySchema = new mongoose.Schema({
     min: 0,
     max: 5
   },
+  reviewCount: {
+    type: Number,
+    default: 0
+  },
+  reviews: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Review'
+  }],
   isAvailable: {
     type: Boolean,
     default: true
@@ -79,6 +87,31 @@ jewelrySchema.pre('save', function(next) {
   this.sellingPrice = this.price - (this.discount || 0);
   next();
 });
+
+// Method to update rating and review count
+jewelrySchema.methods.updateRatingStats = async function() {
+  const Review = mongoose.model('Review');
+  const stats = await Review.aggregate([
+    { $match: { product: this._id } },
+    {
+      $group: {
+        _id: null,
+        averageRating: { $avg: '$rating' },
+        count: { $sum: 1 }
+      }
+    }
+  ]);
+
+  if (stats.length > 0) {
+    this.rating = Math.round(stats[0].averageRating * 10) / 10;
+    this.reviewCount = stats[0].count;
+  } else {
+    this.rating = 0;
+    this.reviewCount = 0;
+  }
+  
+  await this.save();
+};
 
 const Jewelry = mongoose.model('Jewelry', jewelrySchema);
 

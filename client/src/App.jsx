@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Login from './pages/Login';
 import LoginOTP from './pages/LoginOTP';
 import Register from './pages/Register';
@@ -28,6 +30,18 @@ const App = () => {
       <ShopProvider>
         <Router>
           <ScrollToTop />
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/loginOTP" element={<LoginOTP />} />

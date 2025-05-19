@@ -29,6 +29,7 @@ const cartRoutes = require('./routes/cart');
 const wishlistRoutes = require('./routes/wishlist');
 const orderRoutes = require('./routes/order');
 const requestRoutes = require('./routes/request');
+const reviewRoutes = require('./routes/review');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/jewelry', jewelryRoutes);
@@ -38,6 +39,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/order', orderRoutes);
 app.use('/api/request', requestRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
