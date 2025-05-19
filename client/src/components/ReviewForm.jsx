@@ -68,8 +68,6 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
       if (error.response?.status === 401) {
         toast.error('Your session has expired. Please login again.');
         navigate('/login');
-      } else if (error.response?.status === 403 && error.response?.data?.message === 'You can only review products you have purchased') {
-        toast.error('You can only review products you have purchased');
       } else {
         const message = error.response?.data?.message || 'Error submitting review';
         toast.error(message);

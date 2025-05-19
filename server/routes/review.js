@@ -24,7 +24,7 @@ const verifyPurchase = async (req, res, next) => {
 };
 
 // Create a review
-router.post('/:productId', auth, verifyPurchase, async (req, res) => {
+router.post('/:productId', auth, async (req, res) => {
   try {
     const { rating, title, content } = req.body;
     const productId = req.params.productId;
@@ -45,7 +45,7 @@ router.post('/:productId', auth, verifyPurchase, async (req, res) => {
       rating,
       title,
       content,
-      verifiedPurchase: true
+      verifiedPurchase: false // Set to false since we're not verifying purchases
     });
 
     await review.save();
