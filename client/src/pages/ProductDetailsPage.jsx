@@ -658,37 +658,47 @@ function ProductDetailsPage() {
             </div>
           </div>
           
-          <div className="flex flex-col md:flex-row gap-5 md:gap-10 mb-10">
-            <div className="text-center">
-              <h2 className="text-2xl mb-2.5">{(product?.rating || 0).toFixed(1)}</h2>
-              <div className="mb-2.5">{renderRatingStars(product?.rating || 0)}</div>
-              <p className="mb-2.5">({product?.reviewCount || 0} ratings)</p>
+          {/* <div className="flex flex-col md:flex-row gap-5 mb-10 bg-gray-50 rounded-lg p-6">
+            <div className="flex md:flex-col items-center gap-3 md:w-auto">
+              <div className="flex items-center gap-2">
+                <h2 className="text-3xl font-bold text-gray-900">{(product?.rating || 0).toFixed(1)}</h2>
+                <span className="text-sm text-gray-600">out of 5</span>
+              </div>
+              <div className="flex items-center">
+                <div className="flex">{renderRatingStars(product?.rating || 0)}</div>
+                <p className="ml-2 text-sm text-gray-600">({product?.reviewCount || 0} ratings)</p>
+              </div>
             </div>
             
-            <div className="flex-1">
+            <div className="flex-1 md:ml-8">
               {[5, 4, 3, 2, 1].map((stars) => {
                 const count = ratingDistribution[stars] || 0;
                 const total = Object.values(ratingDistribution).reduce((a, b) => a + b, 0);
                 const percentage = total > 0 ? (count / total) * 100 : 0;
                 
                 return (
-                  <div key={stars} className="flex items-center gap-2.5 mb-1">
-                    <span className="w-12">{stars} ★</span>
-                    <div className="flex-1 h-2 bg-gray-200 rounded-[4px]">
+                  <div key={stars} className="flex items-center gap-2.5 mb-2">
+                    <span className="w-8 text-sm font-medium">{stars}★</span>
+                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-yellow-400 rounded-[4px]"
+                        className="h-full bg-yellow-400 rounded-full transition-all duration-300"
                         style={{ width: `${percentage}%` }}
                       ></div>
                     </div>
-                    <span className="w-10">({count})</span>
+                    <span className="w-16 text-sm text-gray-600">({count} votes)</span>
                   </div>
                 );
               })}
             </div>
-          </div>
+          </div> */}
           
           {/* Add Review Section */}
-          <ReviewSection productId={product._id} />
+          <ReviewSection
+            productId={product._id}
+            productRating={product?.rating}
+            ratingDistribution={ratingDistribution}
+            reviewCount={product?.reviewCount}
+          />
 
           {/* Related Products Section */}
           <div className="mt-12">

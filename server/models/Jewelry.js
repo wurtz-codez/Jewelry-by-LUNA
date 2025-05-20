@@ -61,6 +61,13 @@ const jewelrySchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  ratingDistribution: {
+    1: { type: Number, default: 0 },
+    2: { type: Number, default: 0 },
+    3: { type: Number, default: 0 },
+    4: { type: Number, default: 0 },
+    5: { type: Number, default: 0 }
+  },
   reviews: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Review'
@@ -102,6 +109,30 @@ jewelrySchema.methods.updateRatingStats = async function() {
     
     console.log('Aggregating reviews for product:', this._id);
     
+    // Get distribution of ratings
+    const distribution = await Review.aggregate([
+      { $match: { product: new ObjectId(this._id) } },
+      { 
+        $group: {
+          _id: '$rating',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Reset distribution
+    this.ratingDistribution = {
+      1: 0, 2: 0, 3: 0, 4: 0, 5: 0
+    };
+
+    // Update distribution
+    distribution.forEach(({ _id, count }) => {
+      if (_id >= 1 && _id <= 5) {
+        this.ratingDistribution[_id] = count;
+      }
+    });
+
+    // Get average rating and total count
     const stats = await Review.aggregate([
       { $match: { product: new ObjectId(this._id) } },
       {
