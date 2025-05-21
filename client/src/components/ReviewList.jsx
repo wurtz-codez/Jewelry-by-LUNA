@@ -16,13 +16,11 @@ const ReviewList = ({ productId }) => {
 
   const fetchReviews = async (page = 1) => {
     if (!productId) {
-      console.error('No product ID provided');
       setIsLoading(false);
       return;
     }
     
     try {
-      console.log(`Fetching reviews for product ${productId}, page ${page}`);
       const response = await axios.get(
         `${API_BASE_URL}/reviews/${productId}?page=${page}&limit=5`
       );
@@ -30,7 +28,7 @@ const ReviewList = ({ productId }) => {
       setTotalPages(response.data.totalPages);
       setCurrentPage(response.data.currentPage);
     } catch (error) {
-      console.error('Error fetching reviews:', error);
+      toast.error('Unable to load reviews');
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +64,7 @@ const ReviewList = ({ productId }) => {
         review._id === reviewId ? response.data : review
       ));
     } catch (error) {
-      console.error('Error voting on review:', error);
+      toast.error('Unable to vote on review');
     }
   };
 
@@ -94,7 +92,7 @@ const ReviewList = ({ productId }) => {
       ));
       setCommentContent({ ...commentContent, [reviewId]: '' });
     } catch (error) {
-      console.error('Error adding comment:', error);
+      toast.error('Unable to add comment');
     }
   };
 
