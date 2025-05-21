@@ -1,38 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useMemo } from 'react';
 import { useShop } from '../contexts/ShopContext';
 import { useAuth } from '../contexts/AuthContext';
 import ProductCard from '../assets/cards/ProductCard';
-
-const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
+import { useJewelryQuery } from '../hooks/useJewelryQuery';
+import { FiLoader } from 'react-icons/fi';
 
 const NewArrivals = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
   const { currentUser } = useAuth();
 
-  useEffect(() => {
-    const fetchNewArrivals = async () => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/jewelry`);
-        console.log('API Response:', response.data);
-        const newArrivals = response.data.products
-          .filter(product => product.tags?.includes('new arrival'))
-          .slice(0, 4);
-        console.log('Filtered New Arrivals:', newArrivals);
-        setProducts(newArrivals);
-      } catch (err) {
-        console.error('Failed to fetch new arrivals:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Use React Query to fetch data
+  const { data, isLoading, isError } = useJewelryQuery(
+    { limit: 8, sort: 'createdAt', order: 'desc' },
+    { enabled: !!currentUser }
+  );
 
-    if (currentUser) {
-      fetchNewArrivals();
-    }
-  }, [currentUser]);
+  // Extract and filter new arrivals
+  const products = useMemo(() => {
+    if (!data?.products) return [];
+    return data.products
+      .filter(product => product.tags?.includes('new arrival'))
+      .slice(0, 4);
+  }, [data]);
 
   const handleAddToCart = (product) => {
     addToCart(product);
@@ -55,8 +44,23 @@ const NewArrivals = () => {
     return null;
   }
 
-  if (loading) {
-    return <div className="text-center py-12">Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="py-8 sm:py-12 md:py-16 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-cinzel text-center mb-8 sm:mb-12 md:mb-16">New Arrivals</h2>
+          <div className="flex justify-center">
+            <div className="animate-spin text-primary">
+              <FiLoader className="w-6 h-6 sm:w-8 sm:h-8" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || products.length === 0) {
+    return null;
   }
 
   return (
@@ -69,8 +73,8 @@ const NewArrivals = () => {
               <ProductCard 
                 key={product._id}
                 product={product}
-                onAddToCart={handleAddToCart}
-                onWishlistToggle={handleWishlistToggle}
+                onAddToCart={() => handleAddToCart(product)}
+                onWishlistToggle={() => handleWishlistToggle(product)}
                 isInWishlist={wishlist.some(item => item._id === product._id)}
               />
             ))}

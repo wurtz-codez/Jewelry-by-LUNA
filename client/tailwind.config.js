@@ -2,7 +2,7 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
@@ -12,6 +12,7 @@ export default {
         'cinzel': ['"Cinzel"', 'serif'],
         'cinzel-decorative': ['"Cinzel Decorative"', 'serif'],
         'montserrat-alt': ['"Montserrat Alternates"', 'sans-serif'],
+        'lato': ['Lato', 'sans-serif'],
       },
       colors: {
         'neutral': '#E8E5E0',
@@ -24,6 +25,11 @@ export default {
           'washed': '#E5CEC0',
         },
         'accent': '#5B484A',
+        'base-100': '#FFFFFF',
+        'info': '#3ABFF8',
+        'success': '#36D399',
+        'warning': '#FBBD23',
+        'error': '#F87272',
       },
       typography: {
         DEFAULT: {
@@ -57,4 +63,24 @@ export default {
   plugins: [
     require('@tailwindcss/typography'),
   ],
+  // Purge unused CSS in production
+  purge: {
+    enabled: process.env.NODE_ENV === 'production',
+    content: [
+      './index.html',
+      './src/**/*.{js,jsx,ts,tsx}',
+    ],
+    options: {
+      safelist: [
+        // Add any classes that might be dynamically created and should not be purged
+        /^bg-/,
+        /^text-/,
+        /^border-/,
+        /^hover:/,
+        /^focus:/,
+        'active',
+        'disabled',
+      ],
+    },
+  },
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
@@ -7,42 +7,36 @@ import Collections from '../components/Collections';
 import Footer from '../components/Footer';
 import NewArrivals from '../components/NewArrivals';
 import LoadingScreen from '../components/LoadingScreen';
-import axios from 'axios';
 import Toast from '../components/Toast';
-
-const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
+import { useJewelryQuery } from '../hooks/useJewelryQuery';
 
 const Home = () => {
   const { currentUser } = useAuth();
-  const [jewelry, setJewelry] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  const fetchJewelry = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/jewelry`);
-      setJewelry(response.data);
-    } catch (error) {
-      console.error('Error fetching jewelry:', error);
-      setToastMessage('Failed to fetch jewelry items');
-      setToastType('error');
-      setShowToast(true);
-    } finally {
-      setLoading(false);
-      setIsInitialLoading(false);
-    }
-  };
+  // Use React Query with enabled: false to avoid initial fetch
+  // We'll let the NewArrivals component handle the data fetching
+  const { isLoading, isError } = useJewelryQuery(
+    { limit: 8, sort: 'createdAt', order: 'desc' },
+    { enabled: false }
+  );
 
-  useEffect(() => {
-    fetchJewelry();
-  }, []);
-
-  if (isInitialLoading) {
-    return <LoadingScreen />;
+  if (isError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Failed to load content. Please try again later.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-white rounded-md"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

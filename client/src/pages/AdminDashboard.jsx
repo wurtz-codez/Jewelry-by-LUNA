@@ -84,8 +84,8 @@ const AdminDashboard = () => {
   const [editingId, setEditingId] = useState(null);
 
   const [newCategory, setNewCategory] = useState('');
-  const [newTag, setNewTag] = useState('');
   const [customCategory, setCustomCategory] = useState('');
+  const [newTag, setNewTag] = useState('');
   const [customTag, setCustomTag] = useState('');
 
   // Chart options
@@ -1111,7 +1111,13 @@ const AdminDashboard = () => {
 
         {activeTab === 'dashboard' && (
           <div className="space-y-8">
-            {loading ? <LoadingScreen fullScreen={false} /> : (
+            {loading ? (
+              <div className="flex justify-center items-center h-48">
+                <div className="spinner-border text-purple-500" role="status">
+                  <FiLoader className="animate-spin w-8 h-8 text-purple-500" />
+                </div>
+              </div>
+            ) : (
               <>
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -1253,82 +1259,6 @@ const AdminDashboard = () => {
                     </table>
                   </div>
                 </div>
-
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                  <div className="px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-medium text-gray-900">Order Requests</h3>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {loadingOrders ? (
-                          <tr>
-                            <td colSpan="6" className="px-6 py-4 text-center">
-                              <div className="flex justify-center">
-                                <div className="animate-spin text-gray-500 mr-2">
-                                  <FiLoader size={20} />
-                                </div>
-                                <p>Loading orders...</p>
-                              </div>
-                            </td>
-                          </tr>
-                        ) : orderRequests.length === 0 ? (
-                          <tr>
-                            <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                              No order requests found
-                            </td>
-                          </tr>
-                        ) : (
-                          orderRequests.map((order) => (
-                            <tr key={order._id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {order._id.slice(-6)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {order.user?.name || 'Unknown User'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ₹{order.totalAmount.toFixed(2)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
-                                  order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
-                                  'bg-yellow-100 text-yellow-800'
-                                }`}>
-                                  {order.requestStatus}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {new Date(order.createdAt).toLocaleDateString()}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <div className="flex space-x-2">
-                                  <button 
-                                    className="text-indigo-600 hover:text-indigo-900"
-                                    onClick={() => fetchOrderDetails(order._id)}
-                                  >
-                                    View Details
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
               </>
             )}
           </div>
@@ -1337,593 +1267,93 @@ const AdminDashboard = () => {
         {activeTab === 'products' && (
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-lg font-medium text-gray-900">Manage Products</h2>
-              <button 
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg flex items-center"
+              <h2 className="text-lg font-medium text-gray-900">Products Management</h2>
+              <button
                 onClick={() => {
                   resetForm();
                   setActiveTab('add-product');
                 }}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center"
               >
                 <FiPlusCircle className="mr-2" />
-                Add New
+                Add New Product
               </button>
             </div>
             <div className="p-6">
-              {loading ? <LoadingScreen fullScreen={false} /> : (
-                <>
-                  {loading ? (
-                    <div className="flex justify-center items-center h-48">
-                      <div className="spinner-border text-purple-500" role="status">
-                        <span className="sr-only">Loading...</span>
-                      </div>
-                    </div>
-                  ) : !products || products.length === 0 ? (
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">No products found</p>
-                      <button 
-                        className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg"
-                        onClick={() => setActiveTab('add-product')}
-                      >
-                        Add Your First Product
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selling Price</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {products.map(product => (
-                            <tr key={product._id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <img 
-                                  src={product.imageUrls[0]} 
-                                  alt={product.name} 
-                                  className="h-16 w-16 object-cover rounded-md"
-                                />
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                                <div className="text-sm text-gray-500">{product.description}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ₹{(product.price || 0).toFixed(2)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ₹{(product.discount || 0).toFixed(2)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ₹{(product.sellingPrice || 0).toFixed(2)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                }`}>
-                                  {product.stock}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div className="flex space-x-3">
-                                  <button 
-                                    onClick={() => handleEdit(product)}
-                                    className="text-indigo-600 hover:text-indigo-900"
-                                  >
-                                    <FiEdit size={18} />
-                                  </button>
-                                  <button 
-                                    onClick={() => handleDelete(product._id)}
-                                    className="text-red-600 hover:text-red-900"
-                                  >
-                                    <FiTrash2 size={18} />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        )}
-        
-        {activeTab === 'add-product' && (
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-lg font-medium text-gray-900">
-                {isEditing ? 'Edit Product' : 'Add New Product'}
-              </h2>
-              {isEditing && (
-                <button 
-                  className="text-gray-500 hover:text-gray-700"
-                  onClick={resetForm}
-                >
-                  <FiX size={20} />
-                </button>
-              )}
-            </div>
-            <div className="p-6">
-              <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Product Name*
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className={`w-full p-2 border rounded-md bg-white ${formErrors.name ? 'border-red-500' : 'border-gray-300'}`}
-                      placeholder="Enter product name"
-                    />
-                    {formErrors.name && (
-                      <p className="mt-1 text-sm text-red-500">{formErrors.name}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Categories*
-                    </label>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {formData.categories.map((category, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
-                        >
-                          {category}
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCategory(category)}
-                            className="ml-2 text-purple-600 hover:text-purple-800"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <select 
-                        value={newCategory}
-                        onChange={(e) => setNewCategory(e.target.value)}
-                        className="flex-1 p-2 border border-gray-300 rounded-md bg-white"
-                      >
-                        <option value="">Select a category</option>
-                        {['necklace', 'earrings', 'bracelet', 'ring', 'pendant', 'set'].map(cat => (
-                          <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
-                        ))}
-                        <option value="custom">+ Add custom category</option>
-                      </select>
-                      {newCategory === 'custom' ? (
-                        <div className="flex flex-1 gap-2">
-                          <input
-                            type="text"
-                            value={customCategory}
-                            onChange={(e) => setCustomCategory(e.target.value)}
-                            className="flex-1 p-2 border border-gray-300 rounded-md bg-white"
-                            placeholder="Enter custom category"
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleAddCategory();
-                              }
-                            }}
-                          />
-                        </div>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={handleAddCategory}
-                        className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                        disabled={(newCategory === 'custom' && !customCategory.trim()) || !newCategory}
-                      >
-                        Add
-                      </button>
-                    </div>
-                    {formErrors.categories && (
-                      <p className="mt-1 text-sm text-red-500">{formErrors.categories}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tags*
-                    </label>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {formData.tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
-                        >
-                          {tag}
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveTag(tag)}
-                            className="ml-2 text-blue-600 hover:text-blue-800"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <select 
-                        value={newTag}
-                        onChange={(e) => setNewTag(e.target.value)}
-                        className="flex-1 p-2 border border-gray-300 rounded-md bg-white"
-                      >
-                        <option value="">Select a tag</option>
-                        {['new arrival', 'trending', 'best seller', 'sale', 'limited edition', 'premium', 'handcrafted'].map(tag => (
-                          <option key={tag} value={tag}>{tag.charAt(0).toUpperCase() + tag.slice(1)}</option>
-                        ))}
-                        <option value="custom">+ Add custom tag</option>
-                      </select>
-                      {newTag === 'custom' ? (
-                        <div className="flex flex-1 gap-2">
-                          <input
-                            type="text"
-                            value={customTag}
-                            onChange={(e) => setCustomTag(e.target.value)}
-                            className="flex-1 p-2 border border-gray-300 rounded-md bg-white"
-                            placeholder="Enter custom tag"
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleAddTag();
-                              }
-                            }}
-                          />
-                        </div>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={handleAddTag}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                        disabled={(newTag === 'custom' && !customTag.trim()) || !newTag}
-                      >
-                        Add
-                      </button>
-                    </div>
-                    {formErrors.tags && (
-                      <p className="mt-1 text-sm text-red-500">{formErrors.tags}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Price ($)*
-                    </label>
-                    <input
-                      type="number"
-                      name="price"
-                      step="0.01"
-                      min="0"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      className={`w-full p-2 border rounded-md bg-white ${formErrors.price ? 'border-red-500' : 'border-gray-300'}`}
-                      placeholder="Enter price"
-                    />
-                    {formErrors.price && (
-                      <p className="mt-1 text-sm text-red-500">{formErrors.price}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Discount ($)
-                    </label>
-                    <input
-                      type="number"
-                      name="discount"
-                      step="0.01"
-                      min="0"
-                      value={formData.discount}
-                      onChange={handleInputChange}
-                      className={`w-full p-2 border rounded-md bg-white ${formErrors.discount ? 'border-red-500' : 'border-gray-300'}`}
-                      placeholder="Enter discount amount"
-                    />
-                    {formErrors.discount && (
-                      <p className="mt-1 text-sm text-red-500">{formErrors.discount}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Stock*
-                    </label>
-                    <input
-                      type="number"
-                      name="stock"
-                      min="0"
-                      value={formData.stock}
-                      onChange={handleInputChange}
-                      className={`w-full p-2 border rounded-md bg-white ${formErrors.stock ? 'border-red-500' : 'border-gray-300'}`}
-                      placeholder="Enter available stock"
-                    />
-                    {formErrors.stock && (
-                      <p className="mt-1 text-sm text-red-500">{formErrors.stock}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Product Images*
-                    </label>
-                    <div className={`border rounded-md p-3 ${formErrors.imageUrls ? 'border-red-500' : 'border-gray-300'}`}>
-                      {/* Image previews */}
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                        {formData.imageUrls.map((url, index) => (
-                          <div key={index} className="relative group">
+              {loading ? (
+                <div className="flex justify-center items-center h-48">
+                  <FiLoader className="animate-spin w-8 h-8 text-purple-500" />
+                </div>
+              ) : products.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">No products found</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selling Price</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {products.map(product => (
+                        <tr key={product._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
                             <img 
-                              src={url} 
-                              alt={`Product preview ${index + 1}`} 
-                              className="h-40 w-full object-cover rounded-md"
+                              src={product.imageUrls[0]} 
+                              alt={product.name} 
+                              className="h-16 w-16 object-cover rounded-md"
                             />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveImage(index)}
-                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <FiX size={16} />
-                            </button>
-                          </div>
-                        ))}
-                        {imagePreview.map((preview, index) => (
-                          <div key={`preview-${index}`} className="relative">
-                            <img 
-                              src={preview} 
-                              alt={`Preview ${index + 1}`} 
-                              className="h-40 w-full object-cover rounded-md"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* File input */}
-                      <div className="flex items-center justify-center">
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          accept="image/*"
-                          onChange={handleFileChange}
-                          multiple
-                          className="hidden"
-                          id="product-images"
-                        />
-                        <label 
-                          htmlFor="product-images" 
-                          className="cursor-pointer flex items-center justify-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                        >
-                          <FiImage className="mr-2" />
-                          Select Images
-                        </label>
-                        
-                        {imagePreview.length > 0 && (
-                          <button
-                            onClick={handleImageUpload}
-                            disabled={uploadingImage}
-                            className="ml-3 flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
-                          >
-                            <FiUpload className="mr-2" />
-                            {uploadingImage ? 'Uploading...' : 'Upload'}
-                          </button>
-                        )}
-                      </div>
-                      
-                      {formData.imageUrls.length > 0 && (
-                        <p className="mt-2 text-sm text-green-600">
-                          {formData.imageUrls.length} image(s) uploaded successfully
-                        </p>
-                      )}
-                    </div>
-                    {formErrors.imageUrls && (
-                      <p className="mt-1 text-sm text-red-500">{formErrors.imageUrls}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Product Videos (Optional)
-                    </label>
-                    <div className="border rounded-md p-3 border-gray-300">
-                      {/* Video previews */}
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                        {formData.videoUrls.map((url, index) => (
-                          <div key={index} className="relative group">
-                            <video 
-                              src={url} 
-                              controls
-                              className="h-40 w-full object-cover rounded-md"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveVideo(index)}
-                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <FiX size={16} />
-                            </button>
-                          </div>
-                        ))}
-                        {videoPreview.map((preview, index) => (
-                          <div key={`preview-${index}`} className="relative">
-                            <video 
-                              src={preview.url} 
-                              controls
-                              className="h-40 w-full object-cover rounded-md"
-                            />
-                            <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                              {preview.size}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                            <div className="text-sm text-gray-500">{product.description}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ₹{(product.price || 0).toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ₹{(product.discount || 0).toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ₹{(product.sellingPrice || 0).toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {product.stock}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex space-x-3">
+                              <button 
+                                onClick={() => handleEdit(product)}
+                                className="text-indigo-600 hover:text-indigo-900"
+                              >
+                                <FiEdit size={18} />
+                              </button>
+                              <button 
+                                onClick={() => handleDelete(product._id)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                <FiTrash2 size={18} />
+                              </button>
                             </div>
-                            <p className="text-xs mt-1 text-center truncate">{preview.name}</p>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* File input */}
-                      <div className="flex items-center justify-center">
-                        <input
-                          type="file"
-                          ref={videoInputRef}
-                          accept="video/*"
-                          onChange={handleVideoFileChange}
-                          multiple
-                          className="hidden"
-                          id="product-videos"
-                        />
-                        <label 
-                          htmlFor="product-videos" 
-                          className="cursor-pointer flex items-center justify-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                        >
-                          <FiImage className="mr-2" />
-                          Select Videos
-                        </label>
-                        
-                        {videoPreview.length > 0 && (
-                          <button
-                            onClick={handleVideoUpload}
-                            disabled={uploadingVideo}
-                            className="ml-3 flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
-                          >
-                            {uploadingVideo ? (
-                              <>
-                                <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Uploading...
-                              </>
-                            ) : (
-                              <>
-                                <FiUpload className="mr-2" />
-                                Upload
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </div>
-                      
-                      {uploadingVideo && (
-                        <div className="mt-2">
-                          <p className="text-sm text-blue-600">
-                            Uploading videos, please wait... This may take a few minutes for larger files.
-                          </p>
-                          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
-                            <div className="bg-blue-600 h-2.5 rounded-full animate-pulse w-full"></div>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {formData.videoUrls.length > 0 && (
-                        <p className="mt-2 text-sm text-green-600">
-                          {formData.videoUrls.length} video(s) uploaded successfully
-                        </p>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">Add videos to showcase your product from different angles (optional)</p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Initial Rating (0-5)
-                    </label>
-                    <input
-                      type="number"
-                      name="rating"
-                      min="0"
-                      max="5"
-                      step="0.1"
-                      value={formData.rating}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border border-gray-300 rounded-md bg-white"
-                      placeholder="Enter initial rating"
-                    />
-                  </div>
-                  
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Short Description*
-                    </label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      rows="3"
-                      className={`w-full p-2 border rounded-md bg-white ${formErrors.description ? 'border-red-500' : 'border-gray-300'}`}
-                      placeholder="Enter a short product description"
-                    ></textarea>
-                    {formErrors.description && (
-                      <p className="mt-1 text-sm text-red-500">{formErrors.description}</p>
-                    )}
-                  </div>
-                  
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Detailed Description*
-                    </label>
-                    <textarea
-                      name="detailedDescription"
-                      value={formData.detailedDescription}
-                      onChange={handleInputChange}
-                      rows="5"
-                      className={`w-full p-2 border rounded-md bg-white ${formErrors.detailedDescription ? 'border-red-500' : 'border-gray-300'}`}
-                      placeholder="Enter detailed product information including materials, dimensions, etc."
-                    ></textarea>
-                    {formErrors.detailedDescription && (
-                      <p className="mt-1 text-sm text-red-500">{formErrors.detailedDescription}</p>
-                    )}
-                  </div>
-                  
-                  <div className="md:col-span-2">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="isAvailable"
-                        name="isAvailable"
-                        checked={formData.isAvailable}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                      />
-                      <label htmlFor="isAvailable" className="ml-2 block text-sm text-gray-900">
-                        Product is available for sale
-                      </label>
-                    </div>
-                  </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                
-                <div className="mt-8 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      resetForm();
-                      setActiveTab('products');
-                    }}
-                    className="mr-4 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className={`px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
-                  >
-                    {loading ? 'Saving...' : isEditing ? 'Update Product' : 'Add Product'}
-                  </button>
-                </div>
-              </form>
+              )}
             </div>
           </div>
         )}
@@ -1934,768 +1364,243 @@ const AdminDashboard = () => {
               <h2 className="text-lg font-medium text-gray-900">User Management</h2>
             </div>
             <div className="p-6">
-              {loading ? <LoadingScreen fullScreen={false} /> : (
-                <>
-                  {loading ? (
-                    <div className="flex justify-center items-center h-48">
-                      <div className="spinner-border text-purple-500" role="status">
-                        <span className="sr-only">Loading...</span>
-                      </div>
-                    </div>
-                  ) : users.length === 0 ? (
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">No users found</p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              User
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Email
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Status
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Orders
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {users.map((user) => (
-                            <tr key={user._id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center">
-                                  <div className="flex-shrink-0 h-10 w-10">
-                                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-                                      <FiUser className="text-gray-500" />
-                                    </div>
-                                  </div>
-                                  <div className="ml-4">
-                                    <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                                  </div>
+              {loading ? (
+                <div className="flex justify-center items-center h-48">
+                  <FiLoader className="animate-spin w-8 h-8 text-purple-500" />
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          User
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Orders
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {users.map((user) => (
+                        <tr key={user._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10">
+                                <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                  <FiUser className="text-gray-500" />
                                 </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {user.email}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  user.status === 'active' ? 'bg-green-100 text-green-800' :
-                                  user.status === 'banned' ? 'bg-red-100 text-red-800' :
-                                  'bg-yellow-100 text-yellow-800'
-                                }`}>
-                                  {user.status}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {user.orderCount || 0}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button
-                                  className="text-indigo-600 hover:text-indigo-900 mr-3"
-                                  onClick={() => fetchUserDetails(user._id)}
-                                >
-                                  <FiEdit />
-                                </button>
-                                <button
-                                  className="text-red-600 hover:text-red-900"
-                                  onClick={() => handleUserDelete(user._id)}
-                                >
-                                  <FiTrash2 />
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </>
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              user.status === 'active' ? 'bg-green-100 text-green-800' :
+                              user.status === 'banned' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {user.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.orderCount || 0}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              className="text-indigo-600 hover:text-indigo-900 mr-3"
+                              onClick={() => fetchUserDetails(user._id)}
+                            >
+                              <FiEdit />
+                            </button>
+                            <button
+                              className="text-red-600 hover:text-red-900"
+                              onClick={() => handleUserDelete(user._id)}
+                            >
+                              <FiTrash2 />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>
         )}
 
         {activeTab === 'orders' && (
-          <div className="space-y-8">
-            {loading ? <LoadingScreen fullScreen={false} /> : (
-              <>
-                {/* Order Requests Section */}
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                  <div className="px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-medium text-gray-900">Order Requests</h3>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {loadingOrders ? (
-                          <tr>
-                            <td colSpan="6" className="px-6 py-4 text-center">
-                              <div className="flex justify-center">
-                                <div className="animate-spin text-gray-500 mr-2">
-                                  <FiLoader size={20} />
-                                </div>
-                                <p>Loading orders...</p>
-                              </div>
-                            </td>
-                          </tr>
-                        ) : orderRequests.length === 0 ? (
-                          <tr>
-                            <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                              No order requests found
-                            </td>
-                          </tr>
-                        ) : (
-                          orderRequests.map((order) => (
-                            <tr key={order._id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {order._id.slice(-6)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {order.user?.name || 'Unknown User'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ₹{order.totalAmount.toFixed(2)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
-                                  order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
-                                  'bg-yellow-100 text-yellow-800'
-                                }`}>
-                                  {order.requestStatus}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {new Date(order.createdAt).toLocaleDateString()}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <div className="flex space-x-2">
-                                  <button 
-                                    className="text-indigo-600 hover:text-indigo-900"
-                                    onClick={() => fetchOrderDetails(order._id)}
-                                  >
-                                    View Details
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* All Orders Section */}
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                  <div className="px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-medium text-gray-900">All Orders</h3>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {loading ? (
-                          <tr>
-                            <td colSpan="6" className="px-6 py-4 text-center">
-                              <div className="flex justify-center">
-                                <div className="animate-spin text-gray-500 mr-2">
-                                  <FiLoader size={20} />
-                                </div>
-                                <p>Loading orders...</p>
-                              </div>
-                            </td>
-                          </tr>
-                        ) : orders.length === 0 ? (
-                          <tr>
-                            <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                              No orders found
-                            </td>
-                          </tr>
-                        ) : (
-                          orders.map((order) => (
-                            <tr key={order._id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {order._id.slice(-6)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {order.user?.name || 'Unknown User'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ₹{order.totalAmount.toFixed(2)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
-                                  order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
-                                  'bg-yellow-100 text-yellow-800'
-                                }`}>
-                                  {order.requestStatus}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {new Date(order.createdAt).toLocaleDateString()}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <div className="flex space-x-2">
-                                  <button 
-                                    className="text-indigo-600 hover:text-indigo-900"
-                                    onClick={() => fetchOrderDetails(order._id)}
-                                  >
-                                    View Details
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'requests' && (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">Replacement/Refund Requests</h3>
+              <h2 className="text-lg font-medium text-gray-900">Orders Management</h2>
             </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {loadingRequests ? (
-                    <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center">
-                        <div className="flex justify-center">
-                          <div className="animate-spin text-gray-500 mr-2">
-                            <FiLoader size={20} />
-                          </div>
-                          <p>Loading requests...</p>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : requests.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                        No requests found
-                      </td>
-                    </tr>
-                  ) : (
-                    requests.map((request) => (
-                      <tr 
-                        key={request._id} 
-                        className={`hover:bg-gray-50 ${request.deleted ? 'opacity-50' : ''}`}
-                      >
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${request.deleted ? 'line-through' : ''}`}>
-                          {request._id.slice(-6)}
-                        </td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${request.deleted ? 'line-through' : ''}`}>
-                          {request.user?.name || 'Unknown User'}
-                        </td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${request.deleted ? 'line-through' : ''}`}>
-                          {request.type}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            request.status === 'approved' ? 'bg-green-100 text-green-800' :
-                            request.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                            request.status === 'deleted' ? 'bg-gray-100 text-gray-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {request.status}
-                          </span>
-                        </td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${request.deleted ? 'line-through' : ''}`}>
-                          {new Date(request.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => {
-                                setSelectedRequest(request);
-                                setShowRequestModal(true);
-                              }}
-                              className="text-blue-600 hover:text-blue-800"
-                            >
-                              View Details
-                            </button>
-                            {!request.deleted && (request.status === 'approved' || request.status === 'rejected') && (
-                              <button
-                                onClick={() => handleRequestDelete(request._id)}
-                                className="text-red-600 hover:text-red-800"
-                              >
-                                Delete
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
-      {showToast && (
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setShowToast(false)}
-        />
-      )}
-      {/* Order Details Modal */}
-      {selectedOrder && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Order Details</h3>
-              <button
-                className="text-gray-400 hover:text-gray-500"
-                onClick={() => {
-                  setShowOrderModal(false);
-                  setSelectedOrder(null);
-                }}
-              >
-                <FiX size={20} />
-              </button>
-            </div>
-
-            {loadingOrderDetails ? (
-              <div className="flex justify-center items-center h-48">
-                <div className="animate-spin text-purple-500">
-                  <FiLoader size={24} />
+            <div className="p-6">
+              {loading ? (
+                <div className="flex justify-center items-center h-48">
+                  <FiLoader className="animate-spin w-8 h-8 text-purple-500" />
                 </div>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <h4 className="font-medium text-gray-700 mb-2">Order Information</h4>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p><span className="font-medium">Order ID:</span> {selectedOrder._id}</p>
-                      <p><span className="font-medium">Date:</span> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
-                      <p><span className="font-medium">Status:</span> 
-                        <span className={`ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          selectedOrder.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
-                          selectedOrder.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {selectedOrder.requestStatus}
-                        </span>
-                      </p>
-                      <p><span className="font-medium">Total Amount:</span> ${selectedOrder.totalAmount.toFixed(2)}</p>
-                      {selectedOrder.paymentMethod && (
-                        <p><span className="font-medium">Payment Method:</span> {selectedOrder.paymentMethod}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium text-gray-700 mb-2">Customer Information</h4>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      {selectedOrder.user && typeof selectedOrder.user === 'object' ? (
-                        <>
-                          <p><span className="font-medium">Name:</span> {selectedOrder.user?.name || 'Unknown User'}</p>
-                          <p><span className="font-medium">Email:</span> {selectedOrder.user?.email || 'No email available'}</p>
-                          <p><span className="font-medium">Phone:</span> {selectedOrder.user?.phone || 'Not provided'}</p>
-                          <p><span className="font-medium">WhatsApp:</span> {selectedOrder.whatsappPhone || 'Not provided'}</p>
-
-                          {selectedOrder.shippingAddress && (
-                            <>
-                              <p className="font-medium mt-2">Shipping Address:</p>
-                              <p>{selectedOrder.shippingAddress.street || selectedOrder.shippingAddress.address}</p>
-                              <p>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} {selectedOrder.shippingAddress.zipCode}</p>
-                              <p>{selectedOrder.shippingAddress.country}</p>
-                            </>
-                          )}
-                        </>
-                      ) : (
-                        <p>User information not available</p>
-                      )}
-                    </div>
-
-                    {selectedOrder.whatsappMessage && (
-                      <div className="mt-4">
-                        <h4 className="font-medium text-gray-700 mb-2">WhatsApp Message</h4>
-                        <div className="bg-gray-50 rounded-lg p-4 whitespace-pre-wrap">
-                          {selectedOrder.whatsappMessage}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <h4 className="font-medium text-gray-700 mb-2">Order Items</h4>
-                <div className="overflow-x-auto bg-gray-50 rounded-lg mb-6">
+              ) : (
+                <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-100">
+                    <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {selectedOrder.items && selectedOrder.items.map((item, index) => (
-                        <tr key={index}>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {orderRequests.map((order) => (
+                        <tr key={order._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {order._id.slice(-6)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {order.user?.name || 'Unknown User'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ₹{order.totalAmount.toFixed(2)}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              {item.jewelry && typeof item.jewelry === 'object' && item.jewelry.imageUrl && (
-                                <div className="h-12 w-12 flex-shrink-0 mr-4">
-                                  <img 
-                                    className="h-12 w-12 object-cover rounded-md" 
-                                    src={item.jewelry.imageUrl} 
-                                    alt={item.jewelry.name}
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = '/src/assets/placeholder.svg';
-                                    }}
-                                  />
-                                </div>
-                              )}
-                              <div className="flex-1">
-                                {item.jewelry && typeof item.jewelry === 'object' ? item.jewelry.name : 'Unknown Product'}
-                              </div>
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                              order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {order.requestStatus}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <div className="flex space-x-2">
+                              <button 
+                                className="text-indigo-600 hover:text-indigo-900"
+                                onClick={() => fetchOrderDetails(order._id)}
+                              >
+                                View Details
+                              </button>
                             </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            ${item.price ? item.price.toFixed(2) : '0.00'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {item.quantity}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            ${(item.price * item.quantity).toFixed(2)}
                           </td>
                         </tr>
                       ))}
                     </tbody>
-                    <tfoot className="bg-gray-100">
-                      <tr>
-                        <td colSpan="3" className="px-6 py-4 text-right font-medium">Total:</td>
-                        <td className="px-6 py-4 font-medium">${selectedOrder.totalAmount.toFixed(2)}</td>
-                      </tr>
-                    </tfoot>
                   </table>
                 </div>
-
-                {selectedOrder.notes && (
-                  <div className="mb-6">
-                    <h4 className="font-medium text-gray-700 mb-2">Order Notes</h4>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p>{selectedOrder.notes}</p>
-                    </div>
-                  </div>
-                )}
-
-                {selectedOrder.requestStatus === 'pending' && (
-                  <div className="flex space-x-4 justify-end mt-4">
-                    <button 
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                      onClick={() => {
-                        handleOrderStatusUpdate(selectedOrder._id, 'rejected');
-                        setShowOrderModal(false);
-                      }}
-                    >
-                      Reject Order
-                    </button>
-                    <button 
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                      onClick={() => {
-                        handleOrderStatusUpdate(selectedOrder._id, 'approved');
-                        setShowOrderModal(false);
-                      }}
-                    >
-                      Approve Order
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      )}
-      {/* Request Details Modal */}
-      {showRequestModal && selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-            <h3 className="text-lg font-medium mb-4">Request Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <h4 className="font-medium text-gray-700 mb-2">Request Information</h4>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p><span className="font-medium">Request ID:</span> {selectedRequest._id}</p>
-                  <p><span className="font-medium">Type:</span> {selectedRequest.type}</p>
-                  <p><span className="font-medium">Status:</span> 
-                    <span className={`ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      selectedRequest.status === 'approved' ? 'bg-green-100 text-green-800' :
-                      selectedRequest.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {selectedRequest.status}
-                    </span>
-                  </p>
-                  <p><span className="font-medium">Date:</span> {new Date(selectedRequest.createdAt).toLocaleString()}</p>
-                </div>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-700 mb-2">Customer Information</h4>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p><span className="font-medium">Name:</span> {selectedRequest.user?.name || 'Unknown User'}</p>
-                  <p><span className="font-medium">Email:</span> {selectedRequest.user?.email || 'No email available'}</p>
-                </div>
-              </div>
-            </div>
-            <div className="mb-6">
-              <h4 className="font-medium text-gray-700 mb-2">Reason</h4>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p>{selectedRequest.reason}</p>
-              </div>
-            </div>
-
-            {/* Combined Image and Video Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              {/* Images Section */}
-              {selectedRequest.imageUrls && selectedRequest.imageUrls.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Images</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    {selectedRequest.imageUrls.map((imageUrl, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-2">
-                        <img 
-                          src={imageUrl} 
-                          alt={`Request ${index + 1}`} 
-                          className="w-full h-32 object-cover rounded" 
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Videos Section */}
-              {selectedRequest.videoUrls && selectedRequest.videoUrls.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Videos</h4>
-                  <div className="grid grid-cols-1 gap-2">
-                    {selectedRequest.videoUrls.map((videoUrl, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-2">
-                        <video 
-                          src={videoUrl} 
-                          controls
-                          className="w-full h-32 object-cover rounded" 
-                        >
-                          Your browser does not support the video tag.
-                        </video>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               )}
             </div>
-
-            <div className="mb-6">
-              <h4 className="font-medium text-gray-700 mb-2">Response</h4>
-              <textarea
-                value={adminResponse}
-                onChange={(e) => setAdminResponse(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                rows="3"
-                placeholder="Enter your response..."
-              />
-            </div>
-
-            <div className="flex justify-end gap-4">
-              <motion.button
-                onClick={() => {
-                  setShowRequestModal(false);
-                  setSelectedRequest(null);
-                  setAdminResponse('');
-                }}
-                className="px-4 py-2 bg-neutral text-gray-700 rounded-lg hover:bg-neutral/80 transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Cancel
-              </motion.button>
-              <motion.button
-                onClick={handleRequestStatusUpdate}
-                disabled={!adminResponse.trim()}
-                className={`px-4 py-2 bg-primary text-white rounded-lg ${
-                  !adminResponse.trim() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90'
-                } transition-colors`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Update Status
-              </motion.button>
-            </div>
           </div>
-        </div>
-      )}
-      {/* User Management Modal */}
-      {showUserModal && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-            <h3 className="text-lg font-medium mb-4">User Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <h4 className="font-medium text-gray-700 mb-2">User Information</h4>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p><span className="font-medium">Name:</span> {selectedUser.name}</p>
-                  <p><span className="font-medium">Email:</span> {selectedUser.email}</p>
-                  <p><span className="font-medium">Status:</span> 
-                    <span className={`ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      selectedUser.status === 'active' ? 'bg-green-100 text-green-800' :
-                      selectedUser.status === 'banned' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {selectedUser.status}
-                    </span>
-                  </p>
-                  {selectedUser.status !== 'active' && (
-                    <>
-                      <p><span className="font-medium">Ban Reason:</span> {selectedUser.banReason}</p>
-                      {selectedUser.banExpiry && (
-                        <p><span className="font-medium">Ban Expiry:</span> {new Date(selectedUser.banExpiry).toLocaleString()}</p>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-700 mb-2">Order History</h4>
-                <div className="bg-gray-50 rounded-lg p-4 max-h-48 overflow-y-auto">
-                  {userOrders.length === 0 ? (
-                    <p className="text-gray-500">No orders found</p>
-                  ) : (
-                    <ul className="space-y-2">
-                      {userOrders.map(order => (
-                        <li key={order._id} className="border-b pb-2">
-                          <p className="font-medium">Order #{order._id.slice(-6)}</p>
-                          <p className="text-sm text-gray-600">Amount: ₹{order.totalAmount.toFixed(2)}</p>
-                          <p className="text-sm text-gray-600">Status: {order.requestStatus}</p>
-                          <p className="text-sm text-gray-600">Date: {new Date(order.createdAt).toLocaleDateString()}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
+        )}
+
+        {activeTab === 'requests' && (
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">Custom Requests</h2>
             </div>
-            {selectedUser.status === 'active' ? (
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Ban Reason</label>
-                <input
-                  type="text"
-                  value={banReason}
-                  onChange={(e) => setBanReason(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  placeholder="Enter ban reason"
-                />
-                <label className="block text-gray-700 mb-2 mt-4">Ban Expiry (Optional)</label>
-                <input
-                  type="datetime-local"
-                  value={banExpiry}
-                  onChange={(e) => setBanExpiry(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-              </div>
-            ) : null}
-            <div className="flex space-x-4 justify-end">
-              {selectedUser.status === 'active' ? (
-                <>
-                  <button
-                    onClick={() => {
-                      setUserAction('suspended');
-                      handleUserStatusUpdate();
-                    }}
-                    className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
-                  >
-                    Suspend User
-                  </button>
-                  <button
-                    onClick={() => {
-                      setUserAction('banned');
-                      handleUserStatusUpdate();
-                    }}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                  >
-                    Ban User
-                  </button>
-                </>
+            <div className="p-6">
+              {loading ? (
+                <div className="flex justify-center items-center h-48">
+                  <FiLoader className="animate-spin w-8 h-8 text-purple-500" />
+                </div>
               ) : (
-                <button
-                  onClick={() => {
-                    setUserAction('active');
-                    handleUserStatusUpdate();
-                  }}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                >
-                  Activate User
-                </button>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {requests.map((request) => (
+                        <tr 
+                          key={request._id} 
+                          className={`hover:bg-gray-50 ${request.deleted ? 'opacity-50' : ''}`}
+                        >
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${request.deleted ? 'line-through' : ''}`}>
+                            {request._id.slice(-6)}
+                          </td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${request.deleted ? 'line-through' : ''}`}>
+                            {request.user?.name || 'Unknown User'}
+                          </td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${request.deleted ? 'line-through' : ''}`}>
+                            {request.type}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                              request.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                              request.status === 'deleted' ? 'bg-gray-100 text-gray-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {request.status}
+                            </span>
+                          </td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${request.deleted ? 'line-through' : ''}`}>
+                            {new Date(request.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedRequest(request);
+                                  setShowRequestModal(true);
+                                }}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                View Details
+                              </button>
+                              {!request.deleted && (request.status === 'approved' || request.status === 'rejected') && (
+                                <button
+                                  onClick={() => handleRequestDelete(request._id)}
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => {
-                  setShowUserModal(false);
-                  setSelectedUser(null);
-                  setBanReason('');
-                  setBanExpiry('');
-                }}
-                className="px-4 py-2 border rounded-lg"
-              >
-                Close
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {showToast && (
+          <Toast
+            message={toastMessage}
+            type={toastType}
+            onClose={() => setShowToast(false)}
+          />
+        )}
+      </div>
     </div>
   );
 };

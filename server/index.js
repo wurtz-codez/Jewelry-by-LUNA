@@ -2,9 +2,24 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
+const compression = require('compression');
 require('dotenv').config();
 
 const app = express();
+
+// Compression middleware - should be one of the first middlewares
+app.use(compression({
+  level: 6, // Default compression level
+  threshold: 0, // Compress all responses
+  filter: (req, res) => {
+    // Don't compress responses with this request header
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    // Use compression filter function
+    return compression.filter(req, res);
+  }
+}));
 
 // Middleware
 app.use(cors({
