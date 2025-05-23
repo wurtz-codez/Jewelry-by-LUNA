@@ -73,22 +73,19 @@ const LoginOTP = () => {
     setError('');
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/verify-login-otp`, {
-        email,
-        otp
-      });
-
-      if (response.data.success) {
-        const { token, user } = response.data;
-        localStorage.setItem('token', token);
+      const result = await login(email, otp, true);
+      
+      if (result.success) {
         setShowToast(true);
         setTimeout(() => {
-          if (user?.role === 'admin') {
+          if (result.user?.role === 'admin') {
             navigate('/admin');
           } else {
             navigate('/');
           }
         }, 1000);
+      } else {
+        setError(result.error || 'Login failed');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid OTP');

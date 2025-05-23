@@ -248,17 +248,26 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
-// Validate token
+// Validate token and get user
 router.get('/validate', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json({ user });
+    
+    res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status
+      }
+    });
   } catch (error) {
-    console.error('Token validation error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error validating token:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 

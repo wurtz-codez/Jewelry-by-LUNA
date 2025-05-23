@@ -29,6 +29,7 @@ export const AuthProvider = ({ children }) => {
       
       if (response.data.user) {
         setCurrentUser(response.data.user);
+        return true;
       } else {
         throw new Error('Invalid user data');
       }
@@ -41,6 +42,7 @@ export const AuthProvider = ({ children }) => {
         setToken(null);
         setCurrentUser(null);
       }
+      return false;
     } finally {
       setLoading(false);
     }

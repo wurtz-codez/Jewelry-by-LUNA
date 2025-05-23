@@ -54,8 +54,8 @@ const ShopProvider = ({ children }) => {
   const addToCart = async (product, quantity = 1) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
+      if (!token || !currentUser) {
+        console.error('User not authenticated');
         return false;
       }
 
@@ -83,7 +83,7 @@ const ShopProvider = ({ children }) => {
   const removeFromCart = async (productId) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token || !currentUser) return;
 
       await axios.delete(
         `${API_BASE_URL}/cart/items/${productId}`,
@@ -98,7 +98,7 @@ const ShopProvider = ({ children }) => {
   const updateCartItemQuantity = async (productId, quantity) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token || !currentUser) return;
 
       await axios.put(
         `${API_BASE_URL}/cart/items/${productId}`,
@@ -114,8 +114,8 @@ const ShopProvider = ({ children }) => {
   const addToWishlist = async (product) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
+      if (!token || !currentUser) {
+        console.error('User not authenticated');
         return false;
       }
 
@@ -135,8 +135,8 @@ const ShopProvider = ({ children }) => {
   const removeFromWishlist = async (productId) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
+      if (!token || !currentUser) {
+        console.error('User not authenticated');
         return false;
       }
 
