@@ -25,6 +25,9 @@ const Wishlist = lazy(() => import('./pages/Wishlist'));
 const Profile = lazy(() => import('./pages/Profile'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const ProductDetailsPage = lazy(() => import('./pages/ProductDetailsPage'));
+const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const FAQ = lazy(() => import('./pages/FAQ'));
 
 const App = () => {
   useScrollOptimization();
@@ -56,6 +59,9 @@ const App = () => {
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/refund-and-return-policies" element={<RefundAndReturnPolicies />} />
+              <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/faq" element={<FAQ />} />
               <Route path="/cart" element={
                 <ProtectedRoute>
                   <Cart />

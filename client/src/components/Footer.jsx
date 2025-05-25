@@ -60,6 +60,21 @@ const Footer = () => {
                   Returns & Refunds
                 </Link>
               </li>
+              <li>
+                <Link to="/terms-and-conditions" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy-policy" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/faq" className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-primary transition-colors font-cormorant">
+                  FAQs
+                </Link>
+              </li>
             </ul>
           </div>
           
