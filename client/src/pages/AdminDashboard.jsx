@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FiUsers, FiShoppingBag, FiDollarSign, FiTrendingUp, FiPlusCircle, FiX, FiEdit, FiTrash2, FiUpload, FiImage, FiUser, FiUserX, FiUserCheck, FiCheck, FiLoader } from 'react-icons/fi';
+import { FiUsers, FiShoppingBag, FiDollarSign, FiTrendingUp, FiPlusCircle, FiX, FiEdit, FiTrash2, FiUpload, FiImage, FiUser, FiUserX, FiUserCheck, FiCheck, FiLoader, FiVideo } from 'react-icons/fi';
 import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -49,12 +49,12 @@ const AdminDashboard = () => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [requestsLoading, setRequestsLoading] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [imagePreview, setImagePreview] = useState([]);
   const [videoPreview, setVideoPreview] = useState([]);
   const fileInputRef = useRef(null);
   const videoInputRef = useRef(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [videoUploading, setVideoUploading] = useState(false);
 
   // Dashboard stats state
   const [dashboardStats, setDashboardStats] = useState({
@@ -277,7 +277,7 @@ const AdminDashboard = () => {
     }
     
     try {
-      setUploadingImage(true);
+      setImageUploading(true);
       
       const formData = new FormData();
       files.forEach(file => {
@@ -315,7 +315,7 @@ const AdminDashboard = () => {
       setToastType('error');
       setShowToast(true);
     } finally {
-      setUploadingImage(false);
+      setImageUploading(false);
     }
   };
 
@@ -409,7 +409,7 @@ const AdminDashboard = () => {
     }
     
     try {
-      setUploadingVideo(true);
+      setVideoUploading(true);
       setToastMessage('Starting video upload, please wait...');
       setToastType('info');
       setShowToast(true);
@@ -463,7 +463,7 @@ const AdminDashboard = () => {
       setToastType('error');
       setShowToast(true);
     } finally {
-      setUploadingVideo(false);
+      setVideoUploading(false);
     }
   };
 
@@ -1974,6 +1974,455 @@ const AdminDashboard = () => {
                   </table>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+        
+        {activeTab === 'add-product' && (
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-secondary-washed">
+            <div className="px-6 py-4 border-b border-secondary-washed bg-gradient-to-r from-neutral to-white">
+              <h2 className="text-xl font-heading font-semibold text-accent">
+                {isEditing ? 'Edit Product' : 'Add New Product'}
+              </h2>
+            </div>
+            <div className="p-6 bg-gradient-to-br from-white to-neutral/30">
+              <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Basic Information */}
+                <div className="border-b border-secondary-washed pb-6">
+                  <h3 className="text-lg font-heading text-primary mb-4 border-l-4 border-primary pl-3 py-1">Product Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="transition-all duration-200 hover:shadow-sm">
+                        <label htmlFor="name" className="block text-sm font-medium text-accent mb-1">Product Name</label>
+                        <input
+                          type="text"
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          className={`mt-1 block w-full rounded-md border-secondary-washed shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-30 font-body text-accent ${formErrors.name ? 'border-error' : ''} bg-neutral/30 py-2 px-3 transition-all duration-200`}
+                        />
+                        {formErrors.name && <p className="mt-1 text-sm text-error">{formErrors.name}</p>}
+                      </div>
+                      
+                      <div className="transition-all duration-200 hover:shadow-sm">
+                        <label htmlFor="description" className="block text-sm font-medium text-accent mb-1">Short Description</label>
+                        <textarea
+                          id="description"
+                          name="description"
+                          rows={3}
+                          value={formData.description}
+                          onChange={handleInputChange}
+                          className={`mt-1 block w-full rounded-md border-secondary-washed shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-30 font-body text-accent ${formErrors.description ? 'border-error' : ''} bg-neutral/30 py-2 px-3 transition-all duration-200`}
+                        />
+                        {formErrors.description && <p className="mt-1 text-sm text-error">{formErrors.description}</p>}
+                      </div>
+                    </div>
+                    
+                    <div className="transition-all duration-200 hover:shadow-sm">
+                      <label htmlFor="detailedDescription" className="block text-sm font-medium text-accent mb-1">Detailed Description</label>
+                      <textarea
+                        id="detailedDescription"
+                        name="detailedDescription"
+                        rows={8}
+                        value={formData.detailedDescription}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full rounded-md border-secondary-washed shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-30 font-body text-accent bg-neutral/30 py-2 px-3 transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Pricing & Inventory */}
+                <div className="border-b border-secondary-washed pb-6">
+                  <h3 className="text-lg font-heading text-primary mb-4 border-l-4 border-primary pl-3 py-1">Pricing & Inventory</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="transition-all duration-200 hover:shadow-sm">
+                          <label htmlFor="price" className="block text-sm font-medium text-accent mb-1">Price (₹)</label>
+                          <input
+                            type="number"
+                            id="price"
+                            name="price"
+                            min="0"
+                            step="0.01"
+                            value={formData.price}
+                            onChange={handleInputChange}
+                            className={`mt-1 block w-full rounded-md border-secondary-washed shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-30 font-body text-accent ${formErrors.price ? 'border-error' : ''} bg-neutral/30 py-2 px-3 transition-all duration-200`}
+                          />
+                          {formErrors.price && <p className="mt-1 text-sm text-error">{formErrors.price}</p>}
+                        </div>
+                        
+                        <div className="transition-all duration-200 hover:shadow-sm">
+                          <label htmlFor="discount" className="block text-sm font-medium text-accent mb-1">Discount (₹)</label>
+                          <input
+                            type="number"
+                            id="discount"
+                            name="discount"
+                            min="0"
+                            step="0.01"
+                            value={formData.discount}
+                            onChange={handleInputChange}
+                            className={`mt-1 block w-full rounded-md border-secondary-washed shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-30 font-body text-accent ${formErrors.discount ? 'border-error' : ''} bg-neutral/30 py-2 px-3 transition-all duration-200`}
+                          />
+                          {formErrors.discount && <p className="mt-1 text-sm text-error">{formErrors.discount}</p>}
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="transition-all duration-200 hover:shadow-sm">
+                          <label htmlFor="sellingPrice" className="block text-sm font-medium text-accent mb-1">Selling Price (₹)</label>
+                          <input
+                            type="number"
+                            id="sellingPrice"
+                            name="sellingPrice"
+                            value={formData.sellingPrice}
+                            disabled
+                            className="mt-1 block w-full rounded-md border-secondary-washed shadow-sm font-body text-accent bg-neutral/50 py-2 px-3 opacity-80"
+                          />
+                        </div>
+                        
+                        <div className="transition-all duration-200 hover:shadow-sm">
+                          <label htmlFor="stock" className="block text-sm font-medium text-accent mb-1">Stock</label>
+                          <input
+                            type="number"
+                            id="stock"
+                            name="stock"
+                            min="0"
+                            value={formData.stock}
+                            onChange={handleInputChange}
+                            className={`mt-1 block w-full rounded-md border-secondary-washed shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-30 font-body text-accent ${formErrors.stock ? 'border-error' : ''} bg-neutral/30 py-2 px-3 transition-all duration-200`}
+                          />
+                          {formErrors.stock && <p className="mt-1 text-sm text-error">{formErrors.stock}</p>}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <div className="bg-neutral rounded-lg p-5 w-full transition-all duration-200 hover:shadow-md">
+                        <div className="flex items-center mb-4">
+                          <input
+                            type="checkbox"
+                            id="isAvailable"
+                            name="isAvailable"
+                            checked={formData.isAvailable}
+                            onChange={(e) => setFormData(prev => ({ ...prev, isAvailable: e.target.checked }))}
+                            className="h-4 w-4 rounded border-secondary text-primary focus:ring-primary focus:ring-opacity-30 transition-all duration-200"
+                          />
+                          <label htmlFor="isAvailable" className="ml-2 block text-sm text-accent">Available for Purchase</label>
+                        </div>
+                        <div className="text-sm text-secondary italic">
+                          {formData.isAvailable 
+                            ? "This product will be displayed in the shop and can be purchased by customers." 
+                            : "This product will be hidden from the shop and cannot be purchased."}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Categories & Tags */}
+                <div className="border-b border-secondary-washed pb-6">
+                  <h3 className="text-lg font-heading text-primary mb-4 border-l-4 border-primary pl-3 py-1">Categories & Tags</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="transition-all duration-200 hover:shadow-sm bg-white p-4 rounded-md border border-secondary-washed bg-gradient-to-r from-white to-neutral/30">
+                      <label className="block text-sm font-medium text-accent mb-2">Categories</label>
+                      <div className="flex flex-wrap gap-2 mb-3 min-h-[40px]">
+                        {formData.categories.map((category, index) => (
+                          <span 
+                            key={index} 
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary bg-opacity-10 text-primary"
+                          >
+                            {category}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCategory(category)}
+                              className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-primary hover:bg-primary hover:text-white"
+                            >
+                              <span className="sr-only">Remove category</span>
+                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex space-x-2">
+                        <select
+                          value={newCategory}
+                          onChange={(e) => setNewCategory(e.target.value)}
+                          className="block w-full rounded-md border-secondary-washed shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-30 font-body text-accent bg-neutral/30 py-2 px-3 transition-all duration-200 appearance-none bg-no-repeat bg-right"
+                          style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239B7D7D' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundSize: "1.5em 1.5em", paddingRight: "2.5rem" }}
+                        >
+                          <option value="">Select Category</option>
+                          <option value="necklace">Necklace</option>
+                          <option value="earrings">Earrings</option>
+                          <option value="bracelet">Bracelet</option>
+                          <option value="ring">Ring</option>
+                          <option value="anklet">Anklet</option>
+                          <option value="custom">Custom Category</option>
+                        </select>
+                        {newCategory === 'custom' && (
+                          <input
+                            type="text"
+                            value={customCategory}
+                            onChange={(e) => setCustomCategory(e.target.value)}
+                            placeholder="Enter custom category"
+                            className="block w-full rounded-md border-secondary-washed shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-30 font-body text-accent bg-neutral/30 py-2 px-3 transition-all duration-200"
+                          />
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleAddCategory}
+                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-washed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:shadow-md"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="transition-all duration-200 hover:shadow-sm bg-white p-4 rounded-md border border-secondary-washed bg-gradient-to-r from-white to-neutral/30">
+                      <label className="block text-sm font-medium text-accent mb-2">Tags</label>
+                      <div className="flex flex-wrap gap-2 mb-3 min-h-[40px]">
+                        {formData.tags.map((tag, index) => (
+                          <span 
+                            key={index} 
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary bg-opacity-10 text-secondary"
+                          >
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveTag(tag)}
+                              className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-secondary hover:bg-secondary hover:text-white"
+                            >
+                              <span className="sr-only">Remove tag</span>
+                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex space-x-2">
+                        <select
+                          value={newTag}
+                          onChange={(e) => setNewTag(e.target.value)}
+                          className="block w-full rounded-md border-secondary-washed shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-30 font-body text-accent bg-neutral/30 py-2 px-3 transition-all duration-200 appearance-none bg-no-repeat bg-right"
+                          style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239B7D7D' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundSize: "1.5em 1.5em", paddingRight: "2.5rem" }}
+                        >
+                          <option value="">Select Tag</option>
+                          <option value="new arrival">New Arrival</option>
+                          <option value="bestseller">Bestseller</option>
+                          <option value="trending">Trending</option>
+                          <option value="sale">Sale</option>
+                          <option value="handmade">Handmade</option>
+                          <option value="custom">Custom Tag</option>
+                        </select>
+                        {newTag === 'custom' && (
+                          <input
+                            type="text"
+                            value={customTag}
+                            onChange={(e) => setCustomTag(e.target.value)}
+                            placeholder="Enter custom tag"
+                            className="block w-full rounded-md border-secondary-washed shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-30 font-body text-accent bg-neutral/30 py-2 px-3 transition-all duration-200"
+                          />
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleAddTag}
+                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-secondary hover:bg-secondary-washed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary hover:shadow-md"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Images and Videos */}
+                <div className="border-b border-secondary-washed pb-6">
+                  <h3 className="text-lg font-heading text-primary mb-4 border-l-4 border-primary pl-3 py-1">Media Gallery</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="transition-all duration-200 hover:shadow-sm bg-white p-4 rounded-md border border-secondary-washed bg-gradient-to-r from-white to-neutral/30">
+                      <label className="block text-sm font-medium text-accent mb-2">Product Images</label>
+                      {formErrors.imageUrls && (
+                        <p className="mb-2 text-sm text-error rounded-md bg-red-50 p-2">{formErrors.imageUrls}</p>
+                      )}
+                      <div className="flex flex-wrap gap-4 mb-4 min-h-[100px]">
+                        {formData.imageUrls.map((url, index) => (
+                          <div key={index} className="relative w-24 h-24 group transition-all duration-200 hover:shadow-md">
+                            <img 
+                              src={url} 
+                              alt={`Product ${index + 1}`} 
+                              className="w-24 h-24 object-cover rounded-md border border-secondary-washed"
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 rounded-md"></div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(index)}
+                              className="absolute -top-2 -right-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md text-error hover:bg-error hover:text-white transition-colors duration-200"
+                            >
+                              <span className="sr-only">Remove image</span>
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                        {imagePreview.map((preview, index) => (
+                          <div key={`preview-${index}`} className="relative w-24 h-24">
+                            <img 
+                              src={preview} 
+                              alt={`Upload Preview ${index + 1}`} 
+                              className="w-24 h-24 object-cover rounded-md border border-secondary-washed opacity-70"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <div className="mt-1 flex items-center">
+                        <input
+                          type="file"
+                          id="productImages"
+                          multiple
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          className="sr-only"
+                          ref={fileInputRef}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current.click()}
+                          className="inline-flex items-center px-3 py-2 border border-secondary shadow-sm text-sm leading-4 font-medium rounded-md text-accent bg-white hover:bg-neutral transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:shadow-md"
+                        >
+                          <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          Upload Images
+                        </button>
+                        {imageUploading && 
+                          <div className="ml-3 text-sm text-primary flex items-center">
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Uploading...
+                          </div>
+                        }
+                      </div>
+                    </div>
+                    
+                    <div className="transition-all duration-200 hover:shadow-sm bg-white p-4 rounded-md border border-secondary-washed bg-gradient-to-r from-white to-neutral/30">
+                      <label className="block text-sm font-medium text-accent mb-2">Product Videos</label>
+                      <div className="flex flex-wrap gap-4 mb-4 min-h-[100px]">
+                        {formData.videoUrls.map((url, index) => (
+                          <div key={index} className="relative w-32 h-24 group transition-all duration-200 hover:shadow-md">
+                            <video 
+                              src={url}
+                              className="w-32 h-24 object-cover rounded-md border border-secondary-washed bg-neutral"
+                              muted
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 rounded-md"></div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveVideo(index)}
+                              className="absolute -top-2 -right-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md text-error hover:bg-error hover:text-white transition-colors duration-200"
+                            >
+                              <span className="sr-only">Remove video</span>
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                        {videoPreview.map((preview, index) => (
+                          <div key={`video-preview-${index}`} className="relative w-32 h-24">
+                            <div className="w-32 h-24 bg-neutral rounded-md flex items-center justify-center border border-secondary-washed">
+                              <svg className="h-8 w-8 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <div className="mt-1 flex items-center">
+                        <input
+                          type="file"
+                          id="productVideos"
+                          multiple
+                          accept="video/*"
+                          onChange={handleVideoFileChange}
+                          className="sr-only"
+                          ref={videoInputRef}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => videoInputRef.current.click()}
+                          className="inline-flex items-center px-3 py-2 border border-secondary shadow-sm text-sm leading-4 font-medium rounded-md text-accent bg-white hover:bg-neutral transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:shadow-md"
+                        >
+                          <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          Upload Videos
+                        </button>
+                        {videoUploading && 
+                          <div className="ml-3 text-sm text-primary flex items-center">
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Uploading...
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-4 pt-4 mt-8 border-t border-secondary-washed pt-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetForm();
+                      setActiveTab('products');
+                    }}
+                    className="inline-flex items-center px-4 py-2 border border-secondary text-sm font-medium rounded-md text-accent bg-white hover:bg-neutral transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:shadow-md"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={productsLoading}
+                    className="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-washed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:bg-primary disabled:bg-opacity-50 hover:shadow-md"
+                  >
+                    {productsLoading ? (
+                      <div className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Saving...
+                      </div>
+                    ) : (
+                      <>{isEditing ? 'Update Product' : 'Add Product'}</>
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
