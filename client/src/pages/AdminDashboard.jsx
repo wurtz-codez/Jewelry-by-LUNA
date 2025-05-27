@@ -34,7 +34,10 @@ ChartJS.register(
   ArcElement
 );
 
-const API_BASE_URL = 'https://jewelry-by-luna.onrender.com/api';
+// Use localhost for development, production URL for production
+const API_BASE_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:5001/api' 
+  : 'https://jewelry-by-luna.onrender.com/api';
 
 const AdminDashboard = () => {
   const { currentUser } = useAuth();
@@ -284,13 +287,22 @@ const AdminDashboard = () => {
         formData.append('images', file);
       });
       
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setToastMessage('Authentication required. Please log in again.');
+        setToastType('error');
+        setShowToast(true);
+        setImageUploading(false);
+        return;
+      }
+      
       const response = await axios.post(
         `${API_BASE_URL}/upload`,
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            'x-auth-token': localStorage.getItem('token')
+            'x-auth-token': token
           }
         }
       );
@@ -311,7 +323,20 @@ const AdminDashboard = () => {
       
     } catch (error) {
       console.error('Error uploading images:', error);
-      setToastMessage(error.response?.data?.message || 'Failed to upload images');
+      let errorMessage = 'Failed to upload images';
+      
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        errorMessage = error.response.data.message || errorMessage;
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+        errorMessage = 'No response from server. Check your network connection.';
+      } else {
+        console.error('Error message:', error.message);
+        errorMessage = error.message;
+      }
+      
+      setToastMessage(errorMessage);
       setToastType('error');
       setShowToast(true);
     } finally {
@@ -414,6 +439,15 @@ const AdminDashboard = () => {
       setToastType('info');
       setShowToast(true);
       
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setToastMessage('Authentication required. Please log in again.');
+        setToastType('error');
+        setShowToast(true);
+        setVideoUploading(false);
+        return;
+      }
+      
       const formData = new FormData();
       files.forEach(file => {
         // Compress or validate video files if needed
@@ -427,7 +461,7 @@ const AdminDashboard = () => {
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            'x-auth-token': localStorage.getItem('token')
+            'x-auth-token': token
           },
           onUploadProgress: (progressEvent) => {
             const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -456,10 +490,20 @@ const AdminDashboard = () => {
       
     } catch (error) {
       console.error('Error uploading videos:', error);
-      const errorMsg = error.response?.data?.message || 
-                      (error.code === 'ECONNABORTED' ? 'Upload timed out. Try with smaller files.' : 
-                      'Failed to upload videos. Check your internet connection.');
-      setToastMessage(errorMsg);
+      let errorMessage = 'Failed to upload videos';
+      
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        errorMessage = error.response.data.message || errorMessage;
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+        errorMessage = 'No response from server. Check your network connection.';
+      } else {
+        console.error('Error message:', error.message);
+        errorMessage = error.message;
+      }
+      
+      setToastMessage(errorMessage);
       setToastType('error');
       setShowToast(true);
     } finally {
@@ -2305,8 +2349,18 @@ const AdminDashboard = () => {
                           <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                           </svg>
-                          Upload Images
+                          Select Images
                         </button>
+                        {imagePreview.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleImageUpload}
+                            className="ml-2 inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-primary hover:bg-primary-washed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:shadow-md"
+                          >
+                            <FiUpload className="mr-2 h-4 w-4" />
+                            Upload {imagePreview.length} Image{imagePreview.length > 1 ? 's' : ''}
+                          </button>
+                        )}
                         {imageUploading && 
                           <div className="ml-3 text-sm text-primary flex items-center">
                             <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -2377,8 +2431,18 @@ const AdminDashboard = () => {
                           <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                           </svg>
-                          Upload Videos
+                          Select Videos
                         </button>
+                        {videoPreview.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleVideoUpload}
+                            className="ml-2 inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-primary hover:bg-primary-washed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary hover:shadow-md"
+                          >
+                            <FiVideo className="mr-2 h-4 w-4" />
+                            Upload {videoPreview.length} Video{videoPreview.length > 1 ? 's' : ''}
+                          </button>
+                        )}
                         {videoUploading && 
                           <div className="ml-3 text-sm text-primary flex items-center">
                             <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
