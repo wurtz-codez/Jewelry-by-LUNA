@@ -133,7 +133,7 @@ function ProductDetailsPage() {
       // Then try to find products with matching tags
       if (product.tags?.length > 0) {
         const tagMatches = filteredProducts.filter(p => 
-          p._id !== product._id && 
+          p._id !== product._id &&
           !relatedProducts.some(rp => rp._id === p._id) &&
           p.tags?.some(tag => product.tags.includes(tag))
         );
@@ -386,122 +386,126 @@ function ProductDetailsPage() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      <div className="container mx-auto px-4 py-8 pt-16">
-        <div className="font-sans max-w-7xl mx-auto p-2 sm:p-5">
-          <div className="flex flex-col md:flex-row md:gap-10 mb-10">
-            <div className="flex flex-col gap-5 flex-1">
-              {/* Main Image/Video */}
-              <div className="flex-1 max-w-full md:max-w-[600px] relative h-[250px] md:h-[180px]">
-                {productMedia[selectedImage].type === 'video' ? (
-                  <video 
-                    src={productMedia[selectedImage].url} 
-                    controls
-                    className="w-full h-full object-contain md:object-cover rounded-[8px]" 
-                  />
-                ) : (
-                  <img 
-                    src={productMedia[selectedImage].url} 
-                    alt="Main product" 
-                    className="w-full h-full object-contain md:object-cover rounded-[8px]" 
-                  />
-                )}
-                {productMedia.length > 1 && (
-                  <>
-                    <button 
-                      className={`absolute left-2.5 top-1/2 -translate-y-1/2 bg-white/80 border-none rounded-[6px] w-10 h-10 flex items-center justify-center cursor-pointer ${
-                        selectedImage === 0 ? 'opacity-50' : 'opacity-100'
-                      }`}
-                      onClick={() => setSelectedImage(prev => Math.max(0, prev - 1))}
-                      disabled={selectedImage === 0}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M15 18l-6-6 6-6" />
-                      </svg>
-                    </button>
-                    <button 
-                      className={`absolute right-2.5 top-1/2 -translate-y-1/2 bg-white/80 border-none rounded-[6px] w-10 h-10 flex items-center justify-center cursor-pointer ${
-                        selectedImage === productMedia.length - 1 ? 'opacity-50' : 'opacity-100'
-                      }`}
-                      onClick={() => setSelectedImage(prev => Math.min(productMedia.length - 1, prev + 1))}
-                      disabled={selectedImage === productMedia.length - 1}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M9 18l6-6-6-6" />
-                      </svg>
-                    </button>
-                  </>
-                )}
+      <div className="container mx-auto px-2 md:px-4 py-4 md:py-6 pt-16 md:pt-16 mt-3 md:mt-0">
+        <div className="font-sans max-w-7xl mx-auto p-1 sm:p-4">
+          <div className="flex flex-col md:flex-row md:gap-6 mb-4 md:mb-6">
+            <div className="flex flex-col w-full md:w-1/2 min-h-[520px] md:min-h-[1020px]">
+              {/* Main Image Section - Top Half */}
+              <div className="h-[400px] md:h-[800px] mb-3 md:mb-6">
+                <div className="w-full h-full relative bg-gray-50 rounded-[8px] p-2 md:p-3 flex items-center justify-center">
+                  {productMedia[selectedImage].type === 'video' ? (
+                    <video 
+                      src={productMedia[selectedImage].url} 
+                      controls
+                      className="max-w-full max-h-full object-contain rounded-[8px]" 
+                    />
+                  ) : (
+                    <img 
+                      src={productMedia[selectedImage].url} 
+                      alt="Main product" 
+                      className="max-w-full max-h-full object-contain rounded-[8px]" 
+                    />
+                  )}
+                  {productMedia.length > 1 && (
+                    <>
+                      <button 
+                        className={`absolute left-1 md:left-2.5 top-1/2 -translate-y-1/2 bg-white/80 border-none rounded-[6px] w-8 md:w-10 h-8 md:h-10 flex items-center justify-center cursor-pointer ${
+                          selectedImage === 0 ? 'opacity-50' : 'opacity-100'
+                        }`}
+                        onClick={() => setSelectedImage(prev => Math.max(0, prev - 1))}
+                        disabled={selectedImage === 0}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                      </button>
+                      <button 
+                        className={`absolute right-1 md:right-2.5 top-1/2 -translate-y-1/2 bg-white/80 border-none rounded-[6px] w-8 md:w-10 h-8 md:h-10 flex items-center justify-center cursor-pointer ${
+                          selectedImage === productMedia.length - 1 ? 'opacity-50' : 'opacity-100'
+                        }`}
+                        onClick={() => setSelectedImage(prev => Math.min(productMedia.length - 1, prev + 1))}
+                        disabled={selectedImage === productMedia.length - 1}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
 
-              {/* Thumbnails */}
-              <div className="flex gap-2.5 overflow-x-auto md:max-w-[600px] mt-2">
-                {productMedia.map((media, index) => (
-                  <div 
-                    key={index} 
-                    className={`min-w-[80px] w-20 h-20 border cursor-pointer overflow-hidden rounded-[6px] ${
-                      selectedImage === index ? 'border-[rgb(165,97,108)]' : 'border-gray-200'
-                    }`}
-                    onClick={() => setSelectedImage(index)}
-                  >
-                    {media.type === 'video' ? (
-                      <div className="relative w-full h-full">
-                        <video 
-                          src={media.url} 
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
-                            <path d="M8 5v14l11-7z"/>
-                          </svg>
+              {/* Thumbnails Section - Bottom Half */}
+              <div className="h-[90px] md:h-[100px]">
+                <div className="flex gap-2 md:gap-3 overflow-x-auto max-w-full md:max-w-[600px]">
+                  {productMedia.map((media, index) => (
+                    <div 
+                      key={index} 
+                      className={`min-w-[65px] w-[65px] h-[65px] md:min-w-[75px] md:w-[75px] md:h-[75px] border cursor-pointer overflow-hidden rounded-[6px] ${
+                        selectedImage === index ? 'border-[rgb(165,97,108)] border-2 md:border-3' : 'border-gray-200'
+                      }`}
+                      onClick={() => setSelectedImage(index)}
+                    >
+                      {media.type === 'video' ? (
+                        <div className="relative w-full h-full">
+                          <video 
+                            src={media.url} 
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <img 
-                        src={media.url} 
-                        alt={`Product thumbnail ${index + 1}`} 
-                        className="w-full h-full object-cover" 
-                      />
-                    )}
-                  </div>
-                ))}
+                      ) : (
+                        <img 
+                          src={media.url} 
+                          alt={`Product thumbnail ${index + 1}`} 
+                          className="w-full h-full object-cover object-top" 
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
             
-            <div className="flex-1 mt-8 md:mt-0">
-              <h1 className="text-xl md:text-2xl font-bold mb-1">{product?.name || 'Product Name'}</h1>
-              <p className="text-gray-600 mb-4">{product?.description || 'Product description'}</p>
+            <div className="flex-1 mt-4 md:mt-0 w-full md:w-1/2">
+              <h1 className="text-lg md:text-2xl font-bold mb-1">{product?.name || 'Product Name'}</h1>
+              <p className="text-gray-600 text-sm md:text-base mb-3 md:mb-4">{product?.description || 'Product description'}</p>
               
-              <div className="inline-flex items-center bg-gray-800 text-white px-2.5 py-1.5 rounded-[6px] mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="inline-flex items-center bg-gray-800 text-white px-2 md:px-2.5 py-1 md:py-1.5 rounded-[6px] mb-3 md:mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-4 md:h-4">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
-                <span className="ml-1.5">{(product?.rating || 0).toFixed(1)}</span>
+                <span className="ml-1 md:ml-1.5 text-sm md:text-base">{(product?.rating || 0).toFixed(1)}</span>
               </div>
               
-              <div className="flex items-center gap-2.5 mb-1">
-                <span className="text-2xl font-bold">₹{product?.sellingPrice?.toFixed(2) || '0.00'}</span>
+              <div className="flex items-center gap-1.5 md:gap-2.5 mb-1">
+                <span className="text-xl md:text-2xl font-bold">₹{product?.sellingPrice?.toFixed(2) || '0.00'}</span>
                 {product?.price && (
-                  <span className="line-through text-gray-500">₹{product.price.toFixed(2)}</span>
+                  <span className="line-through text-gray-500 text-sm md:text-base">₹{product.price.toFixed(2)}</span>
                 )}
-                {Math.round(((product.price - product.sellingPrice) / product.price) * 100)}% OFF
+                <span className="text-sm md:text-base">{Math.round(((product.price - product.sellingPrice) / product.price) * 100)}% OFF</span>
               </div>
               
-              <p className="text-gray-600 mb-2.5 text-sm">inclusive of all the taxes</p>
+              <p className="text-gray-600 text-xs md:text-sm mb-2 md:mb-2.5">inclusive of all the taxes</p>
               
               {/* Stock Status */}
-              <div className="mb-5">
+              <div className="mb-3 md:mb-5">
                 {renderStockStatus()}
               </div>
 
               {/* Quantity Selector */}
               {product?.stock > 0 && product?.isAvailable && (
-                <div className="mb-5">
-                  <label className="block mb-2 font-medium">Quantity:</label>
-                  <div className="flex items-center gap-2.5">
+                <div className="mb-3 md:mb-5">
+                  <label className="block mb-1 md:mb-2 text-sm md:text-base font-medium">Quantity:</label>
+                  <div className="flex items-center gap-1.5 md:gap-2.5">
                     <button
                       onClick={() => handleQuantityUpdate(quantity - 1)}
                       disabled={quantity <= 1}
-                      className={`w-9 h-9 border border-gray-200 rounded-l-[6px] bg-white ${
+                      className={`w-8 h-8 md:w-9 md:h-9 border border-gray-200 rounded-l-[6px] bg-white ${
                         quantity > 1 ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-50'
                       }`}
                     >
@@ -513,11 +517,11 @@ function ProductDetailsPage() {
                       max={product.stock}
                       value={quantity}
                       onChange={(e) => handleQuantityUpdate(parseInt(e.target.value))}
-                      className="w-15 h-9 border border-gray-200 border-l-0 border-r-0 text-center bg-white text-gray-800"
+                      className="w-12 md:w-15 h-8 md:h-9 border border-gray-200 border-l-0 border-r-0 text-center bg-white text-gray-800 text-sm md:text-base"
                     />
                     <button
                       onClick={() => handleQuantityUpdate(quantity + 1)}
-                      className={`w-9 h-9 border border-gray-200 rounded-r-[6px] bg-white ${
+                      className={`w-8 h-8 md:w-9 md:h-9 border border-gray-200 rounded-r-[6px] bg-white ${
                         quantity < product.stock ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-50'
                       }`}
                     >
@@ -528,64 +532,64 @@ function ProductDetailsPage() {
               )}
               
               {/* Categories */}
-              <div className="mb-5">
-                <p className="font-medium mb-1">Categories:</p>
-                <div className="flex flex-wrap gap-2">
+              <div className="mb-3 md:mb-5">
+                <p className="font-medium mb-1 text-sm md:text-base">Categories:</p>
+                <div className="flex flex-wrap gap-1.5 md:gap-2">
                   {product?.categories && product.categories.length > 0 ? 
                     product.categories.map((category, index) => (
                       <span 
                         key={index}
-                        className="px-3 py-1.5 bg-gray-200 rounded-[8px] text-sm capitalize"
+                        className="px-2 md:px-3 py-1 md:py-1.5 bg-gray-200 rounded-[8px] text-xs md:text-sm capitalize"
                       >
                         {category}
                       </span>
                     )) : 
-                    <span className="text-gray-600">No categories</span>
+                    <span className="text-gray-600 text-xs md:text-sm">No categories</span>
                   }
                 </div>
               </div>
 
               {/* Tags */}
-              <div className="mb-5">
-                <p className="font-medium mb-1">Tags:</p>
-                <div className="flex flex-wrap gap-2">
+              <div className="mb-4 md:mb-5">
+                <p className="font-medium mb-1 text-sm md:text-base">Tags:</p>
+                <div className="flex flex-wrap gap-1.5 md:gap-2">
                   {product?.tags && product.tags.length > 0 ? 
                     product.tags.map((tag, index) => (
                       <span 
                         key={index} 
-                        className="px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-600 rounded-[6px] text-sm capitalize"
+                        className="px-2 md:px-3 py-1 md:py-1.5 bg-blue-50 text-blue-600 border border-blue-600 rounded-[6px] text-xs md:text-sm capitalize"
                       >
                         {tag}
                       </span>
                     )) : 
-                    <span className="text-gray-600">No tags</span>
+                    <span className="text-gray-600 text-xs md:text-sm">No tags</span>
                   }
                 </div>
               </div>
               
-              <div className="flex gap-2.5 mb-8">
+              <div className="flex gap-2 md:gap-2.5 mb-5 md:mb-8">
                 <button 
-                  className={`flex-1 py-3 px-4 rounded-[8px] ${
+                  className={`flex-1 py-2 md:py-3 px-3 md:px-4 rounded-[8px] ${
                     (product?.stock > 0 && product?.isAvailable) 
                       ? 'bg-[rgb(165,97,108)] text-white cursor-pointer' 
                       : 'bg-gray-300 text-white cursor-not-allowed'
-                  } flex items-center justify-center gap-2`}
+                  } flex items-center justify-center gap-1.5 md:gap-2 text-sm md:text-base`}
                   onClick={handleAddToCart}
                   disabled={!product?.stock || product?.stock <= 0 || !product?.isAvailable || isAddingToCart}
                 >
                   {isAddingToCart ? (
-                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-4 w-4 md:h-5 md:w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                   ) : !currentUser ? (
                     <>
-                      <FiLock className="w-5 h-5" />
+                      <FiLock className="w-4 h-4 md:w-5 md:h-5" />
                       Login to use cart
                     </>
                   ) : (
                     <>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-5 md:h-5">
                         <circle cx="8" cy="21" r="1" />
                         <circle cx="19" cy="21" r="1" />
                         <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -595,28 +599,28 @@ function ProductDetailsPage() {
                   )}
                 </button>
                 <button 
-                  className={`py-3 px-4 bg-white ${
+                  className={`py-2 md:py-3 px-3 md:px-4 bg-white ${
                     isInWishlist ? 'text-[rgb(165,97,108)]' : 'text-gray-800'
-                  } border border-gray-200 rounded-[8px] flex items-center justify-center gap-2 cursor-pointer`}
+                  } border border-gray-200 rounded-[8px] flex items-center justify-center cursor-pointer`}
                   onClick={handleWishlistToggle}
                   disabled={isTogglingWishlist}
                 >
                   {isTogglingWishlist ? (
-                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-4 w-4 md:h-5 md:w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill={isInWishlist ? 'rgb(165,97,108)' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill={isInWishlist ? 'rgb(165,97,108)' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-5 md:h-5">
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
                   )}
                 </button>
               </div>
 
-              <div className="mb-5 border-t border-gray-200 pt-4">
-                <h2 className="text-lg mb-2.5">Product Specifications</h2>
-                <table className="w-full border-collapse">
+              <div className="mb-4 md:mb-5 border-t border-gray-200 pt-3 md:pt-4">
+                <h2 className="text-base md:text-lg mb-2 md:mb-2.5">Product Specifications</h2>
+                <table className="w-full border-collapse text-sm md:text-base">
                   <tbody>
                     <tr>
                       <td className="py-2 border-b border-gray-200 font-bold w-2/5">Categories</td>
