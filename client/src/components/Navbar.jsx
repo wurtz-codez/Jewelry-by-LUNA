@@ -75,7 +75,7 @@ const Navbar = ({ variant }) => {
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[1000] ${variant === 'white' ? 'bg-white' : 'bg-neutral'} shadow-sm font-body`}>
+    <nav className={`fixed top-0 left-0 right-0 z-[1000] bg-navbar-bg shadow-sm font-body`}>
       <div className="max-w-8xl mx-auto px-4 sm:px-5 md:px-6 lg:px-8 xl:px-32 pt-[2px]">
         <div className="flex items-center justify-between h-14 sm:h-16 md:h-18">
           {/* Mobile Menu Button - Now on the left */}
@@ -176,9 +176,8 @@ const Navbar = ({ variant }) => {
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="scale-75 sm:scale-90 md:scale-100"
             >
-              <Logo size="default" />
+              <Logo size="navbar" />
             </motion.div>
           </motion.div>
 
@@ -313,7 +312,7 @@ const Navbar = ({ variant }) => {
       <AnimatePresence>
         {showMobileMenu && (
           <motion.div
-            className="md:hidden bg-white border-t border-gray-200 shadow-md"
+            className="md:hidden bg-navbar-bg border-t border-gray-200 shadow-md"
             initial="closed"
             animate="open"
             exit="closed"

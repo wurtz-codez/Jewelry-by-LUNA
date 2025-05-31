@@ -1,4 +1,4 @@
-import heroImage from '../assets/hero-image.png'
+import heroImage from '../assets/hero-image.jpeg'
 import ShopNowButton from '../assets/buttons/ShopNowButton'
 import { motion } from 'framer-motion'
 import { heroAnimation, heroTextAnimation, heroButtonAnimation } from '../animations/heroAnimation'
@@ -11,8 +11,8 @@ const Hero = () => {
       initial="initial"
       animate="animate"
       variants={heroAnimation}
-    >
-      <div className="absolute inset-0 bg-gray-100/10"></div>
+    >      
+      <div className="absolute inset-0 bg-black/20"></div>
       <motion.div 
         className="hero-content relative z-10 flex flex-col items-center gap-2 sm:gap-4 md:gap-8 px-4 sm:px-6 md:px-8"
         variants={heroAnimation}

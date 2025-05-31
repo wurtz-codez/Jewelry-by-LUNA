@@ -16,6 +16,7 @@ export default {
       },
       colors: {
         'neutral': '#E8E5E0',
+        'navbar-bg': 'rgb(204, 188, 182)',
         'primary': {
           DEFAULT: '#A5616C',
           'washed': '#C8959A',
