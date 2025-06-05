@@ -861,14 +861,12 @@ const AdminDashboard = () => {
       setToastType('success');
       setShowToast(true);
       
+      // Close the modal
+      setShowOrderModal(false);
+      
       // Refresh both order lists to ensure UI is updated
       fetchOrderRequests();
       fetchAllOrders();
-      
-      // If we're updating from the modal, refresh the selected order details
-      if (selectedOrder && selectedOrder._id === orderId) {
-        fetchOrderDetails(orderId);
-      }
     } catch (error) {
       console.error('Error updating order status:', error);
       setToastMessage('Failed to update order status');
@@ -1292,25 +1290,14 @@ const AdminDashboard = () => {
                     <p><span className="font-medium">Date:</span> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
                     <p><span className="font-medium">Status:</span> 
                       <span className={`ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        selectedOrder.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        selectedOrder.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
+                        selectedOrder.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                        selectedOrder.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                        'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {selectedOrder.status}
+                        {selectedOrder.requestStatus}
                       </span>
                     </p>
                     <p><span className="font-medium">Total Amount:</span> ₹{selectedOrder.totalAmount.toFixed(2)}</p>
-                  </div>
-                  
-                  <div className="mt-6">
-                    <h3 className="text-lg font-medium mb-4">Shipping Information</h3>
-                    <div className="space-y-3">
-                      <p><span className="font-medium">Address:</span> {selectedOrder.shippingAddress?.street || 'N/A'}</p>
-                      <p><span className="font-medium">City:</span> {selectedOrder.shippingAddress?.city || 'N/A'}</p>
-                      <p><span className="font-medium">State:</span> {selectedOrder.shippingAddress?.state || 'N/A'}</p>
-                      <p><span className="font-medium">Postal Code:</span> {selectedOrder.shippingAddress?.postalCode || 'N/A'}</p>
-                      <p><span className="font-medium">Country:</span> {selectedOrder.shippingAddress?.country || 'N/A'}</p>
-                    </div>
                   </div>
                   
                   <div className="mt-6">
@@ -1318,10 +1305,10 @@ const AdminDashboard = () => {
                     <div className="flex flex-wrap gap-2">
                       <button
                         className={`px-3 py-2 rounded-md flex items-center ${
-                          selectedOrder.status === 'pending' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'
+                          selectedOrder.requestStatus === 'pending' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'
                         }`}
                         onClick={() => handleOrderStatusUpdate(selectedOrder._id, 'approved')}
-                        disabled={selectedOrder.status !== 'pending' || ordersLoading}
+                        disabled={selectedOrder.requestStatus !== 'pending' || ordersLoading}
                       >
                         {ordersLoading ? (
                           <FiLoader className="animate-spin mr-1" />
@@ -1332,10 +1319,10 @@ const AdminDashboard = () => {
                       </button>
                       <button
                         className={`px-3 py-2 rounded-md flex items-center ${
-                          selectedOrder.status === 'pending' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'
+                          selectedOrder.requestStatus === 'pending' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'
                         }`}
                         onClick={() => handleOrderStatusUpdate(selectedOrder._id, 'rejected')}
-                        disabled={selectedOrder.status !== 'pending' || ordersLoading}
+                        disabled={selectedOrder.requestStatus !== 'pending' || ordersLoading}
                       >
                         {ordersLoading ? (
                           <FiLoader className="animate-spin mr-1" />
@@ -1886,57 +1873,113 @@ const AdminDashboard = () => {
               {ordersLoading ? (
                 <LoadingIndicator />
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {orderRequests.map((order) => (
-                        <tr key={order._id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {order._id.slice(-6)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {order.user?.name || 'Unknown User'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ₹{order.totalAmount.toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
-                              order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {order.requestStatus}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div className="flex space-x-2">
-                              <button 
-                                className="text-indigo-600 hover:text-indigo-900"
-                                onClick={() => fetchOrderDetails(order._id)}
-                              >
-                                View Details
-                              </button>
-                            </div>
-                          </td>
+                <>
+                  <h3 className="text-md font-medium text-gray-700 mb-4">Pending Order Requests</h3>
+                  <div className="overflow-x-auto mb-8">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {orderRequests.map((order) => (
+                          <tr key={order._id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {order._id.slice(-6)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {order.user?.name || 'Unknown User'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              ₹{order.totalAmount.toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                                order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {order.requestStatus}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <div className="flex space-x-2">
+                                <button 
+                                  className="text-indigo-600 hover:text-indigo-900"
+                                  onClick={() => fetchOrderDetails(order._id)}
+                                >
+                                  View Details
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <h3 className="text-md font-medium text-gray-700 mb-4">Order History</h3>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {orders.map((order) => (
+                          <tr key={order._id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {order._id.slice(-6)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {order.user?.name || 'Unknown User'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              ₹{order.totalAmount.toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                order.requestStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                                order.requestStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {order.requestStatus}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <div className="flex space-x-2">
+                                <button 
+                                  className="text-indigo-600 hover:text-indigo-900"
+                                  onClick={() => fetchOrderDetails(order._id)}
+                                >
+                                  View Details
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
           </div>
