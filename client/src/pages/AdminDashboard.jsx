@@ -1365,8 +1365,8 @@ const AdminDashboard = () => {
                           <tr key={index} className="hover:bg-gray-50">
                             <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                               <div className="flex items-center">
-                                <img src={item.product.imageUrls[0]} alt={item.product.name} className="w-10 h-10 object-cover rounded-md mr-2" />
-                                <span>{item.product.name}</span>
+                                <img src={item.product?.imageUrls?.[0] || '/placeholder-image.jpg'} alt={item.product?.name || 'Product'} className="w-10 h-10 object-cover rounded-md mr-2" />
+                                <span>{item.product?.name || 'Unknown Product'}</span>
                               </div>
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">₹{item.price.toFixed(2)}</td>
