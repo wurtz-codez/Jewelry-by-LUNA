@@ -7,6 +7,11 @@ const generateWhatsAppMessage = (order, user) => {
 
   const shippingAddress = order.shippingAddress;
   const address = `${shippingAddress.street}, ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}, ${shippingAddress.country}`;
+  
+  // Explicitly log the mobile number for debugging
+  console.log('Mobile Number from order:', shippingAddress.mobileNumber);
+  
+  const mobileNumber = shippingAddress.mobileNumber ? `+91 ${shippingAddress.mobileNumber}` : 'Not provided';
 
   return `Hello! I would like to place an order for the following items:
 
@@ -17,6 +22,7 @@ Payment Method: ${order.paymentMethod}
 
 Shipping Details:
 Name: ${user.name}
+Mobile: ${mobileNumber}
 Address: ${address}
 
 Please confirm if these items are available and let me know the next steps. Thank you!`;

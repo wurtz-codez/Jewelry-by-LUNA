@@ -40,6 +40,9 @@ router.post('/request', auth, async (req, res) => {
     // Extract shipping and payment details from request body
     const { shippingAddress, paymentMethod, couponCode } = req.body;
     
+    // Log the shipping address for debugging
+    console.log('Received shipping address:', shippingAddress);
+    
     // Calculate discount if coupon is provided
     let discount = 0;
     if (couponCode) {
@@ -57,7 +60,7 @@ router.post('/request', auth, async (req, res) => {
     }
     
     // Calculate total amount with shipping and discount
-    const shipping = 15.00; // Fixed shipping cost
+    const shipping = 60.00; // Fixed shipping cost
     const subtotal = cart.items.reduce((total, item) => total + (item.jewelry.sellingPrice * item.quantity), 0);
     const totalAmount = subtotal + shipping - discount;
 
@@ -227,6 +230,31 @@ router.put('/:orderId/status', auth, isAdmin, async (req, res) => {
     res.json(order);
   } catch (error) {
     console.error('Error updating order status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Debugging endpoint to get the latest order
+router.get('/debug/latest', auth, async (req, res) => {
+  try {
+    const latestOrder = await Order.findOne({ user: req.user.id })
+      .sort({ createdAt: -1 })
+      .limit(1);
+    
+    if (!latestOrder) {
+      return res.status(404).json({ message: 'No orders found' });
+    }
+
+    // Log the shipping address details
+    console.log('Latest order shipping address:', latestOrder.shippingAddress);
+    
+    res.json({
+      orderId: latestOrder._id,
+      shippingAddress: latestOrder.shippingAddress,
+      whatsappMessage: latestOrder.whatsappMessage
+    });
+  } catch (error) {
+    console.error('Error fetching latest order:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

@@ -59,7 +59,8 @@ const Cart = () => {
     state: '',
     zipCode: '',
     country: 'India',
-    landmark: ''
+    landmark: '',
+    mobileNumber: ''
   });
   
   // State for coupon and payment
@@ -76,7 +77,7 @@ const Cart = () => {
   }, 0) || 0;
   
   // Shipping cost (could be calculated based on location, weight, etc.)
-  const shipping = 15.00;
+  const shipping = 60.00;
   
   // Calculate discount
   const getCouponDiscount = () => {
@@ -194,7 +195,8 @@ const Cart = () => {
       state: '',
       zipCode: '',
       country: 'India',
-      landmark: ''
+      landmark: '',
+      mobileNumber: ''
     });
     setSelectedCoupon('');
     setPaymentMethod('cod');
@@ -223,6 +225,12 @@ const Cart = () => {
       newErrors.zipCode = 'Please enter a valid 6-digit zip code';
     }
     
+    if (!shippingAddress.mobileNumber.trim()) {
+      newErrors.mobileNumber = 'Mobile number is required';
+    } else if (!/^\d{10}$/.test(shippingAddress.mobileNumber)) {
+      newErrors.mobileNumber = 'Please enter a valid 10-digit mobile number';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -241,6 +249,9 @@ const Cart = () => {
 
       // First, ensure the cart is synced with the server
       await fetchCart();
+
+      // Log shipping address before sending to server
+      console.log('Sending shipping address to server:', shippingAddress);
 
       // Then proceed with the order request with additional data
       const response = await axios.post(
@@ -339,6 +350,60 @@ const Cart = () => {
     }
     
     return placeholderImage;
+  };
+
+  // Debug function to test mobile number functionality
+  const debugMobileNumber = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setToastMessage('Please log in first');
+        setToastType('error');
+        setShowToast(true);
+        return;
+      }
+
+      // Test with a direct API call
+      const testResponse = await axios.post(
+        `${API_BASE_URL}/order/request`,
+        {
+          shippingAddress: {
+            street: '123 Test Street',
+            city: 'Test City',
+            state: 'Test State',
+            zipCode: '123456',
+            country: 'India',
+            mobileNumber: '9876543210'
+          },
+          paymentMethod: 'cod',
+          couponCode: ''
+        },
+        {
+          headers: { 'x-auth-token': token }
+        }
+      );
+
+      console.log('Debug test response:', testResponse.data);
+      
+      // Check the latest order
+      const latestOrderResponse = await axios.get(
+        `${API_BASE_URL}/order/debug/latest`,
+        {
+          headers: { 'x-auth-token': token }
+        }
+      );
+      
+      console.log('Latest order debug data:', latestOrderResponse.data);
+      
+      setToastMessage('Debug test completed. Check console for results.');
+      setToastType('success');
+      setShowToast(true);
+    } catch (error) {
+      console.error('Debug test error:', error);
+      setToastMessage('Debug test failed. Check console for details.');
+      setToastType('error');
+      setShowToast(true);
+    }
   };
 
   return (
@@ -648,6 +713,24 @@ const Cart = () => {
                       placeholder="Near Bank, Behind Mall, etc."
                       className="w-full border border-neutral-200 rounded-[8px] px-2.5 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
                     />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-gray-700 mb-1 font-medium text-xs sm:text-sm">Mobile Number*</label>
+                    <div className="flex">
+                      <span className="inline-flex items-center px-2.5 py-2 bg-neutral/5 border border-r-0 border-neutral-200 rounded-l-[8px] text-xs sm:text-sm text-gray-500">
+                        +91
+                      </span>
+                      <input 
+                        type="text" 
+                        name="mobileNumber" 
+                        value={shippingAddress.mobileNumber}
+                        onChange={handleShippingChange}
+                        placeholder="9876543210"
+                        className={`w-full border ${errors.mobileNumber ? 'border-red-500' : 'border-neutral-200'} rounded-r-[8px] px-2.5 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white`}
+                      />
+                    </div>
+                    {errors.mobileNumber && <p className="text-red-500 text-xs mt-0.5">{errors.mobileNumber}</p>}
                   </div>
                   
                   {/* City and State in single row on mobile */}

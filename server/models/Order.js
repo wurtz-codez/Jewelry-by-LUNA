@@ -41,7 +41,8 @@ const orderSchema = new mongoose.Schema({
     city: String,
     state: String,
     country: String,
-    zipCode: String
+    zipCode: String,
+    mobileNumber: String
   },
   paymentMethod: {
     type: String,
