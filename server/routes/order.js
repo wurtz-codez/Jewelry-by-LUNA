@@ -106,9 +106,17 @@ router.post('/request', auth, async (req, res) => {
 // Get user's order requests
 router.get('/user', auth, async (req, res) => {
   try {
+    console.log('Fetching orders for user:', req.user.id);
+    
     const orders = await Order.find({ user: req.user.id })
       .populate('items.jewelry', 'name imageUrl sellingPrice')
       .sort({ createdAt: -1 });
+    
+    console.log('Found orders:', orders.length);
+    if (orders.length > 0) {
+      console.log('First order ID:', orders[0]._id);
+      console.log('First order user ID:', orders[0].user);
+    }
     
     res.json(orders);
   } catch (error) {
@@ -143,19 +151,39 @@ router.get('/admin', auth, isAdmin, async (req, res) => {
 // Get order by ID (Admin or order owner)
 router.get('/:orderId', auth, async (req, res) => {
   try {
+    console.log('Fetching order details for orderId:', req.params.orderId);
+    console.log('Current user:', { id: req.user.id, role: req.user.role });
+    
+    // Validate orderId format
+    if (!req.params.orderId || !mongoose.Types.ObjectId.isValid(req.params.orderId)) {
+      console.log('Invalid order ID format:', req.params.orderId);
+      return res.status(400).json({ message: 'Invalid order ID format' });
+    }
+    
     const order = await Order.findById(req.params.orderId)
       .populate('user', 'name email phone')
       .populate('items.jewelry', 'name imageUrl sellingPrice');
     
     if (!order) {
+      console.log('Order not found');
       return res.status(404).json({ message: 'Order not found' });
     }
 
+    console.log('Order found, user ID:', order.user._id);
+
     // Check if user is admin or the order owner
-    if (req.user.role !== 'admin' && order.user._id.toString() !== req.user.id) {
+    // Convert both IDs to strings for proper comparison
+    const currentUserId = req.user.id.toString();
+    const orderUserId = order.user._id.toString();
+    
+    console.log('Comparing user IDs:', { currentUserId, orderUserId, isAdmin: req.user.role === 'admin' });
+    
+    if (req.user.role !== 'admin' && orderUserId !== currentUserId) {
+      console.log('Access denied - user is not admin and not order owner');
       return res.status(403).json({ message: 'Access denied. You can only view your own orders.' });
     }
 
+    console.log('Access granted, returning order details');
     res.json(order);
   } catch (error) {
     console.error('Error fetching order details:', error);

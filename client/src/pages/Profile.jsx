@@ -118,6 +118,14 @@ const Profile = () => {
       const response = await axios.get(`${API_BASE_URL}/order/user`, {
         headers: { 'x-auth-token': token }
       });
+      
+      console.log('Orders fetched:', response.data);
+      if (response.data.length > 0) {
+        console.log('First order ID:', response.data[0]._id);
+        console.log('First order ID type:', typeof response.data[0]._id);
+        console.log('First order ID length:', response.data[0]._id?.length);
+      }
+      
       setOrders(response.data);
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -141,18 +149,63 @@ const Profile = () => {
   
   // Fetch order details
   const fetchOrderDetails = async (orderId) => {
+    console.log('=== fetchOrderDetails called ===');
+    console.log('Received orderId:', orderId);
+    console.log('Received orderId type:', typeof orderId);
+    console.log('Received orderId length:', orderId?.length);
+    
     try {
       setLoadingOrderDetails(true);
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        console.error('No token found in localStorage');
+        setToastMessage('Authentication required');
+        setToastType('error');
+        setShowToast(true);
+        return;
+      }
+      
+      // Validate order ID
+      if (!orderId || typeof orderId !== 'string' || orderId.length !== 24) {
+        console.error('Invalid order ID:', orderId);
+        setToastMessage('Invalid order ID');
+        setToastType('error');
+        setShowToast(true);
+        return;
+      }
+      
+      // Check if order ID matches MongoDB ObjectId pattern
+      const objectIdPattern = /^[0-9a-fA-F]{24}$/;
+      if (!objectIdPattern.test(orderId)) {
+        console.error('Order ID does not match ObjectId pattern:', orderId);
+        setToastMessage('Invalid order ID format');
+        setToastType('error');
+        setShowToast(true);
+        return;
+      }
+      
+      console.log('Fetching order details for orderId:', orderId);
+      console.log('OrderId type:', typeof orderId);
+      console.log('OrderId length:', orderId?.length);
+      console.log('Token exists:', !!token);
+      console.log('API URL:', `${API_BASE_URL}/order/${orderId}`);
+      console.log('Full request URL:', new URL(`${API_BASE_URL}/order/${orderId}`).href);
+      console.log('URL encoded orderId:', encodeURIComponent(orderId));
+      console.log('Token first 10 chars:', token.substring(0, 10) + '...');
+      console.log('Token length:', token.length);
       
       const response = await axios.get(`${API_BASE_URL}/order/${orderId}`, {
         headers: { 'x-auth-token': token }
       });
+      
+      console.log('Order details response:', response.data);
       setSelectedOrder(response.data);
       setShowOrderModal(true);
     } catch (error) {
       console.error('Error fetching order details:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      console.error('Error headers:', error.response?.headers);
       setToastMessage('Failed to fetch order details');
       setToastType('error');
       setShowToast(true);
@@ -713,7 +766,13 @@ const Profile = () => {
                             </span>
                             <span className="text-base md:text-lg lg:text-lg font-medium">₹{order.totalAmount.toFixed(2)}</span>
                             <motion.button 
-                              onClick={() => fetchOrderDetails(order._id)}
+                              onClick={() => {
+                                console.log('Full order ID:', order._id);
+                                console.log('Order ID length:', order._id?.length);
+                                console.log('Order ID type:', typeof order._id);
+                                console.log('Order ID hex pattern:', /^[0-9a-fA-F]{24}$/.test(order._id));
+                                fetchOrderDetails(order._id);
+                              }}
                               className="px-3 md:px-4 py-1 md:py-2 bg-primary text-white rounded-[8px] hover:bg-primary/90 transition-colors text-sm md:text-base"
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
