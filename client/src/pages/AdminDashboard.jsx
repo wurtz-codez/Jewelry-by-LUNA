@@ -95,6 +95,12 @@ const AdminDashboard = () => {
   const [newTag, setNewTag] = useState('');
   const [customTag, setCustomTag] = useState('');
 
+  // Pagination state for products
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(20);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [allProducts, setAllProducts] = useState([]);
+
   // Chart options
   const lineChartOptions = {
     responsive: true,
@@ -157,6 +163,16 @@ const AdminDashboard = () => {
     }
   }, [activeTab]);
 
+  // Update products when page changes
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      const indexOfLastProduct = currentPage * productsPerPage;
+      const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+      const currentProducts = allProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+      setProducts(currentProducts);
+    }
+  }, [currentPage, allProducts, productsPerPage]);
+
   // Admin check
   useEffect(() => {
     if (!currentUser || currentUser.role !== 'admin') {
@@ -195,18 +211,39 @@ const AdminDashboard = () => {
   const fetchProducts = async () => {
     try {
       setProductsLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/jewelry`);
+      // For admin dashboard, fetch all products without pagination
+      const response = await axios.get(`${API_BASE_URL}/jewelry?limit=1000&page=1`);
       // The API returns an object with a products array
-      setProducts(Array.isArray(response.data.products) ? response.data.products : []);
+      const allProductsData = Array.isArray(response.data.products) ? response.data.products : [];
+      setAllProducts(allProductsData);
+      setTotalProducts(allProductsData.length);
+      
+      // Calculate pagination
+      const indexOfLastProduct = currentPage * productsPerPage;
+      const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+      const currentProducts = allProductsData.slice(indexOfFirstProduct, indexOfLastProduct);
+      
+      setProducts(currentProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
       setToastMessage('Failed to fetch products');
       setToastType('error');
       setShowToast(true);
       setProducts([]);
+      setAllProducts([]);
+      setTotalProducts(0);
     } finally {
       setProductsLoading(false);
     }
+  };
+
+  // Handle page change for products pagination
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    const indexOfLastProduct = pageNumber * productsPerPage;
+    const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+    const currentProducts = allProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+    setProducts(currentProducts);
   };
 
   // Handle form input changes
@@ -1711,70 +1748,137 @@ const AdminDashboard = () => {
                   <p className="text-gray-500">No products found</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selling Price</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {products.map(product => (
-                        <tr key={product._id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <img 
-                              src={product.imageUrls[0]} 
-                              alt={product.name} 
-                              className="h-16 w-16 object-cover rounded-md"
-                            />
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                            <div className="text-sm text-gray-500">{product.description}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ₹{(product.price || 0).toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ₹{(product.discount || 0).toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ₹{(product.sellingPrice || 0).toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                              {product.stock}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex space-x-3">
-                              <button 
-                                onClick={() => handleEdit(product)}
-                                className="text-indigo-600 hover:text-indigo-900"
-                              >
-                                <FiEdit size={18} />
-                              </button>
-                              <button 
-                                onClick={() => handleDelete(product._id)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                <FiTrash2 size={18} />
-                              </button>
-                            </div>
-                          </td>
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selling Price</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {products.map(product => (
+                          <tr key={product._id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <img 
+                                src={product.imageUrls[0]} 
+                                alt={product.name} 
+                                className="h-16 w-16 object-cover rounded-md"
+                              />
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                              <div className="text-sm text-gray-500">{product.description}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              ₹{(product.price || 0).toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              ₹{(product.discount || 0).toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              ₹{(product.sellingPrice || 0).toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {product.stock}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <div className="flex space-x-3">
+                                <button 
+                                  onClick={() => handleEdit(product)}
+                                  className="text-indigo-600 hover:text-indigo-900"
+                                >
+                                  <FiEdit size={18} />
+                                </button>
+                                <button 
+                                  onClick={() => handleDelete(product._id)}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  <FiTrash2 size={18} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {/* Pagination Controls */}
+                  {totalProducts > productsPerPage && (
+                    <div className="mt-6 flex items-center justify-between">
+                      <div className="text-sm text-gray-700">
+                        Showing {((currentPage - 1) * productsPerPage) + 1} to {Math.min(currentPage * productsPerPage, totalProducts)} of {totalProducts} products
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className={`px-3 py-2 text-sm font-medium rounded-md ${
+                            currentPage === 1
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                          }`}
+                        >
+                          Previous
+                        </button>
+                        
+                        {/* Page numbers */}
+                        {Array.from({ length: Math.ceil(totalProducts / productsPerPage) }, (_, i) => i + 1)
+                          .filter(page => {
+                            // Show first page, last page, current page, and pages around current page
+                            return page === 1 || 
+                                   page === Math.ceil(totalProducts / productsPerPage) ||
+                                   Math.abs(page - currentPage) <= 1;
+                          })
+                          .map((page, index, array) => {
+                            // Add ellipsis if there's a gap
+                            const showEllipsisBefore = index > 0 && page - array[index - 1] > 1;
+                            
+                            return (
+                              <div key={page} className="flex items-center">
+                                {showEllipsisBefore && (
+                                  <span className="px-2 text-gray-500">...</span>
+                                )}
+                                <button
+                                  onClick={() => handlePageChange(page)}
+                                  className={`px-3 py-2 text-sm font-medium rounded-md ${
+                                    currentPage === page
+                                      ? 'bg-purple-600 text-white'
+                                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                                  }`}
+                                >
+                                  {page}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        
+                        <button
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === Math.ceil(totalProducts / productsPerPage)}
+                          className={`px-3 py-2 text-sm font-medium rounded-md ${
+                            currentPage === Math.ceil(totalProducts / productsPerPage)
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                          }`}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
