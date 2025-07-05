@@ -109,7 +109,7 @@ router.get('/user', auth, async (req, res) => {
     console.log('Fetching orders for user:', req.user.id);
     
     const orders = await Order.find({ user: req.user.id })
-      .populate('items.jewelry', 'name imageUrl sellingPrice')
+      .populate('items.jewelry', 'name imageUrls sellingPrice')
       .sort({ createdAt: -1 });
     
     console.log('Found orders:', orders.length);
@@ -131,7 +131,7 @@ router.get('/admin', auth, isAdmin, async (req, res) => {
     // Get all orders with populated user and jewelry details
     const orders = await Order.find()
       .populate('user', 'name email')
-      .populate('items.jewelry', 'name imageUrl sellingPrice')
+      .populate('items.jewelry', 'name imageUrls sellingPrice')
       .sort({ createdAt: -1 });
     
     // Separate orders into requests and regular orders
@@ -162,7 +162,7 @@ router.get('/:orderId', auth, async (req, res) => {
     
     const order = await Order.findById(req.params.orderId)
       .populate('user', 'name email phone')
-      .populate('items.jewelry', 'name imageUrl sellingPrice');
+      .populate('items.jewelry', 'name imageUrls sellingPrice');
     
     if (!order) {
       console.log('Order not found');

@@ -101,6 +101,12 @@ const AdminDashboard = () => {
   const [totalProducts, setTotalProducts] = useState(0);
   const [allProducts, setAllProducts] = useState([]);
 
+  // Pagination state for orders
+  const [currentOrderPage, setCurrentOrderPage] = useState(1);
+  const [ordersPerPage] = useState(20);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [allOrders, setAllOrders] = useState([]);
+
   // Chart options
   const lineChartOptions = {
     responsive: true,
@@ -173,6 +179,16 @@ const AdminDashboard = () => {
     }
   }, [currentPage, allProducts, productsPerPage]);
 
+  // Update orders when page changes
+  useEffect(() => {
+    if (allOrders.length > 0) {
+      const indexOfLastOrder = currentOrderPage * ordersPerPage;
+      const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+      const currentOrders = allOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+      setOrders(currentOrders);
+    }
+  }, [currentOrderPage, allOrders, ordersPerPage]);
+
   // Admin check
   useEffect(() => {
     if (!currentUser || currentUser.role !== 'admin') {
@@ -244,6 +260,15 @@ const AdminDashboard = () => {
     const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
     const currentProducts = allProducts.slice(indexOfFirstProduct, indexOfLastProduct);
     setProducts(currentProducts);
+  };
+
+  // Handle page change for orders pagination
+  const handleOrderPageChange = (pageNumber) => {
+    setCurrentOrderPage(pageNumber);
+    const indexOfLastOrder = pageNumber * ordersPerPage;
+    const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+    const currentOrders = allOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+    setOrders(currentOrders);
   };
 
   // Handle form input changes
@@ -939,12 +964,26 @@ const AdminDashboard = () => {
         }
       });
       setOrderRequests(response.data.orderRequests);
-      setOrders(response.data.allOrders);
+      
+      // Set all orders for pagination
+      const allOrdersData = Array.isArray(response.data.allOrders) ? response.data.allOrders : [];
+      setAllOrders(allOrdersData);
+      setTotalOrders(allOrdersData.length);
+      
+      // Calculate pagination for orders
+      const indexOfLastOrder = currentOrderPage * ordersPerPage;
+      const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+      const currentOrders = allOrdersData.slice(indexOfFirstOrder, indexOfLastOrder);
+      
+      setOrders(currentOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
       setToastMessage('Failed to fetch orders');
       setToastType('error');
       setShowToast(true);
+      setOrders([]);
+      setAllOrders([]);
+      setTotalOrders(0);
     } finally {
       setOrdersLoading(false);
     }
@@ -1388,10 +1427,7 @@ const AdminDashboard = () => {
                         {selectedOrder.items.map((item, index) => (
                           <tr key={index} className="hover:bg-gray-50">
                             <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                              <div className="flex items-center">
-                                <img src={item.product?.imageUrls?.[0] || '/placeholder-image.jpg'} alt={item.product?.name || 'Product'} className="w-10 h-10 object-cover rounded-md mr-2" />
-                                <span>{item.product?.name || 'Unknown Product'}</span>
-                              </div>
+                              <span>{item.jewelry?.name || 'Unknown Product'}</span>
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">₹{item.price.toFixed(2)}</td>
                             <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{item.quantity}</td>
@@ -2083,6 +2119,71 @@ const AdminDashboard = () => {
                       </tbody>
                     </table>
                   </div>
+                  
+                  {/* Pagination Controls for Orders */}
+                  {totalOrders > ordersPerPage && (
+                    <div className="mt-6 flex items-center justify-between">
+                      <div className="text-sm text-gray-700">
+                        Showing {((currentOrderPage - 1) * ordersPerPage) + 1} to {Math.min(currentOrderPage * ordersPerPage, totalOrders)} of {totalOrders} orders
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleOrderPageChange(currentOrderPage - 1)}
+                          disabled={currentOrderPage === 1}
+                          className={`px-3 py-2 text-sm font-medium rounded-md ${
+                            currentOrderPage === 1
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                          }`}
+                        >
+                          Previous
+                        </button>
+                        
+                        {/* Page numbers */}
+                        {Array.from({ length: Math.ceil(totalOrders / ordersPerPage) }, (_, i) => i + 1)
+                          .filter(page => {
+                            // Show first page, last page, current page, and pages around current page
+                            return page === 1 || 
+                                   page === Math.ceil(totalOrders / ordersPerPage) ||
+                                   Math.abs(page - currentOrderPage) <= 1;
+                          })
+                          .map((page, index, array) => {
+                            // Add ellipsis if there's a gap
+                            const showEllipsisBefore = index > 0 && page - array[index - 1] > 1;
+                            
+                            return (
+                              <div key={page} className="flex items-center">
+                                {showEllipsisBefore && (
+                                  <span className="px-2 text-gray-500">...</span>
+                                )}
+                                <button
+                                  onClick={() => handleOrderPageChange(page)}
+                                  className={`px-3 py-2 text-sm font-medium rounded-md ${
+                                    currentOrderPage === page
+                                      ? 'bg-purple-600 text-white'
+                                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                                  }`}
+                                >
+                                  {page}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        
+                        <button
+                          onClick={() => handleOrderPageChange(currentOrderPage + 1)}
+                          disabled={currentOrderPage === Math.ceil(totalOrders / ordersPerPage)}
+                          className={`px-3 py-2 text-sm font-medium rounded-md ${
+                            currentOrderPage === Math.ceil(totalOrders / ordersPerPage)
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                          }`}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>

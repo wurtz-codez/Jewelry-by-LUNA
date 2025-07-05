@@ -8,7 +8,7 @@ const auth = require('../middleware/auth');
 router.get('/', auth, async (req, res) => {
   try {
     const wishlist = await Wishlist.findOne({ user: req.user.id })
-      .populate('items', 'name sellingPrice price imageUrl imageUrls description stock categories');
+      .populate('items', 'name sellingPrice price imageUrls description stock categories');
     
     if (!wishlist) {
       return res.json({ items: [] });
@@ -39,7 +39,7 @@ router.post('/items', auth, async (req, res) => {
     }
     
     // Populate jewelry details before sending response
-    await wishlist.populate('items', 'name sellingPrice imageUrl');
+    await wishlist.populate('items', 'name sellingPrice imageUrls');
     
     res.json(wishlist);
   } catch (error) {
@@ -61,7 +61,7 @@ router.delete('/items/:jewelryId', auth, async (req, res) => {
     wishlist.items = wishlist.items.filter(item => item.toString() !== jewelryId);
     await wishlist.save();
     
-    await wishlist.populate('items', 'name sellingPrice imageUrl');
+    await wishlist.populate('items', 'name sellingPrice imageUrls');
     res.json(wishlist);
   } catch (error) {
     console.error('Error removing from wishlist:', error);
